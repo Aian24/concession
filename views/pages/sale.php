@@ -664,10 +664,10 @@ if (isset($_GET['ajax'])) {
     });
 
     // Global listener for any input change in the entry rows
-    document.getElementById('entry-rows').addEventListener('input', (e) => {
+    document.getElementById('entry-rows')?.addEventListener('input', (e) => {
         if (e.target.tagName === 'INPUT') window.updateSummary();
     });
-    document.getElementById('entry-rows').addEventListener('change', (e) => {
+    document.getElementById('entry-rows')?.addEventListener('change', (e) => {
         if (e.target.tagName === 'INPUT') window.updateSummary();
     });
 

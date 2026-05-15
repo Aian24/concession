@@ -7,6 +7,10 @@ if ($_SESSION['role'] !== 'admin') {
 require_once 'includes/db.php';
 $db = db_connect();
 
+// Fetch all store codes for the dropdown
+$stores_res = $db->query("SELECT scode, sname FROM storecode ORDER BY sname ASC");
+$store_list = $stores_res->fetch_all(MYSQLI_ASSOC);
+
 // ── Action Handlers ──────────────────────────────────────────
 
 // 1. CREATE or UPDATE User
@@ -15,17 +19,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_user'])) {
     $uname      = trim($_POST['username'] ?? '');
     $password   = trim($_POST['password'] ?? '');
     $role       = $_POST['role'] ?? 'user';
+    $store_code = $_POST['store_code'] ?? '';
 
     if ($uname) {
         if ($uid > 0) {
             // UPDATE existing
             if ($password !== '') {
                 $hashed = password_hash($password, PASSWORD_BCRYPT);
-                $stmt = $db->prepare("UPDATE users SET username=?, password=?, role=? WHERE id=?");
-                $stmt->bind_param("sssi", $uname, $hashed, $role, $uid);
+                $stmt = $db->prepare("UPDATE users SET username=?, password=?, role=?, store_code=? WHERE id=?");
+                $stmt->bind_param("ssssi", $uname, $hashed, $role, $store_code, $uid);
             } else {
-                $stmt = $db->prepare("UPDATE users SET username=?, role=? WHERE id=?");
-                $stmt->bind_param("ssi", $uname, $role, $uid);
+                $stmt = $db->prepare("UPDATE users SET username=?, role=?, store_code=? WHERE id=?");
+                $stmt->bind_param("sssi", $uname, $role, $store_code, $uid);
             }
             $stmt->execute();
             $stmt->close();
@@ -33,8 +38,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_user'])) {
         } else {
             // CREATE new
             $hashed = password_hash($password !== '' ? $password : '123456', PASSWORD_BCRYPT);
-            $stmt = $db->prepare("INSERT INTO users (username, password, role) VALUES (?, ?, ?)");
-            $stmt->bind_param("sss", $uname, $hashed, $role);
+            $stmt = $db->prepare("INSERT INTO users (username, password, role, store_code) VALUES (?, ?, ?, ?)");
+            $stmt->bind_param("ssss", $uname, $hashed, $role, $store_code);
             $stmt->execute();
             $stmt->close();
             $_SESSION['toast'] = "User created successfully.";
@@ -59,10 +64,11 @@ if (isset($_GET['delete_user'])) {
 // ── Data Fetching ───────────────────────────────────────────
 
 $users_res = $db->query("
-    SELECT u.id, u.username, u.store_code, u.role, u.created_at,
+    SELECT u.id, u.username, u.store_code, sc.sname as store_name, u.role, u.created_at,
     (SELECT COUNT(*) FROM sales s WHERE s.username = u.username) as total_sales,
     (SELECT SUM(line_total) FROM sales s WHERE s.username = u.username) as revenue
     FROM users u
+    LEFT JOIN storecode sc ON u.store_code = sc.scode
     ORDER BY u.created_at DESC
 ");
 $all_users = $users_res->fetch_all(MYSQLI_ASSOC);
@@ -95,7 +101,7 @@ if (isset($_GET['edit'])) {
     
     <!-- User Form (Add/Edit) -->
     <div class="lg:col-span-1">
-        <div class="glass-panel border border-white/5 shadow-2xl overflow-hidden sticky top-24">
+        <div class="glass-panel border border-white/5 shadow-2xl sticky top-24 z-10 overflow-visible">
             <div class="p-5 border-b border-white/5 bg-slate-800/40 flex items-center justify-between">
                 <div class="flex items-center gap-3">
                     <i class="fas <?= $editUser ? 'fa-user-edit text-orange-400' : 'fa-user-plus text-purple-400' ?>"></i>
@@ -106,7 +112,7 @@ if (isset($_GET['edit'])) {
                 <?php endif; ?>
             </div>
             
-            <form method="POST" class="p-6 space-y-4">
+            <form method="POST" class="p-6 space-y-4 overflow-visible">
                 <input type="hidden" name="user_id" value="<?= $editUser['id'] ?? 0 ?>">
                 
                 <div>
@@ -133,6 +139,35 @@ if (isset($_GET['edit'])) {
                         <option value="admin_view" <?= ($editUser['role']??'') === 'admin_view' ? 'selected' : '' ?>>View-Only Admin (All Stores)</option>
                         <option value="store_admin" <?= ($editUser['role']??'') === 'store_admin' ? 'selected' : '' ?>>Store Admin (Specific Store Only)</option>
                     </select>
+                </div>
+
+                <div class="relative" id="store-select-container">
+                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Assigned Store</label>
+                    <div class="relative">
+                        <input type="text" id="store-search-input" class="input-modern w-full pr-10" 
+                               placeholder="Search store..." 
+                               value="<?= htmlspecialchars($editUser['store_name'] ?? ($editUser['store_code'] ?? '')) ?>"
+                               autocomplete="off">
+                        <input type="hidden" name="store_code" id="store-code-hidden" value="<?= htmlspecialchars($editUser['store_code'] ?? '') ?>">
+                        <div class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">
+                            <i class="fas fa-search text-xs"></i>
+                        </div>
+                        
+                        <!-- Search Results Dropdown -->
+                        <div id="store-results" class="hidden absolute left-0 right-0 top-full mt-2 bg-slate-900/95 border border-white/10 shadow-2xl max-h-48 overflow-y-auto z-[999] rounded-xl backdrop-blur-xl">
+                            <?php foreach($store_list as $s): ?>
+                                <div class="store-item p-3 hover:bg-white/10 cursor-pointer border-b border-white/5 transition-colors group" 
+                                     data-code="<?= htmlspecialchars($s['scode']) ?>" 
+                                     data-name="<?= htmlspecialchars($s['sname']) ?>">
+                                    <div class="flex flex-col">
+                                        <span class="text-xs font-bold text-white group-hover:text-purple-400 transition-colors"><?= htmlspecialchars($s['sname']) ?></span>
+                                        <span class="text-[9px] text-gray-500 font-bold tracking-widest uppercase"><?= htmlspecialchars($s['scode']) ?></span>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                            <div id="no-results" class="hidden p-4 text-center text-xs text-gray-500 italic">No stores found...</div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="pt-2">
@@ -185,6 +220,7 @@ if (isset($_GET['edit'])) {
                                 <input type="checkbox" id="selectAllUsers" class="rounded border-white/20 bg-slate-900 text-purple-500 focus:ring-purple-500/20">
                             </th>
                             <th class="p-4 font-semibold text-gray-400 text-[10px] tracking-widest uppercase">Identity</th>
+                            <th class="p-4 font-semibold text-gray-400 text-[10px] tracking-widest uppercase">Store</th>
                             <th class="p-4 font-semibold text-gray-400 text-[10px] tracking-widest uppercase">Performance</th>
                             <th class="p-4 font-semibold text-gray-400 text-[10px] tracking-widest uppercase">Created</th>
                             <th class="p-4 font-semibold text-gray-400 text-[10px] tracking-widest uppercase text-right">Actions</th>
@@ -209,6 +245,14 @@ if (isset($_GET['edit'])) {
                                             <?= $u['role'] ?>
                                         </span>
                                     </div>
+                                </div>
+                            </td>
+                            <td class="p-4">
+                                <div class="flex flex-col">
+                                    <span class="text-white font-bold tracking-wide text-xs"><?= htmlspecialchars($u['store_name'] ?: ($u['store_code'] ?: 'N/A')) ?></span>
+                                    <span class="text-[9px] font-extrabold uppercase tracking-widest text-gray-500">
+                                        <?= htmlspecialchars($u['store_code'] ?: '---') ?>
+                                    </span>
                                 </div>
                             </td>
 
@@ -384,11 +428,15 @@ document.addEventListener("DOMContentLoaded", () => {
         filteredRows = originalRows.filter(row => {
             const userSpan = row.querySelector('.flex.flex-col span.text-white');
             const roleSpan = row.querySelector('.flex.flex-col span.text-\\[9px\\]');
+            const storeSpan = row.cells[2] ? row.cells[2].querySelector('span.text-white') : null;
+            const storeCodeSpan = row.cells[2] ? row.cells[2].querySelector('span.text-\\[9px\\]') : null;
             
             const username = userSpan ? userSpan.textContent.toLowerCase() : '';
             const role = roleSpan ? roleSpan.textContent.toLowerCase() : '';
+            const store = storeSpan ? storeSpan.textContent.toLowerCase() : '';
+            const storeCode = storeCodeSpan ? storeCodeSpan.textContent.toLowerCase() : '';
             
-            return username.includes(query) || role.includes(query);
+            return username.includes(query) || role.includes(query) || store.includes(query) || storeCode.includes(query);
         });
 
         currentPage = 1;
@@ -404,6 +452,60 @@ document.addEventListener("DOMContentLoaded", () => {
 
     updateTable();
     updateBulkDeleteVisibility();
+
+    // Store Searchable Dropdown Logic
+    const storeSearchInput = document.getElementById('store-search-input');
+    const storeCodeHidden = document.getElementById('store-code-hidden');
+    const storeResults = document.getElementById('store-results');
+    const storeItems = document.querySelectorAll('.store-item');
+    const noResults = document.getElementById('no-results');
+
+    if (storeSearchInput) {
+        storeSearchInput.addEventListener('focus', () => {
+            storeResults.classList.remove('hidden');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('#store-select-container')) {
+                storeResults.classList.add('hidden');
+            }
+        });
+
+        storeSearchInput.addEventListener('input', () => {
+            const val = storeSearchInput.value.toLowerCase().trim();
+            let count = 0;
+
+            storeItems.forEach(item => {
+                const name = item.getAttribute('data-name').toLowerCase();
+                const code = item.getAttribute('data-code').toLowerCase();
+
+                if (name.includes(val) || code.includes(val)) {
+                    item.classList.remove('hidden');
+                    count++;
+                } else {
+                    item.classList.add('hidden');
+                }
+            });
+
+            if (count === 0) {
+                noResults.classList.remove('hidden');
+            } else {
+                noResults.classList.add('hidden');
+            }
+            storeResults.classList.remove('hidden');
+        });
+
+        storeItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const name = item.getAttribute('data-name');
+                const code = item.getAttribute('data-code');
+
+                storeSearchInput.value = name;
+                storeCodeHidden.value = code;
+                storeResults.classList.add('hidden');
+            });
+        });
+    }
 });
 </script>
 

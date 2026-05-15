@@ -289,6 +289,7 @@
                 $nav_items['admin'] = ['icon' => 'fa-users-cog', 'title' => 'Manage Users'];
                 $nav_items['stores'] = ['icon' => 'fa-store', 'title' => 'Manage Stores'];
                 $nav_items['prism_data'] = ['icon' => 'fa-gem', 'title' => 'Manage Prism Data'];
+                $nav_items['recent_activity'] = ['icon' => 'fa-clock-rotate-left', 'title' => 'Recent Activity'];
             }
 
             foreach ($nav_items as $key => $item):

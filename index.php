@@ -1,5 +1,4 @@
 <?php
-// Concession System - Test Auto-Deployment
 session_start();
 require_once 'includes/db.php';
 
@@ -111,7 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // ── Routing ───────────────────────────────────────────────────
-$allowed_pages = ['dashboard', 'monitoring', 'sale', 'return', 'receiving', 'ros_supplies', 'submitted', 'admin', 'history', 'pullout', 'stores', 'prism_data'];
+$allowed_pages = ['dashboard', 'monitoring', 'sale', 'return', 'receiving', 'ros_supplies', 'submitted', 'admin', 'history', 'pullout', 'stores', 'recent_activity', 'prism_data'];
 
 if (!in_array($action, $allowed_pages)) {
     $is_admin = (($_SESSION['role'] ?? 'user') === 'admin' || ($_SESSION['user'] ?? '') === 'admin');
