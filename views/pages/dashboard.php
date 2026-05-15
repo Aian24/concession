@@ -229,7 +229,7 @@ if (!function_exists('time_elapsed_string')) {
             </div>
             <h3 class="text-xs font-black text-gray-500 uppercase tracking-[0.2em]">Sales</h3>
         </div>
-        <p class="text-2xl font-bold text-white mb-1">₱<?= number_format($total_sales, 0) ?></p>
+        <p class="text-2xl font-bold text-white mb-1">₱<?= number_format($total_sales, 2) ?></p>
         <div class="flex items-center gap-2">
             <span class="text-[10px] font-bold text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-full uppercase"><?= number_format($total_sales_count) ?> Trans</span>
         </div>
