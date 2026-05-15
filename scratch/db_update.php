@@ -15,7 +15,12 @@ require_once '../includes/db.php';
 
 // --- ADD YOUR SQL HERE ---
 $sql = "
-    -- Example: CREATE TABLE IF NOT EXISTS test_table (id INT PRIMARY KEY);
+    CREATE TABLE IF NOT EXISTS prismdata (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        item_no VARCHAR(255) NOT NULL,
+        srp DECIMAL(10, 2) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
 ";
 // -------------------------
 
