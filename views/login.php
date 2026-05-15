@@ -228,6 +228,13 @@
                 storeSearchInput.style.opacity = '0';
                 lockIcon.classList.toggle('hidden', !isLocked);
                 
+                // Only allow changing if NOT locked
+                if (isLocked) {
+                    changeStoreBtn.classList.add('hidden');
+                } else {
+                    changeStoreBtn.classList.remove('hidden');
+                }
+                
                 hideDropdown();
             }
 
@@ -237,6 +244,7 @@
                 storeSelectedDisplay.classList.add('hidden');
                 storeSearchInput.style.opacity = '1';
                 lockIcon.classList.add('hidden');
+                changeStoreBtn.classList.remove('hidden');
             }
 
             // --- Auto-fill Logic ---
@@ -244,10 +252,12 @@
             usernameInput.addEventListener('input', () => {
                 clearTimeout(lookupTimer);
                 const username = usernameInput.value.trim();
-                if (username.length >= 3) {
-                    lookupTimer = setTimeout(() => fetchUserStore(username), 600);
-                } else if (username.length === 0) {
+                
+                // If username is cleared, fully reset and unlock the store field
+                if (username.length === 0) {
                     resetStoreField();
+                } else if (username.length >= 3) {
+                    lookupTimer = setTimeout(() => fetchUserStore(username), 600);
                 }
             });
 
