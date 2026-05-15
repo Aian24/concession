@@ -1,4 +1,5 @@
 <?php
+// Concession System - Test Auto-Deployment
 session_start();
 require_once 'includes/db.php';
 
