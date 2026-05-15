@@ -2,4 +2,4 @@
 deployment:
   tasks:
     - export DEPLOYPATH=/home1/rustylop/public_html/Concession
-    - /usr/bin/rsync -avz --exclude '.git' --exclude '.gemini' . $DEPLOYPATH
+    - /bin/cp -rf ./* $DEPLOYPATH/
