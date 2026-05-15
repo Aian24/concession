@@ -229,7 +229,7 @@ if (!function_exists('time_elapsed_string')) {
             </div>
             <h3 class="text-xs font-black text-gray-500 uppercase tracking-[0.2em]">Sales</h3>
         </div>
-        <p class="text-2xl font-bold text-white mb-1">₱<?= number_format($total_sales, 2) ?></p>
+        <p class="text-xl md:text-2xl font-bold text-white mb-1">₱<?= number_format($total_sales, 2) ?></p>
         <div class="flex items-center gap-2">
             <span class="text-[10px] font-bold text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-full uppercase"><?= number_format($total_sales_count) ?> Trans</span>
         </div>
@@ -243,7 +243,7 @@ if (!function_exists('time_elapsed_string')) {
             </div>
             <h3 class="text-xs font-black text-gray-500 uppercase tracking-[0.2em]">Total Quantity</h3>
         </div>
-        <p class="text-2xl font-bold text-white mb-1"><?= number_format($total_sales_qty) ?></p>
+        <p class="text-xl md:text-2xl font-bold text-white mb-1"><?= number_format($total_sales_qty) ?></p>
         <div class="flex items-center gap-2">
             <span class="text-[10px] font-bold text-pink-400 bg-pink-500/10 px-2 py-0.5 rounded-full uppercase">Quantity Sold</span>
         </div>
@@ -257,7 +257,7 @@ if (!function_exists('time_elapsed_string')) {
             </div>
             <h3 class="text-xs font-black text-gray-500 uppercase tracking-[0.2em]">Returns</h3>
         </div>
-        <p class="text-2xl font-bold text-white mb-1"><?= number_format($total_returns_count) ?></p>
+        <p class="text-xl md:text-2xl font-bold text-white mb-1"><?= number_format($total_returns_count) ?></p>
         <div class="flex items-center gap-2">
             <span class="text-[10px] font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full uppercase">₱<?= number_format($total_returns, 0) ?></span>
         </div>
@@ -271,7 +271,7 @@ if (!function_exists('time_elapsed_string')) {
             </div>
             <h3 class="text-xs font-black text-gray-500 uppercase tracking-[0.2em]">Received</h3>
         </div>
-        <p class="text-2xl font-bold text-white mb-1"><?= number_format($total_received_qty) ?></p>
+        <p class="text-xl md:text-2xl font-bold text-white mb-1"><?= number_format($total_received_qty) ?></p>
         <div class="flex items-center gap-2">
             <span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full uppercase"><?= number_format($receiving_count) ?> Batch</span>
         </div>
@@ -285,7 +285,7 @@ if (!function_exists('time_elapsed_string')) {
             </div>
             <h3 class="text-xs font-black text-gray-500 uppercase tracking-[0.2em]">Stores</h3>
         </div>
-        <p class="text-2xl font-bold text-white mb-1"><?= number_format($total_stores) ?></p>
+        <p class="text-xl md:text-2xl font-bold text-white mb-1"><?= number_format($total_stores) ?></p>
         <div class="flex items-center gap-2">
             <span class="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full uppercase">Total</span>
         </div>
@@ -299,7 +299,7 @@ if (!function_exists('time_elapsed_string')) {
             </div>
             <h3 class="text-xs font-black text-gray-500 uppercase tracking-[0.2em]">Activity</h3>
         </div>
-        <p class="text-2xl font-bold text-white mb-1"><?= number_format($active_stores_count) ?><span class="text-lg text-gray-500 font-medium">/<?= number_format($total_stores) ?></span></p>
+        <p class="text-xl md:text-2xl font-bold text-white mb-1"><?= number_format($active_stores_count) ?><span class="text-lg text-gray-500 font-medium">/<?= number_format($total_stores) ?></span></p>
         <div class="flex items-center gap-2">
             <span class="text-[10px] font-bold text-orange-400 bg-orange-500/10 px-2 py-0.5 rounded-full uppercase">Active vs Total</span>
         </div>
