@@ -1,0 +1,408 @@
+<?php
+$db = db_connect();
+
+// Date Range Logic
+$end_date = $_GET['end_date'] ?? date('Y-m-d');
+$start_date = $_GET['start_date'] ?? date('Y-m-d', strtotime('-29 days'));
+
+// Store Filtering Logic
+$role = $_SESSION['role'] ?? 'user';
+$is_store_admin = ($role === 'store_admin');
+$is_admin = ($role === 'admin' || ($_SESSION['user'] ?? '') === 'admin' || $role === 'admin_view');
+$session_store_code = $_SESSION['store_code'] ?? '';
+
+// Filter store code from GET
+$filter_store_code = $_GET['store_code'] ?? '';
+
+$store_clause = "";
+if ($is_store_admin) {
+    $store_clause = " AND store_code = '$session_store_code'";
+} elseif ($is_admin) {
+    if ($filter_store_code !== '') {
+        $store_clause = " AND store_code = '$filter_store_code'";
+    }
+} else {
+    // Regular user
+    $store_clause = " AND store_code = '$session_store_code'";
+}
+
+// Fetch stores for filter dropdown
+$stores_list = [];
+if ($is_admin) {
+    $stores_res = $db->query("SELECT scode, sname FROM storecode ORDER BY sname ASC");
+    if ($stores_res) {
+        $stores_list = $stores_res->fetch_all(MYSQLI_ASSOC);
+    }
+}
+
+// 1. Total Sales
+$sales_res = $db->query("SELECT SUM(line_total) as total_sales, SUM(quantity) as total_qty, COUNT(id) as total_count FROM sales WHERE DATE(created_at) BETWEEN '$start_date' AND '$end_date' $store_clause");
+$sales_data = $sales_res ? $sales_res->fetch_assoc() : ['total_sales' => 0, 'total_qty' => 0, 'total_count' => 0];
+$total_sales = (float) ($sales_data['total_sales'] ?? 0.00);
+$total_sales_qty = (int) ($sales_data['total_qty'] ?? 0);
+$total_sales_count = (int) ($sales_data['total_count'] ?? 0);
+
+// 2. Total Returns
+$returns_res = $db->query("SELECT SUM(return_amount) as total_returns, COUNT(id) as total_count FROM returns WHERE DATE(created_at) BETWEEN '$start_date' AND '$end_date' $store_clause");
+$returns_data = $returns_res ? $returns_res->fetch_assoc() : ['total_returns' => 0, 'total_count' => 0];
+$total_returns = (float) ($returns_data['total_returns'] ?? 0.00);
+$total_returns_count = (int) ($returns_data['total_count'] ?? 0);
+
+// 3. Total Receiving
+$receiving_res = $db->query("SELECT SUM(quantity) as total_received, COUNT(id) as total_count FROM receiving WHERE DATE(created_at) BETWEEN '$start_date' AND '$end_date' $store_clause");
+$receiving_data = $receiving_res ? $receiving_res->fetch_assoc() : ['total_received' => 0, 'total_count' => 0];
+$total_received_qty = (int) ($receiving_data['total_received'] ?? 0);
+$receiving_count = (int) ($receiving_data['total_count'] ?? 0);
+
+// 4. Total Stores
+$store_count_res = $db->query("SELECT COUNT(*) as total FROM storecode" . ($is_store_admin ? " WHERE scode = '$session_store_code'" : ""));
+$total_stores = $store_count_res ? (int)$store_count_res->fetch_assoc()['total'] : 0;
+
+// Chart Data Generation
+$chart_labels = [];
+$chart_sales_values = [];
+$chart_qty_values = [];
+
+$current = new DateTime($start_date);
+$end = new DateTime($end_date);
+$end->modify('+1 day');
+$interval = new DateInterval('P1D');
+$period = new DatePeriod($current, $interval, $end);
+
+foreach ($period as $date) {
+    $d = $date->format('Y-m-d');
+    $chart_labels[$d] = $date->format('M d');
+    $chart_sales_values[$d] = 0;
+    $chart_qty_values[$d] = 0;
+}
+
+$chart_res = $db->query("SELECT DATE(created_at) as d, SUM(line_total) as total, SUM(quantity) as qty FROM sales WHERE (DATE(created_at) BETWEEN '$start_date' AND '$end_date') $store_clause GROUP BY DATE(created_at)");
+if ($chart_res) {
+    while($row = $chart_res->fetch_assoc()) {
+        if (isset($chart_sales_values[$row['d']])) {
+            $chart_sales_values[$row['d']] = (float)$row['total'];
+            $chart_qty_values[$row['d']] = (int)$row['qty'];
+        }
+    }
+}
+
+// 5. Dynamic Notifications
+$notif_res = $db->query("
+    (SELECT 'sale' as type, username, store_code, created_at, line_total as val FROM sales WHERE 1=1 $store_clause)
+    UNION
+    (SELECT 'return' as type, username, store_code, created_at, return_amount as val FROM returns WHERE 1=1 $store_clause)
+    UNION
+    (SELECT 'receiving' as type, username, store_code, created_at, quantity as val FROM receiving WHERE 1=1 $store_clause)
+    ORDER BY created_at DESC LIMIT 6
+");
+$notifications = $notif_res ? $notif_res->fetch_all(MYSQLI_ASSOC) : [];
+
+if (!function_exists('time_elapsed_string')) {
+    function time_elapsed_string($datetime, $full = false) {
+        $now = new DateTime;
+        $ago = new DateTime($datetime);
+        $diff = $now->diff($ago);
+        $diff->w = floor($diff->d / 7);
+        $diff->d -= $diff->w * 7;
+        $string = array('y' => 'year','m' => 'month','w' => 'week','d' => 'day','h' => 'hour','i' => 'minute','s' => 'second');
+        foreach ($string as $k => &$v) {
+            if ($diff->$k) { $v = $diff->$k . ' ' . $v . ($diff->$k > 1 ? 's' : ''); } 
+            else { unset($string[$k]); }
+        }
+        if (!$full) $string = array_slice($string, 0, 1);
+        return $string ? implode(', ', $string) . ' ago' : 'just now';
+    }
+}
+?>
+
+<style>
+    input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
+</style>
+
+<!-- Date Range Filter -->
+<div class="glass-panel p-5 border border-white/5 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
+    <div class="flex items-center gap-4">
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600/20 to-pink-600/20 flex items-center justify-center text-white border border-white/10 shadow-xl">
+            <i class="fas fa-calendar-alt"></i>
+        </div>
+        <div>
+            <h3 class="text-sm font-black text-white uppercase tracking-widest">Date Range Analytics</h3>
+            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-tighter">Live filtering applied to graphs and stats</p>
+        </div>
+    </div>
+    
+    <form id="dashboard-filter-form" class="grid grid-cols-1 sm:grid-cols-3 gap-4 flex-1 max-w-3xl" method="GET">
+        <input type="hidden" name="action" value="dashboard">
+        <div class="space-y-1 group">
+            <label class="text-[9px] font-bold text-gray-500 uppercase ml-1 group-hover:text-purple-400 transition-colors">Start Date</label>
+            <div class="relative">
+                <i class="fas fa-calendar-day absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-600 group-hover:text-purple-400 transition-colors pointer-events-none"></i>
+                <input type="date" name="start_date" value="<?= $start_date ?>" onchange="this.form.submit()" onclick="this.showPicker()"
+                       class="w-full bg-slate-900/80 border border-white/10 rounded-xl pl-9 pr-4 py-2 text-xs text-white focus:outline-none focus:border-purple-500/50 cursor-pointer transition-all">
+            </div>
+        </div>
+        <div class="space-y-1 group">
+            <label class="text-[9px] font-bold text-gray-500 uppercase ml-1 group-hover:text-pink-400 transition-colors">End Date</label>
+            <div class="relative">
+                <i class="fas fa-calendar-check absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-600 group-hover:text-pink-400 transition-colors pointer-events-none"></i>
+                <input type="date" name="end_date" value="<?= $end_date ?>" onchange="this.form.submit()" onclick="this.showPicker()"
+                       class="w-full bg-slate-900/80 border border-white/10 rounded-xl pl-9 pr-4 py-2 text-xs text-white focus:outline-none focus:border-pink-500/50 cursor-pointer transition-all">
+            </div>
+        </div>
+        <?php if ($is_admin): ?>
+        <div class="space-y-1 group">
+            <label class="text-[9px] font-bold text-gray-500 uppercase ml-1 group-hover:text-amber-400 transition-colors">Store Filter</label>
+            <div class="relative">
+                <i class="fas fa-store absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-600 group-hover:text-amber-400 transition-colors pointer-events-none"></i>
+                <select name="store_code" onchange="this.form.submit()"
+                        class="w-full bg-slate-900/80 border border-white/10 rounded-xl pl-9 pr-4 py-2 text-xs text-white focus:outline-none focus:border-amber-500/50 cursor-pointer transition-all appearance-none">
+                    <option value="">All Stores</option>
+                    <?php foreach ($stores_list as $s): ?>
+                        <option value="<?= $s['scode'] ?>" <?= $filter_store_code === $s['scode'] ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($s['scode']) ?> - <?= htmlspecialchars($s['sname']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+        </div>
+        <?php endif; ?>
+    </form>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-8">
+    <!-- Stats Cards -->
+    <div class="glass-panel p-6 border border-white/5 relative overflow-hidden group hover:border-purple-500/30 transition-all duration-500">
+        <div class="absolute -right-4 -top-4 w-24 h-24 bg-purple-500/10 rounded-full blur-2xl group-hover:bg-purple-500/20 transition-all"></div>
+        <div class="flex items-center gap-4 mb-4">
+            <div class="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-400 border border-purple-500/20 shadow-lg shadow-purple-500/5">
+                <i class="fas fa-shopping-bag text-xl"></i>
+            </div>
+            <h3 class="text-xs font-black text-gray-500 uppercase tracking-[0.2em]">Sales</h3>
+        </div>
+        <p class="text-3xl font-bold text-white mb-1">₱<?= number_format($total_sales, 2) ?></p>
+        <div class="flex items-center gap-2">
+            <span class="text-[10px] font-bold text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-full uppercase"><?= number_format($total_sales_count) ?> Trans</span>
+        </div>
+    </div>
+
+    <div class="glass-panel p-6 border border-white/5 relative overflow-hidden group hover:border-pink-500/30 transition-all duration-500">
+        <div class="absolute -right-4 -top-4 w-24 h-24 bg-pink-500/10 rounded-full blur-2xl group-hover:bg-pink-500/20 transition-all"></div>
+        <div class="flex items-center gap-4 mb-4">
+            <div class="w-12 h-12 rounded-2xl bg-pink-500/10 flex items-center justify-center text-pink-400 border border-pink-500/20 shadow-lg shadow-pink-500/5">
+                <i class="fas fa-box text-xl"></i>
+            </div>
+            <h3 class="text-xs font-black text-gray-500 uppercase tracking-[0.2em]">Total Quantity</h3>
+        </div>
+        <p class="text-3xl font-bold text-white mb-1"><?= number_format($total_sales_qty) ?></p>
+        <div class="flex items-center gap-2">
+            <span class="text-[10px] font-bold text-pink-400 bg-pink-500/10 px-2 py-0.5 rounded-full uppercase">Quantity Sold</span>
+        </div>
+    </div>
+
+    <div class="glass-panel p-6 border border-white/5 relative overflow-hidden group hover:border-blue-500/30 transition-all duration-500">
+        <div class="absolute -right-4 -top-4 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-all"></div>
+        <div class="flex items-center gap-4 mb-4">
+            <div class="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-400 border border-blue-500/20 shadow-lg shadow-blue-500/5">
+                <i class="fas fa-undo-alt text-xl"></i>
+            </div>
+            <h3 class="text-xs font-black text-gray-500 uppercase tracking-[0.2em]">Returns</h3>
+        </div>
+        <p class="text-3xl font-bold text-white mb-1"><?= number_format($total_returns_count) ?></p>
+        <div class="flex items-center gap-2">
+            <span class="text-[10px] font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full uppercase">₱<?= number_format($total_returns, 0) ?></span>
+        </div>
+    </div>
+
+    <div class="glass-panel p-6 border border-white/5 relative overflow-hidden group hover:border-emerald-500/30 transition-all duration-500">
+        <div class="absolute -right-4 -top-4 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition-all"></div>
+        <div class="flex items-center gap-4 mb-4">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 border border-emerald-500/20 shadow-lg shadow-emerald-500/5">
+                <i class="fas fa-truck-loading text-xl"></i>
+            </div>
+            <h3 class="text-xs font-black text-gray-500 uppercase tracking-[0.2em]">Received</h3>
+        </div>
+        <p class="text-3xl font-bold text-white mb-1"><?= number_format($total_received_qty) ?></p>
+        <div class="flex items-center gap-2">
+            <span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full uppercase"><?= number_format($receiving_count) ?> Batch</span>
+        </div>
+    </div>
+
+    <div class="glass-panel p-6 border border-white/5 relative overflow-hidden group hover:border-amber-500/30 transition-all duration-500">
+        <div class="absolute -right-4 -top-4 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl group-hover:bg-amber-500/20 transition-all"></div>
+        <div class="flex items-center gap-4 mb-4">
+            <div class="w-12 h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-400 border border-amber-500/20 shadow-lg shadow-amber-500/5">
+                <i class="fas fa-store text-xl"></i>
+            </div>
+            <h3 class="text-xs font-black text-gray-500 uppercase tracking-[0.2em]">Stores</h3>
+        </div>
+        <p class="text-3xl font-bold text-white mb-1"><?= number_format($total_stores) ?></p>
+        <div class="flex items-center gap-2">
+            <span class="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full uppercase">Active</span>
+        </div>
+    </div>
+</div>
+
+<div class="w-full">
+    <!-- Chart Section -->
+    <div class="glass-panel p-8 border border-white/5">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8">
+            <div class="flex-1">
+                <h3 class="text-lg font-bold text-white tracking-wide uppercase flex items-center gap-2">
+                    <i class="fas fa-chart-line text-purple-400"></i> Performance Activity
+                </h3>
+                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">Daily sales line graph overview</p>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2 px-3 py-1 bg-purple-500/10 rounded-lg border border-purple-500/20">
+                    <div class="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></div>
+                    <span class="text-[9px] font-black uppercase text-purple-400 tracking-tighter">Live Data View</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="relative h-[400px]">
+            <canvas id="monthlyActivityChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('monthlyActivityChart').getContext('2d');
+    
+    // Gradient Background
+    const gradient = ctx.createLinearGradient(0, 0, 0, 350);
+    gradient.addColorStop(0, 'rgba(168, 85, 247, 0.4)');
+    gradient.addColorStop(1, 'rgba(168, 85, 247, 0.0)');
+
+    const labels = <?= json_encode(array_values($chart_labels)) ?>;
+    const salesData = <?= json_encode(array_values($chart_sales_values)) ?>;
+    const qtyData = <?= json_encode(array_values($chart_qty_values)) ?>;
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Daily Sales (₱)',
+                    data: salesData,
+                    borderColor: '#a855f7',
+                    borderWidth: 4,
+                    backgroundColor: gradient,
+                    fill: true,
+                    tension: 0.45,
+                    yAxisID: 'y',
+                    pointBackgroundColor: '#fff',
+                    pointBorderColor: '#a855f7',
+                    pointBorderWidth: 2,
+                    pointRadius: (labels.length > 31) ? 0 : 3,
+                    pointHoverRadius: 6,
+                    pointHoverBackgroundColor: '#a855f7',
+                    pointHoverBorderColor: '#fff',
+                    pointHoverBorderWidth: 2
+                },
+                {
+                    label: 'Daily Quantity',
+                    data: qtyData,
+                    borderColor: '#ec4899',
+                    borderWidth: 3,
+                    borderDash: [5, 5],
+                    backgroundColor: 'transparent',
+                    fill: false,
+                    tension: 0.45,
+                    yAxisID: 'y1',
+                    pointBackgroundColor: '#fff',
+                    pointBorderColor: '#ec4899',
+                    pointBorderWidth: 2,
+                    pointRadius: (labels.length > 31) ? 0 : 3,
+                    pointHoverRadius: 6,
+                    pointHoverBackgroundColor: '#ec4899',
+                    pointHoverBorderColor: '#fff',
+                    pointHoverBorderWidth: 2
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            },
+            plugins: {
+                legend: { 
+                    display: true,
+                    labels: {
+                        color: '#64748b',
+                        font: { size: 10, family: 'Outfit', weight: 'bold' },
+                        usePointStyle: true,
+                        padding: 20
+                    }
+                },
+                tooltip: {
+                    backgroundColor: '#0f172a',
+                    titleFont: { size: 10, family: 'Outfit', weight: 'bold' },
+                    bodyFont: { size: 12, family: 'Outfit', weight: 'bold' },
+                    padding: 12,
+                    cornerRadius: 12,
+                    displayColors: true,
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.datasetIndex === 0) {
+                                label += '₱ ' + context.parsed.y.toLocaleString(undefined, {minimumFractionDigits: 2});
+                            } else {
+                                label += context.parsed.y.toLocaleString();
+                            }
+                            return label;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    position: 'left',
+                    grid: { color: 'rgba(255, 255, 255, 0.03)', drawBorder: false },
+                    ticks: {
+                        color: '#64748b',
+                        font: { size: 10, family: 'Outfit' },
+                        callback: function(value) {
+                            if (value >= 1000) return '₱' + (value/1000) + 'k';
+                            return '₱' + value;
+                        }
+                    }
+                },
+                y1: {
+                    beginAtZero: true,
+                    position: 'right',
+                    grid: { display: false },
+                    ticks: {
+                        color: '#ec4899',
+                        font: { size: 10, family: 'Outfit' },
+                        callback: function(value) {
+                            return value + ' qty';
+                        }
+                    }
+                },
+                x: {
+                    grid: { display: false, drawBorder: false },
+                    ticks: {
+                        color: '#64748b',
+                        font: { size: 9, family: 'Outfit', weight: 'bold' },
+                        maxRotation: 45,
+                        minRotation: 45,
+                        autoSkip: true,
+                        maxTicksLimit: 15
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
