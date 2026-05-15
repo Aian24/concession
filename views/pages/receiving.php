@@ -528,8 +528,11 @@ if (isset($_GET['ajax'])) {
         document.getElementById('edit-to-store').value   = row.cells[4 + offset].innerText.trim();
 
         const modal = document.getElementById('edit-receiving-modal');
+        // Move modal to body to escape transform container and fix scroll visibility
+        document.body.appendChild(modal);
         modal.classList.remove('opacity-0', 'pointer-events-none', 'scale-95');
-        modal.classList.add('scale-100');
+        modal.classList.add('scale-100', 'flex');
+        modal.classList.remove('hidden');
     };
 
     window.closeEditReceivingModal = function() {

@@ -9,6 +9,82 @@ if (!isset($can_delete)) {
     $can_delete     = ($is_full_admin);
 }
 ?>
+<style>
+    @media (max-width: 768px) {
+        #submitted-history-table thead { display: none; }
+        #submitted-history-table, #submitted-history-table tbody { display: block; width: 100%; }
+        #submitted-history-table tr { 
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 1.5rem; 
+            margin-left: 1.25rem;
+            margin-right: 1.25rem;
+            border: 1px solid rgba(255,255,255,0.08); 
+            border-radius: 1.5rem; 
+            padding: 1.25rem; 
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.4), rgba(15, 23, 42, 0.4));
+            position: relative;
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+        }
+        #submitted-history-table td { 
+            display: flex; 
+            flex-direction: column;
+            justify-content: flex-start; 
+            align-items: flex-start; 
+            padding: 0; 
+            border: none; 
+            white-space: normal;
+            min-width: 0;
+        }
+        #submitted-history-table td::before { 
+            content: attr(data-label); 
+            font-weight: 900; 
+            text-transform: uppercase; 
+            font-size: 7px; 
+            color: #64748b; 
+            letter-spacing: 0.1em;
+            margin-bottom: 4px;
+            opacity: 0.8;
+        }
+        
+        /* Layout: Strict 3 items per row */
+        #submitted-history-table td { 
+            grid-column: span 1 !important;
+            border: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+
+        /* Specific Cell Alignments */
+        #submitted-history-table td[data-label="Select"] {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: auto;
+            border: none;
+            padding: 0;
+            z-index: 10;
+        }
+        #submitted-history-table td[data-label="Select"]::before { display: none; }
+        
+        /* Ensure content doesn't overflow and text is readable */
+        #submitted-history-table td span, 
+        #submitted-history-table td div { 
+            font-size: 10px !important; 
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        #submitted-history-table td .flex-col { align-items: flex-start !important; text-align: left !important; }
+        #submitted-history-table td .mx-auto { margin-left: 0 !important; }
+        #submitted-history-table tr:first-child { margin-top: 1.5rem; }
+        
+        /* Hide avatar in mobile */
+        #submitted-history-table td[data-label="Submitted By"] .flex span:first-child { display: none; }
+    }
+</style>
+
 <div class="glass-panel border border-white/5 shadow-xl overflow-hidden mt-6" id="submitted-sales-section">
     <div class="p-5 border-b border-white/5 bg-slate-800/30 space-y-4">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -45,13 +121,13 @@ if (!isset($can_delete)) {
         <style>
             input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
         </style>
-        <div class="grid grid-cols-1 sm:grid-cols-2 <?= $is_admin ? 'lg:grid-cols-4' : 'lg:grid-cols-3' ?> gap-3 bg-white/5 p-3 rounded-xl border border-white/5">
+        <div class="grid grid-cols-2 <?= $is_admin ? 'lg:grid-cols-4' : 'lg:grid-cols-3' ?> gap-3 bg-white/5 p-3 rounded-xl border border-white/5">
             <div class="space-y-1">
                 <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Search</label>
                 <div class="relative">
                     <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-[10px]"></i>
                     <input type="text" name="search" value="<?= htmlspecialchars($search) ?>" placeholder="Item # or User..." 
-                           class="w-full bg-slate-900/80 border border-white/10 rounded-lg pl-8 pr-4 py-1.5 h-8 text-xs text-white focus:outline-none focus:border-green-500/50">
+                           class="w-full bg-slate-900/80 border border-white/10 rounded-lg pl-8 pr-4 py-1.5 h-8 text-[10px] text-white focus:outline-none focus:border-green-500/50">
                 </div>
             </div>
 
@@ -165,7 +241,7 @@ if (!isset($can_delete)) {
     </div>
     
     <div class="overflow-x-auto min-h-[300px]">
-        <table class="w-full text-left border-collapse glass-table whitespace-nowrap">
+        <table class="w-full text-left border-collapse glass-table whitespace-nowrap" id="submitted-history-table">
             <thead>
                 <tr>
                     <th class="px-5 py-3 w-10 text-center">
@@ -205,12 +281,12 @@ if (!isset($can_delete)) {
                         $total_line_total += $s['line_total'];
                     ?>
                     <tr class="hover:bg-white/5 transition-colors border-b border-white/5 last:border-0 border-r border-transparent hover:border-r-green-500/50">
-                        <td class="px-5 py-3.5 text-center">
+                        <td class="px-5 py-3.5 text-center" data-label="Select">
                             <input type="checkbox" name="sale_ids[]" value="<?= $s['id'] ?>" class="sale-checkbox rounded border-white/20 bg-slate-900 text-green-500 focus:ring-offset-slate-900">
                         </td>
                         <?php if ($is_admin): ?>
-                            <td class="px-5 py-3.5">
-                                <div class="flex flex-col">
+                            <td class="px-5 py-3.5" data-label="Store">
+                                <div class="flex flex-col md:items-start items-end text-right md:text-left">
                                     <span class="font-bold text-gray-400 text-[11px]"><?= htmlspecialchars($s['store_code']) ?></span>
                                     <?php if (!empty($s['sname'])): ?>
                                         <span class="text-[9px] text-gray-500 font-bold uppercase tracking-tighter truncate max-w-[120px]"><?= htmlspecialchars($s['sname']) ?></span>
@@ -218,33 +294,33 @@ if (!isset($can_delete)) {
                                 </div>
                             </td>
                         <?php endif; ?>
-                        <td class="px-5 py-3.5 font-bold text-purple-300 tracking-wide flex items-center gap-2">
+                        <td class="px-5 py-3.5 font-bold text-purple-300 tracking-wide flex items-center gap-2" data-label="Item #">
                             <?= htmlspecialchars($s['item_no']) ?>
                         </td>
-                        <td class="px-5 py-3.5 text-emerald-400 font-black text-center">₱<?= number_format($s['amount_sold'], 2) ?></td>
-                        <td class="px-5 py-3.5 text-gray-300 font-bold text-center"><?= $s['quantity'] ?></td>
-                        <td class="px-5 py-3.5 text-emerald-300 font-black text-center">₱<?= number_format($s['line_total'], 2) ?></td>
-                        <td class="px-5 py-3.5">
+                        <td class="px-5 py-3.5 text-emerald-400 font-black text-center" data-label="Amount Sold">₱<?= number_format($s['amount_sold'], 2) ?></td>
+                        <td class="px-5 py-3.5 text-gray-300 font-bold text-center" data-label="Qty"><?= $s['quantity'] ?></td>
+                        <td class="px-5 py-3.5 text-emerald-300 font-black text-center" data-label="Line Total">₱<?= number_format($s['line_total'], 2) ?></td>
+                        <td class="px-5 py-3.5" data-label="Submitted By">
                             <span class="flex items-center gap-2">
                                 <span class="w-6 h-6 rounded-full bg-gradient-to-tr from-purple-600/20 to-pink-600/20 border border-white/10 flex items-center justify-center text-[10px] text-white font-bold"><?= strtoupper($s['username'][0]) ?></span>
                                 <span class="text-gray-300 text-xs"><?= htmlspecialchars($s['username']) ?></span>
                             </span>
                         </td>
-                        <td class="px-5 py-3.5 text-gray-300 text-[11px] text-right font-medium tracking-tight whitespace-nowrap"><?= date('M d, Y • h:i A', strtotime($s['created_at'])) ?></td>
-                        <td class="px-5 py-3.5 text-center">
+                        <td class="px-5 py-3.5 text-gray-300 text-[11px] text-right font-medium tracking-tight whitespace-nowrap" data-label="Date"><?= date('M d, Y • h:i A', strtotime($s['created_at'])) ?></td>
+                        <td class="px-5 py-3.5 text-center" data-label="Status">
                             <?php if ($s['is_exported']): ?>
-                                <div class="w-6 h-6 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center text-green-400 mx-auto" title="Already Exported">
+                                <div class="w-6 h-6 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center text-green-400 mx-auto md:mx-0" title="Already Exported">
                                     <i class="fas fa-check-double text-[9px]"></i>
                                 </div>
                             <?php else: ?>
-                                <div class="w-6 h-6 rounded-lg bg-slate-500/10 border border-white/5 flex items-center justify-center text-gray-600 mx-auto" title="Pending Export">
+                                <div class="w-6 h-6 rounded-lg bg-slate-500/10 border border-white/5 flex items-center justify-center text-gray-600 mx-auto md:mx-0" title="Pending Export">
                                     <i class="fas fa-clock text-[9px]"></i>
                                 </div>
                             <?php endif; ?>
                         </td>
                         <?php if ($can_edit): ?>
-                            <td class="px-5 py-3.5 text-center">
-                                <div class="flex items-center justify-center gap-2">
+                            <td class="px-5 py-3.5 text-center" data-label="Actions">
+                                <div class="flex items-center justify-center md:justify-center gap-2">
                                     <button onclick="editSale(<?= $s['id'] ?>)" class="w-7 h-7 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 transition-all flex items-center justify-center" title="Edit Record"><i class="fas fa-edit text-[10px]"></i></button>
                                     <?php if ($can_delete): ?>
                                     <button onclick="deleteSale(<?= $s['id'] ?>)" class="w-7 h-7 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 transition-all flex items-center justify-center" title="Delete Record"><i class="fas fa-trash-alt text-[10px]"></i></button>
@@ -260,13 +336,13 @@ if (!isset($can_delete)) {
     </div>
 
     <!-- Pagination: Always Visible -->
-    <div class="px-5 py-4 border-t border-white/5 flex items-center justify-between bg-slate-800/10">
-        <div class="flex items-center gap-4">
+    <div class="px-5 py-4 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-4 bg-slate-800/10">
+        <div class="flex flex-col md:flex-row items-center gap-2 md:gap-4 text-center md:text-left">
             <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Page <?= $page ?> of <?= $total_pages ?> <span class="mx-2 opacity-30">|</span> Result: <?= $total_rows ?> entries</span>
             
             <?php if (!empty($submitted_sales)): ?>
                 <div class="h-4 w-px bg-white/10 hidden md:block"></div>
-                <div class="hidden md:flex items-center gap-4">
+                <div class="flex items-center gap-4">
                     <div class="flex items-center gap-1.5">
                         <span class="text-[9px] font-black text-gray-500 uppercase tracking-tighter">Total Qty:</span>
                         <span class="text-[11px] font-black text-white"><?= number_format($total_qty) ?></span>

@@ -9,6 +9,70 @@ if (!isset($can_delete)) {
     $can_delete     = ($is_full_admin);
 }
 ?>
+<style>
+    @media (max-width: 768px) {
+        #pullout-history-table thead { display: none; }
+        #pullout-history-table, #pullout-history-table tbody { display: block; width: 100%; }
+        #pullout-history-table tr { 
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 1.5rem; 
+            margin-left: 1.25rem;
+            margin-right: 1.25rem;
+            border: 1px solid rgba(255,255,255,0.08); 
+            border-radius: 1.5rem; 
+            padding: 1.25rem; 
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.4), rgba(15, 23, 42, 0.4));
+            position: relative;
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+        }
+        #pullout-history-table tr:first-child { margin-top: 1.5rem; }
+        #pullout-history-table td { 
+            display: flex; 
+            flex-direction: column;
+            justify-content: flex-start; 
+            align-items: flex-start; 
+            padding: 0; 
+            border: none; 
+            white-space: normal;
+            min-width: 0;
+            grid-column: span 1 !important;
+        }
+        #pullout-history-table td::before { 
+            content: attr(data-label); 
+            font-weight: 900; 
+            text-transform: uppercase; 
+            font-size: 7px; 
+            color: #64748b; 
+            letter-spacing: 0.1em;
+            margin-bottom: 4px;
+            opacity: 0.8;
+        }
+        
+        #pullout-history-table td[data-label="Select"] {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: auto;
+            border: none;
+            padding: 0;
+            z-index: 10;
+        }
+        #pullout-history-table td[data-label="Select"]::before { display: none; }
+        
+        #pullout-history-table td span, 
+        #pullout-history-table td div { 
+            font-size: 10px !important; 
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        #pullout-history-table td .flex-col { align-items: flex-start !important; text-align: left !important; }
+        #pullout-history-table td .mx-auto { margin-left: 0 !important; }
+        #pullout-history-table td[data-label="Submitted By"] .flex span:first-child { display: none; }
+    }
+</style>
 <div class="glass-panel border border-white/5 shadow-xl overflow-hidden mt-6" id="pullout-section">
     <div class="p-5 border-b border-white/5 bg-slate-800/30 space-y-4">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -45,7 +109,7 @@ if (!isset($can_delete)) {
         <style>
             input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
         </style>
-        <div class="grid grid-cols-1 sm:grid-cols-2 <?= $is_admin ? 'lg:grid-cols-4' : 'lg:grid-cols-3' ?> gap-3 bg-white/5 p-3 rounded-xl border border-white/5">
+        <div class="grid grid-cols-2 <?= $is_admin ? 'lg:grid-cols-4' : 'lg:grid-cols-3' ?> gap-3 bg-white/5 p-3 rounded-xl border border-white/5">
             <div class="space-y-1">
                 <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Search</label>
                 <div class="relative">
@@ -161,7 +225,7 @@ if (!isset($can_delete)) {
     </div>
     
     <div class="overflow-x-auto min-h-[300px]">
-        <table class="w-full text-left border-collapse glass-table whitespace-nowrap">
+        <table class="w-full text-left border-collapse glass-table whitespace-nowrap" id="pullout-history-table">
             <thead>
                 <tr>
                     <th class="px-5 py-3 w-10 text-center">
@@ -198,12 +262,12 @@ if (!isset($can_delete)) {
                         $total_qty += $p['quantity'];
                     ?>
                     <tr class="hover:bg-white/5 transition-colors border-b border-white/5 last:border-0">
-                        <td class="px-5 py-3.5 text-center">
+                        <td class="px-5 py-3.5 text-center" data-label="Select">
                             <input type="checkbox" value="<?= $p['id'] ?>" class="pullout-checkbox rounded border-white/20 bg-slate-900 text-amber-500">
                         </td>
                         <?php if ($is_admin): ?>
-                            <td class="px-5 py-3.5">
-                                <div class="flex flex-col">
+                            <td class="px-5 py-3.5" data-label="Store">
+                                <div class="flex flex-col md:items-start items-end text-right md:text-left">
                                     <span class="font-bold text-gray-400 text-[11px]"><?= htmlspecialchars($p['store_code']) ?></span>
                                     <?php if (!empty($p['sname'])): ?>
                                         <span class="text-[9px] text-gray-500 font-bold uppercase tracking-tighter truncate max-w-[120px]"><?= htmlspecialchars($p['sname']) ?></span>
@@ -211,33 +275,38 @@ if (!isset($can_delete)) {
                                 </div>
                             </td>
                         <?php endif; ?>
-                        <td class="px-5 py-3.5 font-bold text-amber-300 tracking-wide"><?= htmlspecialchars($p['item_no']) ?></td>
-                        <td class="px-5 py-3.5 text-gray-300 font-bold text-center"><?= $p['quantity'] ?></td>
-                        <td class="px-5 py-3.5 text-center">
+                        <td class="px-5 py-3.5 font-bold text-amber-300 tracking-wide" data-label="Item #"><?= htmlspecialchars($p['item_no']) ?></td>
+                        <td class="px-5 py-3.5 text-gray-300 font-bold text-center" data-label="Qty"><?= $p['quantity'] ?></td>
+                        <td class="px-5 py-3.5 text-center" data-label="Image">
                             <?php if ($p['image_path']): ?>
-                                <button onclick="viewPulloutImage('<?= $p['image_path'] ?>')" class="w-10 h-10 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center transition-all border border-white/10 overflow-hidden group mx-auto">
+                                <button onclick="viewPulloutImage('<?= $p['image_path'] ?>')" class="w-10 h-10 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center transition-all border border-white/10 overflow-hidden group mx-auto md:mx-0">
                                     <img src="<?= $p['image_path'] ?>" class="w-full h-full object-cover group-hover:scale-110 transition-transform" alt="Proof">
                                 </button>
                             <?php else: ?>
                                 <span class="text-gray-600 text-[10px]">—</span>
                             <?php endif; ?>
                         </td>
-                        <td class="px-5 py-3.5 text-gray-300 text-xs"><?= htmlspecialchars($p['username']) ?></td>
-                        <td class="px-5 py-3.5 text-gray-300 text-[11px] font-medium whitespace-nowrap"><?= date('M d, Y • h:i A', strtotime($p['created_at'])) ?></td>
-                        <td class="px-5 py-3.5 text-center">
+                        <td class="px-5 py-3.5" data-label="Submitted By">
+                            <span class="flex items-center gap-2">
+                                <span class="w-6 h-6 rounded-full bg-gradient-to-tr from-amber-600/20 to-orange-600/20 border border-white/10 flex items-center justify-center text-[10px] text-white font-bold"><?= strtoupper($p['username'][0]) ?></span>
+                                <span class="text-gray-300 text-xs"><?= htmlspecialchars($p['username']) ?></span>
+                            </span>
+                        </td>
+                        <td class="px-5 py-3.5 text-gray-300 text-[11px] font-medium tracking-tight whitespace-nowrap" data-label="Date"><?= date('M d, Y • h:i A', strtotime($p['created_at'])) ?></td>
+                        <td class="px-5 py-3.5 text-center" data-label="Status">
                             <?php if ($p['is_exported']): ?>
-                                <div class="w-6 h-6 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center text-green-400 mx-auto" title="Already Exported">
+                                <div class="w-6 h-6 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center text-green-400 mx-auto md:mx-0" title="Already Exported">
                                     <i class="fas fa-check-double text-[9px]"></i>
                                 </div>
                             <?php else: ?>
-                                <div class="w-6 h-6 rounded-lg bg-slate-500/10 border border-white/5 flex items-center justify-center text-gray-600 mx-auto" title="Pending Export">
+                                <div class="w-6 h-6 rounded-lg bg-slate-500/10 border border-white/5 flex items-center justify-center text-gray-600 mx-auto md:mx-0" title="Pending Export">
                                     <i class="fas fa-clock text-[9px]"></i>
                                 </div>
                             <?php endif; ?>
                         </td>
                         <?php if ($can_edit): ?>
-                            <td class="px-5 py-3.5 text-center">
-                                <div class="flex items-center justify-center gap-2">
+                            <td class="px-5 py-3.5 text-center" data-label="Actions">
+                                <div class="flex items-center justify-center md:justify-center gap-2">
                                     <button onclick="editPullout(<?= $p['id'] ?>)" class="w-7 h-7 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 transition-all flex items-center justify-center"><i class="fas fa-edit text-[10px]"></i></button>
                                     <button onclick="deletePullout(<?= $p['id'] ?>)" class="w-7 h-7 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 transition-all flex items-center justify-center"><i class="fas fa-trash-alt text-[10px]"></i></button>
                                 </div>
@@ -251,13 +320,13 @@ if (!isset($can_delete)) {
     </div>
 
     <!-- Pagination -->
-    <div class="px-5 py-4 border-t border-white/5 flex items-center justify-between bg-slate-800/10">
-        <div class="flex items-center gap-4">
+    <div class="px-5 py-4 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-4 bg-slate-800/10">
+        <div class="flex flex-col md:flex-row items-center gap-2 md:gap-4 text-center md:text-left">
             <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Page <?= $page ?> of <?= $total_pages ?> <span class="mx-2 opacity-20">|</span> Result: <?= $total_rows ?> entries</span>
             
             <?php if (!empty($submitted_pullouts)): ?>
                 <div class="h-4 w-px bg-white/10 hidden md:block"></div>
-                <div class="hidden md:flex items-center gap-4">
+                <div class="flex items-center gap-4">
                     <div class="flex items-center gap-1.5">
                         <span class="text-[9px] font-black text-gray-500 uppercase tracking-tighter">Total Qty:</span>
                         <span class="text-[11px] font-black text-white"><?= number_format($total_qty) ?></span>

@@ -86,6 +86,69 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     opacity: 1;
     transform: scale(1.1);
 }
+
+@media (max-width: 768px) {
+    #receiving-history-table thead { display: none; }
+    #receiving-history-table, #receiving-history-table tbody { display: block; width: 100%; }
+    #receiving-history-table tr { 
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-bottom: 1.5rem; 
+        margin-left: 1.25rem;
+        margin-right: 1.25rem;
+        border: 1px solid rgba(255,255,255,0.08); 
+        border-radius: 1.5rem; 
+        padding: 1.25rem; 
+        background: linear-gradient(145deg, rgba(30, 41, 59, 0.4), rgba(15, 23, 42, 0.4));
+        position: relative;
+        box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+    }
+    #receiving-history-table tr:first-child { margin-top: 1.5rem; }
+    #receiving-history-table td { 
+        display: flex; 
+        flex-direction: column;
+        justify-content: flex-start; 
+        align-items: flex-start; 
+        padding: 0; 
+        border: none; 
+        white-space: normal;
+        min-width: 0;
+        grid-column: span 1 !important;
+    }
+    #receiving-history-table td::before { 
+        content: attr(data-label); 
+        font-weight: 900; 
+        text-transform: uppercase; 
+        font-size: 7px; 
+        color: #64748b; 
+        letter-spacing: 0.1em;
+        margin-bottom: 4px;
+        opacity: 0.8;
+    }
+    
+    #receiving-history-table td[data-label="Select"] {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        width: auto;
+        border: none;
+        padding: 0;
+        z-index: 10;
+    }
+    #receiving-history-table td[data-label="Select"]::before { display: none; }
+    
+    #receiving-history-table td span, 
+    #receiving-history-table td div { 
+        font-size: 10px !important; 
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    #receiving-history-table td .flex-col { align-items: flex-start !important; text-align: left !important; }
+    #receiving-history-table td .mx-auto { margin-left: 0 !important; }
+    #receiving-history-table td[data-label="Username"] .flex span:first-child { display: none; }
+}
 </style>
 
 <div id="receiving-history-section" class="glass-panel border border-white/5 shadow-xl animate-fade-in">
@@ -123,7 +186,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 
     <!-- Filters -->
     <div class="p-4 border-b border-white/5 bg-slate-800/10">
-        <div class="grid grid-cols-1 sm:grid-cols-2 <?= $is_admin ? 'lg:grid-cols-4' : 'lg:grid-cols-3' ?> gap-4">
+        <div class="grid grid-cols-2 <?= $is_admin ? 'lg:grid-cols-4' : 'lg:grid-cols-3' ?> gap-4">
             <div class="relative">
                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-[10px]"><i class="fas fa-search"></i></span>
                 <input type="text" name="search" value="<?= htmlspecialchars($search) ?>" placeholder="OS, Item, Store or ID..." class="w-full bg-slate-900/50 border border-white/5 rounded-lg pl-9 pr-4 py-2 text-xs text-white focus:outline-none focus:border-cyan-500/30 transition-all">
@@ -231,7 +294,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 
     <!-- Table -->
     <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
+        <table class="w-full text-left border-collapse" id="receiving-history-table">
             <thead>
                 <tr class="bg-slate-800/40">
                     <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 w-10">
@@ -266,75 +329,71 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
                 <?php else: ?>
                     <?php 
                     $total_qty = 0;
-                    foreach ($received_items as $row): 
-                        $total_qty += $row['quantity'];
+                    foreach ($received_items as $r): 
+                        $total_qty += $r['quantity'];
                     ?>
-                        <tr class="hover:bg-white/[0.02] transition-colors group">
-                            <td class="px-5 py-3">
-                                <input type="checkbox" class="record-checkbox rounded border-white/10 bg-slate-900 text-cyan-500 focus:ring-cyan-500/20" value="<?= $row['id'] ?>">
+                        <tr class="hover:bg-white/5 transition-colors border-b border-white/5 last:border-0 group">
+                        <td class="px-5 py-3.5 text-center" data-label="Select">
+                            <input type="checkbox" name="received_ids[]" value="<?= $r['id'] ?>" class="record-checkbox rounded border-white/10 bg-slate-900 text-cyan-500 focus:ring-cyan-500/20">
+                        </td>
+                        <?php if ($is_admin): ?>
+                            <td class="px-5 py-3.5" data-label="Store">
+                                <div class="flex flex-col md:items-start items-end text-right md:text-left">
+                                    <span class="font-bold text-gray-300 text-[11px]"><?= htmlspecialchars($r['store_code']) ?></span>
+                                    <?php if (!empty($r['sname'])): ?>
+                                        <span class="text-[9px] text-gray-500 font-bold uppercase tracking-tighter"><?= htmlspecialchars($r['sname']) ?></span>
+                                    <?php endif; ?>
+                                </div>
                             </td>
-                            <?php if ($is_admin): ?>
-                                <td class="px-5 py-3">
-                                    <div class="flex flex-col">
-                                        <span class="font-bold text-gray-400 text-[11px]"><?= htmlspecialchars($row['store_code']) ?></span>
-                                        <?php if (!empty($row['sname'])): ?>
-                                            <span class="text-[9px] text-gray-500 font-bold uppercase tracking-tighter truncate max-w-[120px]"><?= htmlspecialchars($row['sname']) ?></span>
-                                        <?php endif; ?>
-                                    </div>
-                                </td>
+                        <?php endif; ?>
+                        
+                        <td class="px-5 py-3.5 font-bold text-cyan-300 tracking-wide" data-label="OS #"><?= htmlspecialchars($r['os_no']) ?></td>
+                        <td class="px-5 py-3.5 text-center" data-label="Qty">
+                            <span class="px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 font-black text-[11px]"><?= $r['quantity'] ?></span>
+                        </td>
+                        <td class="px-5 py-3.5" data-label="Source (From)">
+                            <div class="flex flex-col">
+                                <span class="text-gray-300 font-bold text-xs uppercase"><?= htmlspecialchars($r['from_store'] ?: 'N/A') ?></span>
+                                <span class="text-[8px] text-gray-600 font-bold uppercase tracking-widest">Source</span>
+                            </div>
+                        </td>
+                        <td class="px-5 py-3.5" data-label="Destination (To)">
+                            <div class="flex flex-col">
+                                <span class="text-cyan-400 font-bold text-xs uppercase"><?= htmlspecialchars($r['to_store'] ?: 'N/A') ?></span>
+                                <span class="text-[8px] text-gray-600 font-bold uppercase tracking-widest">Destination</span>
+                            </div>
+                        </td>
+                        <td class="px-5 py-3.5" data-label="Username">
+                            <div class="flex items-center gap-2">
+                                <div class="w-6 h-6 rounded-full bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-[10px] text-cyan-400 font-bold"><?= strtoupper($r['username'][0]) ?></div>
+                                <span class="text-gray-400 text-xs font-medium"><?= htmlspecialchars($r['username']) ?></span>
+                            </div>
+                        </td>
+                        <td class="px-5 py-3.5 text-right text-gray-500 text-[11px] font-medium tracking-tight whitespace-nowrap" data-label="Date Received">
+                            <?= date('M d, Y • h:i A', strtotime($r['created_at'])) ?>
+                        </td>
+                        <td class="px-5 py-3.5 text-center" data-label="Status">
+                            <?php if ($r['is_exported']): ?>
+                                <div class="w-6 h-6 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mx-auto md:mx-0" title="Already Exported">
+                                    <i class="fas fa-check-double text-[9px]"></i>
+                                </div>
+                            <?php else: ?>
+                                <div class="w-6 h-6 rounded-lg bg-slate-500/10 border border-white/5 flex items-center justify-center text-gray-600 mx-auto md:mx-0" title="Pending Export">
+                                    <i class="fas fa-clock text-[9px]"></i>
+                                </div>
                             <?php endif; ?>
-
-                            <td class="px-5 py-3 text-cyan-400 font-bold text-xs"><?= htmlspecialchars($row['os_no']) ?></td>
-                            <td class="px-5 py-3 text-center">
-                                <span class="bg-cyan-500/10 text-cyan-400 px-2 py-0.5 rounded text-[10px] font-black border border-cyan-500/20">
-                                    <?= number_format($row['quantity']) ?>
-                                </span>
-                            </td>
-                            <td class="px-5 py-3 text-gray-400 text-xs font-medium">
-                                <div class="flex items-center gap-2">
-                                    <i class="fas fa-store text-[9px] text-gray-600"></i>
-                                    <?= htmlspecialchars($row['from_store']) ?>
+                        </td>
+                        <?php if ($can_edit): ?>
+                            <td class="px-5 py-3.5 text-center" data-label="Actions">
+                                <div class="flex items-center justify-center md:justify-center gap-2">
+                                    <button onclick="editReceiving(<?= $r['id'] ?>)" class="w-7 h-7 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 transition-all flex items-center justify-center" title="Edit Record"><i class="fas fa-edit text-[10px]"></i></button>
+                                    <?php if ($can_delete): ?>
+                                    <button onclick="deleteReceiving(<?= $r['id'] ?>)" class="w-7 h-7 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 transition-all flex items-center justify-center" title="Delete Record"><i class="fas fa-trash-alt text-[10px]"></i></button>
+                                    <?php endif; ?>
                                 </div>
                             </td>
-                            <td class="px-5 py-3 text-gray-400 text-xs font-medium">
-                                <div class="flex items-center gap-2">
-                                    <i class="fas fa-store text-[9px] text-gray-600"></i>
-                                    <?= htmlspecialchars($row['to_store'] ?? '') ?>
-                                </div>
-                            </td>
-                            <td class="px-5 py-3">
-                                <div class="flex items-center gap-2">
-                                    <div class="w-5 h-5 rounded-full bg-cyan-500/20 flex items-center justify-center text-[8px] font-black text-cyan-400 border border-cyan-500/20">
-                                        <?= strtoupper(substr($row['username'] ?: '?', 0, 1)) ?>
-                                    </div>
-                                    <span class="text-xs text-gray-400 font-bold"><?= htmlspecialchars($row['username']) ?></span>
-                                </div>
-                            </td>
-                            <td class="px-5 py-3 text-right">
-                                <span class="text-[11px] text-gray-300 font-black tracking-tight whitespace-nowrap uppercase">
-                                    <?= date('M d, Y • h:i A', strtotime($row['created_at'])) ?>
-                                </span>
-                            </td>
-                            <td class="px-5 py-3 text-center">
-                                <?php if ($row['is_exported']): ?>
-                                    <div class="w-6 h-6 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center text-green-400 mx-auto" title="Already Exported">
-                                        <i class="fas fa-check-double text-[9px]"></i>
-                                    </div>
-                                <?php else: ?>
-                                    <div class="w-6 h-6 rounded-lg bg-slate-500/10 border border-white/5 flex items-center justify-center text-gray-600 mx-auto" title="Pending Export">
-                                        <i class="fas fa-clock text-[9px]"></i>
-                                    </div>
-                                <?php endif; ?>
-                            </td>
-                            <?php if ($can_edit): ?>
-                                <td class="px-5 py-3 text-center">
-                                    <div class="flex items-center justify-center gap-2">
-                                        <button onclick="editReceiving(<?= $row['id'] ?>)" class="w-7 h-7 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 transition-all flex items-center justify-center" title="Edit Record"><i class="fas fa-edit text-[10px]"></i></button>
-                                        <button onclick="deleteReceiving(<?= $row['id'] ?>)" class="w-7 h-7 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 transition-all flex items-center justify-center" title="Delete Record"><i class="fas fa-trash-alt text-[10px]"></i></button>
-                                    </div>
-                                </td>
-                            <?php endif; ?>
-                        </tr>
+                        <?php endif; ?>
+                    </tr>
                     <?php endforeach; ?>
                 <?php endif; ?>
             </tbody>
@@ -343,14 +402,14 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 
     <!-- Pagination -->
     <div class="px-5 py-4 border-t border-white/5 bg-slate-800/10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div class="flex items-center gap-4">
+        <div class="flex flex-col md:flex-row items-center gap-2 md:gap-4 text-center md:text-left">
             <span class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">
                 Page <?= $page ?> of <?= $total_pages ?> <span class="mx-2 opacity-20">|</span> Result: <?= $total_rows ?> entries
             </span>
             
             <?php if (!empty($received_items)): ?>
                 <div class="h-4 w-px bg-white/10 hidden md:block"></div>
-                <div class="hidden md:flex items-center gap-4">
+                <div class="flex items-center gap-4">
                     <div class="flex items-center gap-1.5">
                         <span class="text-[9px] font-black text-gray-500 uppercase tracking-tighter">Total Qty:</span>
                         <span class="text-[11px] font-black text-white"><?= number_format($total_qty) ?></span>
