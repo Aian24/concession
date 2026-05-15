@@ -63,6 +63,58 @@ while ($row = $stores_res->fetch_assoc()) {
     $store_map[$row['scode']] = $row['sname'];
 }
 ?>
+<style>
+    @media (max-width: 768px) {
+        #recent-activity-table thead { display: none; }
+        #recent-activity-table, #recent-activity-table tbody { display: block; width: 100%; }
+        #recent-activity-table tr { 
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 1.5rem; 
+            margin-left: 1.25rem;
+            margin-right: 1.25rem;
+            border: 1px solid rgba(255,255,255,0.08); 
+            border-radius: 1.5rem; 
+            padding: 1.25rem; 
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.4), rgba(15, 23, 42, 0.4));
+            position: relative;
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+        }
+        #recent-activity-table tr:first-child { margin-top: 1.5rem; }
+        #recent-activity-table td { 
+            display: flex; 
+            flex-direction: column;
+            justify-content: flex-start; 
+            align-items: flex-start; 
+            padding: 0; 
+            border: none; 
+            white-space: normal;
+            min-width: 0;
+            grid-column: span 1 !important;
+        }
+        #recent-activity-table td::before { 
+            content: attr(data-label); 
+            font-weight: 900; 
+            text-transform: uppercase; 
+            font-size: 7px; 
+            color: #64748b; 
+            letter-spacing: 0.1em;
+            margin-bottom: 4px;
+            opacity: 0.8;
+        }
+        
+        #recent-activity-table td span, 
+        #recent-activity-table td div { 
+            font-size: 10px !important; 
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        #recent-activity-table td .flex-col { align-items: flex-start !important; text-align: left !important; }
+        #recent-activity-table td[data-label="User"] .flex > div:first-child { display: none; }
+    }
+</style>
 
 <div class="animate-fade-in pb-12">
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
@@ -85,7 +137,7 @@ while ($row = $stores_res->fetch_assoc()) {
 
     <div class="glass-panel border border-white/5 overflow-hidden shadow-2xl">
         <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
+            <table class="w-full text-left border-collapse" id="recent-activity-table">
                 <thead>
                     <tr class="bg-white/5">
                         <th class="px-6 py-4 text-[10px] font-black text-purple-400 uppercase tracking-[0.2em] border-b border-white/5">Timestamp</th>
@@ -121,13 +173,13 @@ while ($row = $stores_res->fetch_assoc()) {
                             $date = new DateTime($act['created_at']);
                         ?>
                             <tr class="hover:bg-white/[0.02] transition-colors group">
-                                <td class="px-6 py-4">
+                                <td class="px-6 py-4" data-label="Timestamp">
                                     <div class="flex flex-col">
                                         <span class="text-white font-bold text-xs"><?= $date->format('M d, Y') ?></span>
                                         <span class="text-[10px] text-gray-500 font-medium tracking-tighter uppercase"><?= $date->format('h:i A') ?></span>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4">
+                                <td class="px-6 py-4" data-label="User">
                                     <div class="flex items-center gap-2">
                                         <div class="w-7 h-7 rounded-full bg-slate-800 border border-white/10 flex items-center justify-center text-[10px] font-black text-purple-300">
                                             <?= strtoupper(substr($act['username'], 0, 1)) ?>
@@ -135,21 +187,21 @@ while ($row = $stores_res->fetch_assoc()) {
                                         <span class="text-xs font-bold text-gray-300 group-hover:text-white transition-colors"><?= htmlspecialchars($act['username']) ?></span>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4">
+                                <td class="px-6 py-4" data-label="Store">
                                     <div class="flex flex-col">
                                         <span class="text-xs font-bold text-white"><?= htmlspecialchars($store_map[$act['store_code']] ?? 'Unknown Store') ?></span>
                                         <span class="text-[9px] text-gray-500 font-black tracking-widest"><?= htmlspecialchars($act['store_code']) ?></span>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4">
+                                <td class="px-6 py-4" data-label="Transaction">
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border <?= $type_color ?>">
                                         <?= $act['type'] ?>
                                     </span>
                                 </td>
-                                <td class="px-6 py-4">
+                                <td class="px-6 py-4" data-label="Reference">
                                     <span class="text-xs font-mono text-purple-300/80"><?= htmlspecialchars($act['reference']) ?></span>
                                 </td>
-                                <td class="px-6 py-4 text-right">
+                                <td class="px-6 py-4 text-right" data-label="Qty">
                                     <span class="text-xs font-black text-white"><?= number_format($act['quantity']) ?></span>
                                 </td>
                             </tr>
@@ -159,9 +211,9 @@ while ($row = $stores_res->fetch_assoc()) {
             </table>
         </div>
         
-        <div class="px-6 py-4 bg-white/5 border-t border-white/5 flex items-center justify-between">
-            <span class="text-[9px] font-black text-gray-500 uppercase tracking-[0.2em]">Total Recent Actions: <span class="text-white"><?= count($activities) ?></span></span>
-            <span class="text-[9px] font-black text-gray-500 uppercase tracking-[0.2em]">Data Purged Automatically After 7 Days</span>
+        <div class="px-6 py-4 bg-white/5 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-2">
+            <span class="text-[9px] font-black text-gray-500 uppercase tracking-[0.2em] text-center md:text-left">Total Recent Actions: <span class="text-white"><?= count($activities) ?></span></span>
+            <span class="text-[9px] font-black text-gray-500 uppercase tracking-[0.2em] text-center md:text-right">Data Purged Automatically After 7 Days</span>
         </div>
     </div>
 </div>

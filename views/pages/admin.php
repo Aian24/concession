@@ -72,7 +72,71 @@ $users_res = $db->query("
     ORDER BY u.created_at DESC
 ");
 $all_users = $users_res->fetch_all(MYSQLI_ASSOC);
-
+?>
+<style>
+    @media (max-width: 768px) {
+        #users-management-table thead { display: none; }
+        #users-management-table, #users-management-table tbody { display: block; width: 100%; }
+        #users-management-table tr { 
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 1.5rem; 
+            margin-left: 1.25rem;
+            margin-right: 1.25rem;
+            border: 1px solid rgba(255,255,255,0.08); 
+            border-radius: 1.5rem; 
+            padding: 1.25rem; 
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.4), rgba(15, 23, 42, 0.4));
+            position: relative;
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+        }
+        #users-management-table tr:first-child { margin-top: 1.5rem; }
+        #users-management-table td { 
+            display: flex; 
+            flex-direction: column;
+            justify-content: flex-start; 
+            align-items: flex-start; 
+            padding: 0; 
+            border: none; 
+            white-space: normal;
+            min-width: 0;
+            grid-column: span 1 !important;
+        }
+        #users-management-table td::before { 
+            content: attr(data-label); 
+            font-weight: 900; 
+            text-transform: uppercase; 
+            font-size: 7px; 
+            color: #64748b; 
+            letter-spacing: 0.1em;
+            margin-bottom: 4px;
+            opacity: 0.8;
+        }
+        
+        #users-management-table td[data-label="Select"] {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: auto;
+            border: none;
+            padding: 0;
+            z-index: 10;
+        }
+        #users-management-table td[data-label="Select"]::before { display: none; }
+        
+        #users-management-table td span, 
+        #users-management-table td div { 
+            font-size: 10px !important; 
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        #users-management-table td .flex-col { align-items: flex-start !important; text-align: left !important; }
+        #users-management-table td[data-label="Identity"] .flex > div:first-child { display: none; }
+    }
+</style>
+<?php
 // Toast display
 $toast = $_SESSION['toast'] ?? '';
 unset($_SESSION['toast']);
@@ -213,7 +277,7 @@ if (isset($_GET['edit'])) {
             </div>
             
             <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse glass-table whitespace-nowrap">
+                <table class="w-full text-left border-collapse glass-table whitespace-nowrap" id="users-management-table">
                     <thead>
                         <tr>
                             <th class="p-4 w-10 text-center">
@@ -229,12 +293,12 @@ if (isset($_GET['edit'])) {
                     <tbody class="text-sm">
                         <?php foreach($all_users as $u): ?>
                         <tr class="hover:bg-white/5 transition-colors group">
-                            <td class="p-4 text-center">
+                            <td class="p-4 text-center" data-label="Select">
                                 <?php if($u['username'] !== 'admin'): ?>
                                     <input type="checkbox" name="user_ids[]" value="<?= $u['id'] ?>" class="user-checkbox rounded border-white/20 bg-slate-900 text-purple-500 focus:ring-purple-500/20">
                                 <?php endif; ?>
                             </td>
-                            <td class="p-4">
+                            <td class="p-4" data-label="Identity">
                                 <div class="flex items-center gap-3">
                                     <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-slate-700 to-slate-800 border border-white/10 flex items-center justify-center text-white font-bold text-xs">
                                         <?= strtoupper(substr($u['username'], 0, 1)) ?>
@@ -247,7 +311,7 @@ if (isset($_GET['edit'])) {
                                     </div>
                                 </div>
                             </td>
-                            <td class="p-4">
+                            <td class="p-4" data-label="Store">
                                 <div class="flex flex-col">
                                     <span class="text-white font-bold tracking-wide text-xs"><?= htmlspecialchars($u['store_name'] ?: ($u['store_code'] ?: 'N/A')) ?></span>
                                     <span class="text-[9px] font-extrabold uppercase tracking-widest text-gray-500">
@@ -256,9 +320,9 @@ if (isset($_GET['edit'])) {
                                 </div>
                             </td>
 
-                            <td class="p-4">
+                            <td class="p-4" data-label="Performance">
                                 <div class="flex items-center gap-3">
-                                    <div class="h-8 w-[2px] bg-white/5"></div>
+                                    <div class="h-8 w-[2px] bg-white/5 hidden md:block"></div>
                                     <div class="flex flex-col">
                                         <div class="flex items-center gap-1.5">
                                             <i class="fas fa-shopping-cart text-[10px] text-gray-500"></i>
@@ -268,11 +332,11 @@ if (isset($_GET['edit'])) {
                                     </div>
                                 </div>
                             </td>
-                            <td class="p-4 text-gray-500 text-[10px]">
+                            <td class="p-4 text-gray-500 text-[10px]" data-label="Created">
                                 <?= date('M d, Y', strtotime($u['created_at'])) ?>
                             </td>
-                            <td class="p-4">
-                                <div class="flex justify-end gap-2">
+                            <td class="p-4" data-label="Actions">
+                                <div class="flex justify-end md:justify-end gap-2">
                                     <a href="admin?edit=<?= $u['id'] ?>" class="w-8 h-8 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 transition-colors flex items-center justify-center" title="Edit User">
                                         <i class="fas fa-edit text-xs"></i>
                                     </a>
@@ -290,8 +354,8 @@ if (isset($_GET['edit'])) {
                 </table>
             </div>
             
-            <div class="p-4 border-t border-white/5 bg-slate-800/20 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div class="text-xs text-gray-500 font-medium" id="user-table-info">
+            <div class="p-4 border-t border-white/5 bg-slate-800/20 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="text-[10px] text-gray-500 font-bold uppercase tracking-widest text-center md:text-left" id="user-table-info">
                     Showing 0 to 0 of 0 entries
                 </div>
                 <div class="flex items-center gap-1" id="user-pagination">

@@ -1,5 +1,67 @@
+<style>
+    @media (max-width: 768px) {
+        #stores-management-table thead { display: none; }
+        #stores-management-table, #stores-management-table tbody { display: block; width: 100%; }
+        #stores-management-table tr { 
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 1.5rem; 
+            margin-left: 1.25rem;
+            margin-right: 1.25rem;
+            border: 1px solid rgba(255,255,255,0.08); 
+            border-radius: 1.5rem; 
+            padding: 1.25rem; 
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.4), rgba(15, 23, 42, 0.4));
+            position: relative;
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+        }
+        #stores-management-table tr:first-child { margin-top: 1.5rem; }
+        #stores-management-table td { 
+            display: flex; 
+            flex-direction: column;
+            justify-content: flex-start; 
+            align-items: flex-start; 
+            padding: 0; 
+            border: none; 
+            white-space: normal;
+            min-width: 0;
+            grid-column: span 1 !important;
+        }
+        #stores-management-table td::before { 
+            content: attr(data-label); 
+            font-weight: 900; 
+            text-transform: uppercase; 
+            font-size: 7px; 
+            color: #64748b; 
+            letter-spacing: 0.1em;
+            margin-bottom: 4px;
+            opacity: 0.8;
+        }
+        
+        #stores-management-table td[data-label="Select"] {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: auto;
+            border: none;
+            padding: 0;
+            z-index: 10;
+        }
+        #stores-management-table td[data-label="Select"]::before { display: none; }
+        
+        #stores-management-table td span, 
+        #stores-management-table td div { 
+            font-size: 10px !important; 
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        #stores-management-table td .flex-col { align-items: flex-start !important; text-align: left !important; }
+    }
+</style>
 <div class="overflow-x-auto min-h-[300px]">
-    <table class="w-full text-left border-collapse glass-table whitespace-nowrap">
+    <table class="w-full text-left border-collapse glass-table whitespace-nowrap" id="stores-management-table">
         <thead>
             <tr>
                 <th class="px-5 py-3 w-10 text-center">
@@ -23,13 +85,13 @@
             <?php else: ?>
                 <?php foreach ($stores as $s): ?>
                 <tr class="hover:bg-white/5 transition-colors border-b border-white/5 last:border-0 border-r border-transparent hover:border-r-blue-500/50">
-                    <td class="px-5 py-3.5 text-center">
+                    <td class="px-5 py-3.5 text-center" data-label="Select">
                         <input type="checkbox" value="<?= htmlspecialchars($s['scode']) ?>" class="store-checkbox rounded border-white/20 bg-slate-900 text-blue-500 focus:ring-offset-slate-900">
                     </td>
-                    <td class="px-5 py-3.5 font-bold text-blue-300 tracking-wide"><?= htmlspecialchars($s['scode']) ?></td>
-                    <td class="px-5 py-3.5 text-gray-300 font-bold"><?= htmlspecialchars($s['sname']) ?></td>
-                    <td class="px-5 py-3.5 text-center">
-                        <div class="flex items-center justify-center gap-2">
+                    <td class="px-5 py-3.5 font-bold text-blue-300 tracking-wide" data-label="Store Code"><?= htmlspecialchars($s['scode']) ?></td>
+                    <td class="px-5 py-3.5 text-gray-300 font-bold" data-label="Store Name"><?= htmlspecialchars($s['sname']) ?></td>
+                    <td class="px-5 py-3.5 text-center" data-label="Actions">
+                        <div class="flex items-center justify-center md:justify-center gap-2">
                             <button onclick="editStore('<?= htmlspecialchars($s['scode'], ENT_QUOTES) ?>', '<?= htmlspecialchars($s['sname'], ENT_QUOTES) ?>')" class="w-7 h-7 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 transition-all flex items-center justify-center" title="Edit Store"><i class="fas fa-edit text-[10px]"></i></button>
                             <button onclick="deleteStore('<?= htmlspecialchars($s['scode'], ENT_QUOTES) ?>')" class="w-7 h-7 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 transition-all flex items-center justify-center" title="Delete Store"><i class="fas fa-trash-alt text-[10px]"></i></button>
                         </div>
@@ -42,8 +104,8 @@
 </div>
 
 <!-- Pagination -->
-<div class="px-5 py-4 border-t border-white/5 flex items-center justify-between bg-slate-800/10">
-    <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Page <?= $page ?> of <?= $total_pages ?> <span class="mx-2 opacity-30">|</span> Result: <?= $total_rows ?> stores</span>
+<div class="px-5 py-4 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-4 bg-slate-800/10">
+    <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest text-center md:text-left">Page <?= $page ?> of <?= $total_pages ?> <span class="mx-2 opacity-30">|</span> Result: <?= $total_rows ?> stores</span>
     
     <div class="flex items-center gap-1">
         <a href="#" data-page="1" class="pagination-link w-7 h-7 flex items-center justify-center rounded-lg bg-white/5 text-gray-500 hover:text-white transition-all text-[10px]" title="First Page"><i class="fas fa-angle-double-left"></i></a>
