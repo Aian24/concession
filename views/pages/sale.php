@@ -301,14 +301,20 @@ if (isset($_GET['ajax'])) {
                                        placeholder="0">
                             </div>
                         </div>
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Transaction Date</label>
+                            <div class="relative group">
+                                <i class="fas fa-calendar-day absolute left-5 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-blue-400 transition-colors"></i>
+                                <input type="date" name="created_at" id="edit-date" required 
+                                       class="w-full bg-slate-950/50 border border-white/10 rounded-2xl pl-12 pr-5 py-4 text-sm text-white focus:outline-none focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all font-bold cursor-pointer" 
+                                       onclick="this.showPicker()">
+                            </div>
+                        </div>
                     </div>
                     
-                    <button type="submit" class="relative w-full group overflow-hidden rounded-2xl p-px transition-all hover:scale-[1.02] active:scale-[0.98] mt-2">
-                        <div class="absolute inset-0 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 transition-all"></div>
-                        <div class="relative py-4 rounded-[15px] bg-slate-900/10 hover:bg-transparent transition-all flex items-center justify-center gap-3">
-                            <span class="text-white font-black text-[11px] uppercase tracking-[0.2em]">Update Transaction</span>
-                            <i class="fas fa-check-circle text-[10px] text-white/50 group-hover:rotate-[360deg] transition-all duration-500"></i>
-                        </div>
+                    <button type="submit" class="w-full py-4 mt-8 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 text-white font-black text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-blue-500/20 hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-3">
+                        <span>Update Transaction</span>
+                        <i class="fas fa-check-circle text-[10px] text-white/50"></i>
                     </button>
                 </form>
             </div>
@@ -524,12 +530,21 @@ if (isset($_GET['ajax'])) {
         const itemNo = row.cells[1 + offset].innerText;
         const price  = row.cells[2 + offset].innerText.replace('₱', '').replace(',', '');
         const qty    = row.cells[3 + offset].innerText;
+        
+        // Extract raw date from data-label or find a way to get the machine-readable date
+        // The date cell is at 6 + offset
+        const dateCell = row.cells[6 + offset];
+        // We can use a trick: the original date was formatted, but maybe we can find it in a hidden span or similar.
+        // Actually, let's just use the current value and try to parse it, or better, we can add a data-date attribute in the partial.
+        // For now, I'll add the data-date attribute to the partial in the next step.
+        const rawDate = dateCell.getAttribute('data-date') || '';
 
         document.getElementById('edit-id').value = id;
         document.getElementById('edit-id-label').innerText = `Record ID: ${id}`;
         document.getElementById('edit-item-no').value = itemNo;
         document.getElementById('edit-amount').value = price;
         document.getElementById('edit-qty').value = qty;
+        document.getElementById('edit-date').value = rawDate;
 
         const modal = document.getElementById('edit-modal');
         // Move modal to body to escape transform container and fix scroll visibility
@@ -551,7 +566,8 @@ if (isset($_GET['ajax'])) {
             id: this.id.value,
             item_no: this.item_no.value,
             amount_sold: this.amount_sold.value,
-            quantity: this.quantity.value
+            quantity: this.quantity.value,
+            created_at: this.created_at.value
         };
 
         const btn = this.querySelector('button[type="submit"]');

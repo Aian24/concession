@@ -265,8 +265,12 @@ if (isset($_GET['ajax'])) {
                         <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Quantity</label>
                         <input type="number" name="quantity" id="edit-qty" required min="1" class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500/50 transition-all font-medium">
                     </div>
+                    <div class="space-y-1">
+                        <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Transaction Date</label>
+                        <input type="date" name="created_at" id="edit-date" required class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500/50 transition-all font-medium cursor-pointer" onclick="this.showPicker()">
+                    </div>
                     
-                    <button type="submit" class="w-full py-4 mt-2 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 text-white font-black text-[10px] uppercase tracking-[0.2em] shadow-lg shadow-amber-500/20 hover:brightness-110 active:scale-[0.98] transition-all">
+                    <button type="submit" class="w-full py-4 mt-8 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 text-white font-black text-[10px] uppercase tracking-[0.2em] shadow-lg shadow-amber-500/20 hover:brightness-110 active:scale-[0.98] transition-all">
                         Update Record
                     </button>
                 </form>
@@ -527,6 +531,10 @@ if (isset($_GET['ajax'])) {
         document.getElementById('edit-item-no').value = itemNo;
         document.getElementById('edit-qty').value = qty;
 
+        const dateCell = row.cells[5 + offset];
+        const rawDate = dateCell.getAttribute('data-date') || '';
+        document.getElementById('edit-date').value = rawDate;
+
         const modal = document.getElementById('edit-pullout-modal');
         // Move modal to body to escape transform container and fix scroll visibility
         document.body.appendChild(modal);
@@ -546,7 +554,8 @@ if (isset($_GET['ajax'])) {
         const data = {
             id: this.id.value,
             item_no: this.item_no.value,
-            quantity: this.quantity.value
+            quantity: this.quantity.value,
+            created_at: this.created_at.value
         };
 
         const btn = this.querySelector('button[type="submit"]');

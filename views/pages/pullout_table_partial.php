@@ -232,13 +232,13 @@ if (!isset($can_delete)) {
                         <input type="checkbox" id="selectAllPullouts" class="rounded border-white/20 bg-slate-900 text-amber-500 focus:ring-offset-slate-900">
                     </th>
                     <?php if ($is_admin): ?>
-                        <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase">Store</th>
+                        <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Store</th>
                     <?php endif; ?>
-                    <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase">Item #</th>
+                    <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Item #</th>
                     <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Qty</th>
                     <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Image</th>
-                    <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase">Submitted By</th>
-                    <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase">Date</th>
+                    <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Submitted By</th>
+                    <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Date</th>
                     <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Status</th>
                     <?php if ($can_edit): ?>
                         <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Actions</th>
@@ -266,40 +266,40 @@ if (!isset($can_delete)) {
                             <input type="checkbox" value="<?= $p['id'] ?>" class="pullout-checkbox rounded border-white/20 bg-slate-900 text-amber-500">
                         </td>
                         <?php if ($is_admin): ?>
-                            <td class="px-5 py-3.5" data-label="Store">
-                                <div class="flex flex-col md:items-start items-end text-right md:text-left">
+                            <td class="px-5 py-3.5 text-center" data-label="Store">
+                                <div class="flex flex-col md:items-center items-end text-right md:text-center">
                                     <span class="font-bold text-gray-400 text-[11px]"><?= htmlspecialchars($p['store_code']) ?></span>
                                     <?php if (!empty($p['sname'])): ?>
-                                        <span class="text-[9px] text-gray-500 font-bold uppercase tracking-tighter truncate max-w-[120px]"><?= htmlspecialchars($p['sname']) ?></span>
+                                        <span class="text-[9px] text-gray-500 font-bold uppercase tracking-tighter truncate max-w-[120px] mx-auto"><?= htmlspecialchars($p['sname']) ?></span>
                                     <?php endif; ?>
                                 </div>
                             </td>
                         <?php endif; ?>
-                        <td class="px-5 py-3.5 font-bold text-amber-300 tracking-wide" data-label="Item #"><?= htmlspecialchars($p['item_no']) ?></td>
+                        <td class="px-5 py-3.5 font-bold text-amber-300 tracking-wide text-center" data-label="Item #"><?= htmlspecialchars($p['item_no']) ?></td>
                         <td class="px-5 py-3.5 text-gray-300 font-bold text-center" data-label="Qty"><?= $p['quantity'] ?></td>
                         <td class="px-5 py-3.5 text-center" data-label="Image">
                             <?php if ($p['image_path']): ?>
-                                <button onclick="viewPulloutImage('<?= $p['image_path'] ?>')" class="w-10 h-10 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center transition-all border border-white/10 overflow-hidden group mx-auto md:mx-0">
+                                <button onclick="viewPulloutImage('<?= $p['image_path'] ?>')" class="w-10 h-10 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center transition-all border border-white/10 overflow-hidden group mx-auto">
                                     <img src="<?= $p['image_path'] ?>" class="w-full h-full object-cover group-hover:scale-110 transition-transform" alt="Proof">
                                 </button>
                             <?php else: ?>
                                 <span class="text-gray-600 text-[10px]">—</span>
                             <?php endif; ?>
                         </td>
-                        <td class="px-5 py-3.5" data-label="Submitted By">
-                            <span class="flex items-center gap-2">
+                        <td class="px-5 py-3.5 text-center" data-label="Submitted By">
+                            <span class="flex items-center justify-center gap-2">
                                 <span class="w-6 h-6 rounded-full bg-gradient-to-tr from-amber-600/20 to-orange-600/20 border border-white/10 flex items-center justify-center text-[10px] text-white font-bold"><?= strtoupper($p['username'][0]) ?></span>
                                 <span class="text-gray-300 text-xs"><?= htmlspecialchars($p['username']) ?></span>
                             </span>
                         </td>
-                        <td class="px-5 py-3.5 text-gray-300 text-[11px] font-medium tracking-tight whitespace-nowrap" data-label="Date"><?= date('M d, Y • h:i A', strtotime($p['created_at'])) ?></td>
+                        <td class="px-5 py-3.5 text-gray-300 text-[11px] font-medium tracking-tight whitespace-nowrap text-center" data-label="Date" data-date="<?= date('Y-m-d', strtotime($p['created_at'])) ?>"><?= date('M d, Y • h:i A', strtotime($p['created_at'])) ?></td>
                         <td class="px-5 py-3.5 text-center" data-label="Status">
                             <?php if ($p['is_exported']): ?>
-                                <div class="w-6 h-6 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center text-green-400 mx-auto md:mx-0" title="Already Exported">
+                                <div class="w-6 h-6 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center text-green-400 mx-auto" title="Already Exported">
                                     <i class="fas fa-check-double text-[9px]"></i>
                                 </div>
                             <?php else: ?>
-                                <div class="w-6 h-6 rounded-lg bg-slate-500/10 border border-white/5 flex items-center justify-center text-gray-600 mx-auto md:mx-0" title="Pending Export">
+                                <div class="w-6 h-6 rounded-lg bg-slate-500/10 border border-white/5 flex items-center justify-center text-gray-600 mx-auto" title="Pending Export">
                                     <i class="fas fa-clock text-[9px]"></i>
                                 </div>
                             <?php endif; ?>

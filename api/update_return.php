@@ -25,6 +25,8 @@ $ex_qty        = intval($data['exchange_quantity'] ?? 0);
 $ex_amount     = floatval($data['exchange_amount'] ?? 0);
 $ex_name       = trim($data['exchange_name'] ?? '');
 
+$created_at = $data['created_at'] ?? '';
+
 if (!$id) {
     echo json_encode(['success' => false, 'message' => 'Invalid ID.']);
     exit;
@@ -32,8 +34,13 @@ if (!$id) {
 
 $is_exchange = ($ex_item !== '' || $ex_amount > 0 || $ex_name !== '' || $ex_qty > 0) ? 1 : 0;
 
-$stmt = $db->prepare("UPDATE returns SET return_item = ?, quantity = ?, return_amount = ?, reason = ?, is_exchange = ?, exchange_name = ?, exchange_item = ?, exchange_quantity = ?, exchange_amount = ? WHERE id = ?");
-$stmt->bind_param("sidsissidi", $return_item, $qty, $return_amount, $reason, $is_exchange, $ex_name, $ex_item, $ex_qty, $ex_amount, $id);
+if (!empty($created_at)) {
+    $stmt = $db->prepare("UPDATE returns SET return_item = ?, quantity = ?, return_amount = ?, reason = ?, is_exchange = ?, exchange_name = ?, exchange_item = ?, exchange_quantity = ?, exchange_amount = ?, created_at = ? WHERE id = ?");
+    $stmt->bind_param("sidsissidsi", $return_item, $qty, $return_amount, $reason, $is_exchange, $ex_name, $ex_item, $ex_qty, $ex_amount, $created_at, $id);
+} else {
+    $stmt = $db->prepare("UPDATE returns SET return_item = ?, quantity = ?, return_amount = ?, reason = ?, is_exchange = ?, exchange_name = ?, exchange_item = ?, exchange_quantity = ?, exchange_amount = ? WHERE id = ?");
+    $stmt->bind_param("sidsissidi", $return_item, $qty, $return_amount, $reason, $is_exchange, $ex_name, $ex_item, $ex_qty, $ex_amount, $id);
+}
 
 if ($stmt->execute()) {
     echo json_encode(['success' => true, 'message' => 'Record updated successfully.']);

@@ -296,20 +296,20 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse" id="receiving-history-table">
             <thead>
-                <tr class="bg-slate-800/40">
-                    <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 w-10">
+                <tr>
+                    <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 w-10 text-center">
                         <input type="checkbox" id="select-all" class="rounded border-white/10 bg-slate-900 text-cyan-500 focus:ring-cyan-500/20">
                     </th>
                     <?php if ($is_admin): ?>
-                        <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5">Store</th>
+                        <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 text-center">Store</th>
                     <?php endif; ?>
 
-                    <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5">OS #</th>
+                    <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 text-center">OS #</th>
                     <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 text-center">Qty</th>
-                    <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5">Source (From)</th>
-                    <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5">Destination (To)</th>
-                    <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5">Username</th>
-                    <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 text-right">Date Received</th>
+                    <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 text-center">Source (From)</th>
+                    <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 text-center">Destination (To)</th>
+                    <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 text-center">Username</th>
+                    <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 text-center">Date Received</th>
                     <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 text-center">Status</th>
                     <?php if ($can_edit): ?>
                         <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 text-center">Actions</th>
@@ -337,48 +337,48 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
                             <input type="checkbox" name="received_ids[]" value="<?= $r['id'] ?>" class="record-checkbox rounded border-white/10 bg-slate-900 text-cyan-500 focus:ring-cyan-500/20">
                         </td>
                         <?php if ($is_admin): ?>
-                            <td class="px-5 py-3.5" data-label="Store">
-                                <div class="flex flex-col md:items-start items-end text-right md:text-left">
+                            <td class="px-5 py-3.5 text-center" data-label="Store">
+                                <div class="flex flex-col md:items-center items-end text-right md:text-center">
                                     <span class="font-bold text-gray-300 text-[11px]"><?= htmlspecialchars($r['store_code']) ?></span>
                                     <?php if (!empty($r['sname'])): ?>
-                                        <span class="text-[9px] text-gray-500 font-bold uppercase tracking-tighter"><?= htmlspecialchars($r['sname']) ?></span>
+                                        <span class="text-[9px] text-gray-500 font-bold uppercase tracking-tighter mx-auto"><?= htmlspecialchars($r['sname']) ?></span>
                                     <?php endif; ?>
                                 </div>
                             </td>
                         <?php endif; ?>
                         
-                        <td class="px-5 py-3.5 font-bold text-cyan-300 tracking-wide" data-label="OS #"><?= htmlspecialchars($r['os_no']) ?></td>
+                        <td class="px-5 py-3.5 font-bold text-cyan-300 tracking-wide text-center" data-label="OS #"><?= htmlspecialchars($r['os_no']) ?></td>
                         <td class="px-5 py-3.5 text-center" data-label="Qty">
                             <span class="px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 font-black text-[11px]"><?= $r['quantity'] ?></span>
                         </td>
-                        <td class="px-5 py-3.5" data-label="Source (From)">
-                            <div class="flex flex-col">
+                        <td class="px-5 py-3.5 text-center" data-label="Source (From)">
+                            <div class="flex flex-col md:items-center">
                                 <span class="text-gray-300 font-bold text-xs uppercase"><?= htmlspecialchars($r['from_store'] ?: 'N/A') ?></span>
                                 <span class="text-[8px] text-gray-600 font-bold uppercase tracking-widest">Source</span>
                             </div>
                         </td>
-                        <td class="px-5 py-3.5" data-label="Destination (To)">
-                            <div class="flex flex-col">
+                        <td class="px-5 py-3.5 text-center" data-label="Destination (To)">
+                            <div class="flex flex-col md:items-center">
                                 <span class="text-cyan-400 font-bold text-xs uppercase"><?= htmlspecialchars($r['to_store'] ?: 'N/A') ?></span>
                                 <span class="text-[8px] text-gray-600 font-bold uppercase tracking-widest">Destination</span>
                             </div>
                         </td>
-                        <td class="px-5 py-3.5" data-label="Username">
-                            <div class="flex items-center gap-2">
+                        <td class="px-5 py-3.5 text-center" data-label="Username">
+                            <div class="flex items-center gap-2 justify-center">
                                 <div class="w-6 h-6 rounded-full bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-[10px] text-cyan-400 font-bold"><?= strtoupper($r['username'][0]) ?></div>
                                 <span class="text-gray-400 text-xs font-medium"><?= htmlspecialchars($r['username']) ?></span>
                             </div>
                         </td>
-                        <td class="px-5 py-3.5 text-right text-gray-500 text-[11px] font-medium tracking-tight whitespace-nowrap" data-label="Date Received">
+                        <td class="px-5 py-3.5 text-center text-gray-500 text-[11px] font-medium tracking-tight whitespace-nowrap" data-label="Date Received" data-date="<?= date('Y-m-d', strtotime($r['created_at'])) ?>">
                             <?= date('M d, Y • h:i A', strtotime($r['created_at'])) ?>
                         </td>
                         <td class="px-5 py-3.5 text-center" data-label="Status">
                             <?php if ($r['is_exported']): ?>
-                                <div class="w-6 h-6 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mx-auto md:mx-0" title="Already Exported">
+                                <div class="w-6 h-6 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mx-auto" title="Already Exported">
                                     <i class="fas fa-check-double text-[9px]"></i>
                                 </div>
                             <?php else: ?>
-                                <div class="w-6 h-6 rounded-lg bg-slate-500/10 border border-white/5 flex items-center justify-center text-gray-600 mx-auto md:mx-0" title="Pending Export">
+                                <div class="w-6 h-6 rounded-lg bg-slate-500/10 border border-white/5 flex items-center justify-center text-gray-600 mx-auto" title="Pending Export">
                                     <i class="fas fa-clock text-[9px]"></i>
                                 </div>
                             <?php endif; ?>

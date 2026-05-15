@@ -248,14 +248,14 @@ if (!isset($can_delete)) {
                         <input type="checkbox" id="selectAll" class="rounded border-white/20 bg-slate-900 text-green-500 focus:ring-offset-slate-900">
                     </th>
                     <?php if ($is_admin): ?>
-                        <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase">Store</th>
+                        <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Store</th>
                     <?php endif; ?>
-                    <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase">Item #</th>
+                    <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Item #</th>
                     <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Amount Sold</th>
                     <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Qty</th>
                     <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Line Total</th>
-                    <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase">Submitted By</th>
-                    <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase">Date</th>
+                    <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Submitted By</th>
+                    <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Date</th>
                     <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Status</th>
                     <?php if ($can_edit): ?>
                         <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Actions</th>
@@ -285,35 +285,35 @@ if (!isset($can_delete)) {
                             <input type="checkbox" name="sale_ids[]" value="<?= $s['id'] ?>" class="sale-checkbox rounded border-white/20 bg-slate-900 text-green-500 focus:ring-offset-slate-900">
                         </td>
                         <?php if ($is_admin): ?>
-                            <td class="px-5 py-3.5" data-label="Store">
-                                <div class="flex flex-col md:items-start items-end text-right md:text-left">
+                            <td class="px-5 py-3.5 text-center" data-label="Store">
+                                <div class="flex flex-col md:items-center items-end text-right md:text-center">
                                     <span class="font-bold text-gray-400 text-[11px]"><?= htmlspecialchars($s['store_code']) ?></span>
                                     <?php if (!empty($s['sname'])): ?>
-                                        <span class="text-[9px] text-gray-500 font-bold uppercase tracking-tighter truncate max-w-[120px]"><?= htmlspecialchars($s['sname']) ?></span>
+                                        <span class="text-[9px] text-gray-500 font-bold uppercase tracking-tighter truncate max-w-[120px] mx-auto md:mx-0"><?= htmlspecialchars($s['sname']) ?></span>
                                     <?php endif; ?>
                                 </div>
                             </td>
                         <?php endif; ?>
-                        <td class="px-5 py-3.5 font-bold text-purple-300 tracking-wide flex items-center gap-2" data-label="Item #">
+                        <td class="px-5 py-3.5 font-bold text-purple-300 tracking-wide text-center" data-label="Item #">
                             <?= htmlspecialchars($s['item_no']) ?>
                         </td>
                         <td class="px-5 py-3.5 text-emerald-400 font-black text-center" data-label="Amount Sold">₱<?= number_format($s['amount_sold'], 2) ?></td>
                         <td class="px-5 py-3.5 text-gray-300 font-bold text-center" data-label="Qty"><?= $s['quantity'] ?></td>
                         <td class="px-5 py-3.5 text-emerald-300 font-black text-center" data-label="Line Total">₱<?= number_format($s['line_total'], 2) ?></td>
-                        <td class="px-5 py-3.5" data-label="Submitted By">
-                            <span class="flex items-center gap-2">
+                        <td class="px-5 py-3.5 text-center" data-label="Submitted By">
+                            <span class="flex items-center justify-center gap-2">
                                 <span class="w-6 h-6 rounded-full bg-gradient-to-tr from-purple-600/20 to-pink-600/20 border border-white/10 flex items-center justify-center text-[10px] text-white font-bold"><?= strtoupper($s['username'][0]) ?></span>
                                 <span class="text-gray-300 text-xs"><?= htmlspecialchars($s['username']) ?></span>
                             </span>
                         </td>
-                        <td class="px-5 py-3.5 text-gray-300 text-[11px] text-right font-medium tracking-tight whitespace-nowrap" data-label="Date"><?= date('M d, Y • h:i A', strtotime($s['created_at'])) ?></td>
+                        <td class="px-5 py-3.5 text-gray-300 text-[11px] text-center font-medium tracking-tight whitespace-nowrap" data-label="Date" data-date="<?= date('Y-m-d', strtotime($s['created_at'])) ?>"><?= date('M d, Y • h:i A', strtotime($s['created_at'])) ?></td>
                         <td class="px-5 py-3.5 text-center" data-label="Status">
                             <?php if ($s['is_exported']): ?>
-                                <div class="w-6 h-6 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center text-green-400 mx-auto md:mx-0" title="Already Exported">
+                                <div class="w-6 h-6 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center text-green-400 mx-auto" title="Already Exported">
                                     <i class="fas fa-check-double text-[9px]"></i>
                                 </div>
                             <?php else: ?>
-                                <div class="w-6 h-6 rounded-lg bg-slate-500/10 border border-white/5 flex items-center justify-center text-gray-600 mx-auto md:mx-0" title="Pending Export">
+                                <div class="w-6 h-6 rounded-lg bg-slate-500/10 border border-white/5 flex items-center justify-center text-gray-600 mx-auto" title="Pending Export">
                                     <i class="fas fa-clock text-[9px]"></i>
                                 </div>
                             <?php endif; ?>

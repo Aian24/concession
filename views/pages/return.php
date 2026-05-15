@@ -276,6 +276,13 @@ if (isset($_GET['ajax'])) {
                             <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Amount (₱)</label>
                             <input type="number" name="exchange_amount" id="edit-ex-amount" step="0.01" onkeydown="if(['e','E','+','-'].includes(event.key)) event.preventDefault();" class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500/50 transition-all font-medium" placeholder="0.00">
                         </div>
+                        <div class="space-y-1">
+                            <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Transaction Date</label>
+                            <div class="relative group">
+                                <i class="fas fa-calendar-day absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-blue-400 transition-colors"></i>
+                                <input type="date" name="created_at" id="edit-date" required class="w-full bg-slate-900 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500/50 transition-all font-medium cursor-pointer" onclick="this.showPicker()">
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
@@ -690,6 +697,10 @@ if (isset($_GET['ajax'])) {
         document.getElementById('edit-ex-qty').value        = qty; // Best guess since only one Qty column
         document.getElementById('edit-ex-amount').value     = getVal(7 + offset);
 
+        const dateCell = row.cells[10 + offset];
+        const rawDate = dateCell.getAttribute('data-date') || '';
+        document.getElementById('edit-date').value = rawDate;
+
         const modal = document.getElementById('edit-return-modal');
         // Move modal to body to escape transform container and fix scroll visibility
         document.body.appendChild(modal);
@@ -715,7 +726,8 @@ if (isset($_GET['ajax'])) {
             exchange_name: this.exchange_name.value,
             exchange_item: this.exchange_item.value,
             exchange_quantity: this.exchange_quantity.value,
-            exchange_amount: this.exchange_amount.value
+            exchange_amount: this.exchange_amount.value,
+            created_at: this.created_at.value
         };
 
         const btn = this.querySelector('button[type="submit"]');

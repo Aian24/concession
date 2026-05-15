@@ -272,8 +272,12 @@ if (isset($_GET['ajax'])) {
                         <input type="text" name="to_store" id="edit-to-store" class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-500/50 transition-all font-medium">
                     </div>
                 </div>
+                <div class="space-y-1">
+                    <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Transaction Date</label>
+                    <input type="date" name="created_at" id="edit-date" required class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-500/50 transition-all font-medium cursor-pointer" onclick="this.showPicker()">
+                </div>
                 
-                <button type="submit" class="w-full py-4 mt-2 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-black text-[10px] uppercase tracking-[0.2em] shadow-lg shadow-cyan-500/20 hover:brightness-110 active:scale-[0.98] transition-all">
+                <button type="submit" class="w-full py-4 mt-8 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-black text-[10px] uppercase tracking-[0.2em] shadow-lg shadow-cyan-500/20 hover:brightness-110 active:scale-[0.98] transition-all">
                     Update Receipt
                 </button>
             </form>
@@ -527,6 +531,10 @@ if (isset($_GET['ajax'])) {
         document.getElementById('edit-from-store').value = row.cells[3 + offset].innerText.trim();
         document.getElementById('edit-to-store').value   = row.cells[4 + offset].innerText.trim();
 
+        const dateCell = row.cells[6 + offset];
+        const rawDate = dateCell.getAttribute('data-date') || '';
+        document.getElementById('edit-date').value = rawDate;
+
         const modal = document.getElementById('edit-receiving-modal');
         // Move modal to body to escape transform container and fix scroll visibility
         document.body.appendChild(modal);
@@ -548,7 +556,8 @@ if (isset($_GET['ajax'])) {
             os_no: this.os_no.value,
             from_store: this.from_store.value,
             to_store: this.to_store.value,
-            quantity: this.quantity.value
+            quantity: this.quantity.value,
+            created_at: this.created_at.value
         };
 
         const btn = this.querySelector('button[type="submit"]');

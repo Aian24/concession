@@ -20,13 +20,20 @@ $from_store = trim($data['from_store'] ?? '');
 $to_store   = trim($data['to_store'] ?? '');
 $quantity   = intval($data['quantity'] ?? 0);
 
+$created_at = $data['created_at'] ?? '';
+
 if (!$id || $os_no === '') {
     echo json_encode(['success' => false, 'message' => 'Invalid data. OS # is required.']);
     exit;
 }
 
-$stmt = $db->prepare("UPDATE receiving SET os_no = ?, from_store = ?, to_store = ?, quantity = ? WHERE id = ?");
-$stmt->bind_param("sssii", $os_no, $from_store, $to_store, $quantity, $id);
+if (!empty($created_at)) {
+    $stmt = $db->prepare("UPDATE receiving SET os_no = ?, from_store = ?, to_store = ?, quantity = ?, created_at = ? WHERE id = ?");
+    $stmt->bind_param("sssisi", $os_no, $from_store, $to_store, $quantity, $created_at, $id);
+} else {
+    $stmt = $db->prepare("UPDATE receiving SET os_no = ?, from_store = ?, to_store = ?, quantity = ? WHERE id = ?");
+    $stmt->bind_param("sssii", $os_no, $from_store, $to_store, $quantity, $id);
+}
 
 if ($stmt->execute()) {
     echo json_encode(['success' => true, 'message' => 'Record updated successfully.']);
