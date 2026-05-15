@@ -181,6 +181,9 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 
                 <!-- Custom Menu -->
                 <div id="store-filter-menu" class="absolute top-[calc(100%+4px)] left-0 right-0 bg-[#0f172a] border border-white/10 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[100] hidden max-h-64 overflow-y-auto overflow-x-hidden backdrop-blur-xl">
+                    <div class="sticky top-0 bg-[#0f172a] p-2 border-b border-white/5 z-20">
+                        <input type="text" id="store-search-filter" class="w-full bg-slate-900 border border-white/10 rounded-lg px-3 py-1.5 text-[10px] text-white focus:outline-none focus:border-cyan-500/30" placeholder="Search store..." autocomplete="off">
+                    </div>
                     <div class="store-option px-3 py-2.5 text-[11px] text-white hover:bg-white/5 cursor-pointer flex justify-between items-center transition-all border-b border-white/5 last:border-0 <?= $store_filter === '' ? 'bg-cyan-500/10' : '' ?>" data-value="">
                         <span class="font-bold">All Stores</span>
                     </div>

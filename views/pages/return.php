@@ -740,35 +740,6 @@ if (isset($_GET['ajax'])) {
         }
     };
 
-    // ── Custom Dropdown Logic ────────────────────────────────
-    document.addEventListener('click', function(e) {
-        const trigger = e.target.closest('#store-filter-trigger');
-        const option = e.target.closest('.store-option');
-        const menu = document.getElementById('store-filter-menu');
-
-        if (trigger) {
-            if (menu) menu.classList.toggle('hidden');
-        } else if (option) {
-            const val = option.getAttribute('data-value');
-            const label = option.getAttribute('data-label') || 'All Stores';
-            const hiddenSelect = document.querySelector('select[name="store_filter"]');
-            
-            if (hiddenSelect) {
-                hiddenSelect.value = val;
-                const labelEl = document.getElementById('selected-store-label');
-                if (labelEl) labelEl.textContent = label;
-                if (menu) menu.classList.add('hidden');
-                
-                // Trigger change event for table refresh
-                hiddenSelect.dispatchEvent(new Event('change'));
-            }
-        } else {
-            if (menu && !menu.classList.contains('hidden')) {
-                menu.classList.add('hidden');
-            }
-        }
-    });
-
     initTableEvents();
     window.refreshTable = refreshTable;
 })();

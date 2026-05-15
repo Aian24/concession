@@ -457,6 +457,88 @@
             document.getElementById('profile-settings-form').reset();
         }
 
+        // Global Custom Dropdown Logic
+        document.addEventListener('click', function(e) {
+            const trigger = e.target.closest('#store-filter-trigger');
+            const option = e.target.closest('.store-option');
+            const menu = e.target.closest('#store-filter-menu') ? e.target.closest('#store-filter-menu') : document.getElementById('store-filter-menu');
+            const searchInput = e.target.closest('#store-search-filter');
+
+            if (trigger) {
+                // Find the menu relative to the trigger if there are multiple, or fallback to global ID
+                const container = trigger.closest('#store-filter-container') || trigger.parentElement;
+                const targetMenu = container.querySelector('#store-filter-menu') || document.getElementById('store-filter-menu');
+                
+                if (targetMenu) {
+                    targetMenu.classList.toggle('hidden');
+                    if (!targetMenu.classList.contains('hidden')) {
+                        const si = targetMenu.querySelector('#store-search-filter');
+                        if (si) {
+                            si.value = '';
+                            targetMenu.querySelectorAll('.store-option').forEach(opt => opt.classList.remove('hidden'));
+                            setTimeout(() => si.focus(), 50);
+                        }
+                    }
+                }
+            } else if (option) {
+                const val = option.getAttribute('data-value');
+                const label = option.getAttribute('data-label') || 'All Stores';
+                const container = option.closest('#store-filter-container') || option.closest('.group') || document;
+                
+                // Try different common names for the hidden input
+                const hiddenInput = container.querySelector('select[name="store_filter"], input[name="store_code"], select[name="store_code"], input[id="store-filter-value"]');
+                
+                if (hiddenInput) {
+                    hiddenInput.value = val;
+                    const labelEl = container.querySelector('#selected-store-label');
+                    if (labelEl) labelEl.textContent = label;
+                    
+                    const targetMenu = option.closest('#store-filter-menu');
+                    if (targetMenu) targetMenu.classList.add('hidden');
+                    
+                    // Trigger change or submit
+                    if (hiddenInput.tagName === 'SELECT') {
+                        hiddenInput.dispatchEvent(new Event('change'));
+                    } else if (hiddenInput.type === 'hidden') {
+                        // If it's a hidden input in a form, maybe submit the form
+                        const form = hiddenInput.closest('form');
+                        if (form && form.id === 'dashboard-filter-form') {
+                            form.submit();
+                        } else {
+                            // Trigger change for any other listeners
+                            hiddenInput.dispatchEvent(new Event('change'));
+                        }
+                    }
+                }
+            } else if (searchInput) {
+                // Do nothing
+            } else {
+                // Close all open menus
+                document.querySelectorAll('#store-filter-menu').forEach(m => m.classList.add('hidden'));
+            }
+        });
+
+        document.addEventListener('input', function(e) {
+            if (e.target.id === 'store-search-filter') {
+                const query = e.target.value.toLowerCase().trim();
+                const menu = e.target.closest('#store-filter-menu');
+                if (!menu) return;
+
+                const options = menu.querySelectorAll('.store-option');
+                options.forEach(opt => {
+                    const val = (opt.getAttribute('data-value') || '').toLowerCase();
+                    const label = (opt.getAttribute('data-label') || '').toLowerCase();
+                    const text = opt.innerText.toLowerCase();
+                    
+                    if (val === '' || val.includes(query) || label.includes(query) || text.includes(query)) {
+                        opt.classList.remove('hidden');
+                    } else {
+                        opt.classList.add('hidden');
+                    }
+                });
+            }
+        });
+
         // Global Modals Logic
         function showStatusModal(success, message, customTitle = '') {
             const modal = document.getElementById('status-modal');

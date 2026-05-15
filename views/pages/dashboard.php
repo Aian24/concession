@@ -3,7 +3,18 @@ $db = db_connect();
 
 // Date Range Logic
 $end_date = $_GET['end_date'] ?? date('Y-m-d');
-$start_date = $_GET['start_date'] ?? date('Y-m-d', strtotime('-29 days'));
+if (isset($_GET['start_date'])) {
+    $start_date = $_GET['start_date'];
+} else {
+    // Default: Earliest transaction of the current month, or 1st of the month
+    $min_date_res = $db->query("SELECT MIN(created_at) as min_date FROM sales WHERE MONTH(created_at) = MONTH(NOW()) AND YEAR(created_at) = YEAR(NOW())");
+    $min_date_row = $min_date_res ? $min_date_res->fetch_assoc() : null;
+    if ($min_date_row && $min_date_row['min_date']) {
+        $start_date = date('Y-m-d', strtotime($min_date_row['min_date']));
+    } else {
+        $start_date = date('Y-m-01'); // 1st of the month
+    }
+}
 
 // Store Filtering Logic
 $role = $_SESSION['role'] ?? 'user';
@@ -124,7 +135,7 @@ if (!function_exists('time_elapsed_string')) {
 </style>
 
 <!-- Date Range Filter -->
-<div class="glass-panel p-5 border border-white/5 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
+<div class="glass-panel p-5 border border-white/5 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-50">
     <div class="flex items-center gap-4">
         <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600/20 to-pink-600/20 flex items-center justify-center text-white border border-white/10 shadow-xl">
             <i class="fas fa-calendar-alt"></i>
@@ -154,19 +165,54 @@ if (!function_exists('time_elapsed_string')) {
             </div>
         </div>
         <?php if ($is_admin): ?>
-        <div class="space-y-1 group">
+        <div class="space-y-1 group relative">
             <label class="text-[9px] font-bold text-gray-500 uppercase ml-1 group-hover:text-amber-400 transition-colors">Store Filter</label>
-            <div class="relative">
-                <i class="fas fa-store absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-600 group-hover:text-amber-400 transition-colors pointer-events-none"></i>
-                <select name="store_code" onchange="this.form.submit()"
-                        class="w-full bg-slate-900/80 border border-white/10 rounded-xl pl-9 pr-4 py-2 text-xs text-white focus:outline-none focus:border-amber-500/50 cursor-pointer transition-all appearance-none">
-                    <option value="">All Stores</option>
-                    <?php foreach ($stores_list as $s): ?>
-                        <option value="<?= $s['scode'] ?>" <?= $filter_store_code === $s['scode'] ? 'selected' : '' ?>>
-                            <?= htmlspecialchars($s['scode']) ?> - <?= htmlspecialchars($s['sname']) ?>
-                        </option>
+            <div class="relative" id="store-filter-container">
+                <i class="fas fa-store absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-600 group-hover:text-amber-400 transition-colors pointer-events-none z-10"></i>
+                
+                <?php
+                $current_store_label = "All Stores";
+                if ($filter_store_code) {
+                    foreach ($stores_list as $sl) {
+                        if ($sl['scode'] === $filter_store_code) {
+                            $current_store_label = $sl['scode'] . " - " . $sl['sname'];
+                            break;
+                        }
+                    }
+                }
+                ?>
+                
+                <!-- Custom Trigger -->
+                <div id="store-filter-trigger" class="w-full bg-slate-900/80 border border-white/10 rounded-xl pl-9 pr-4 py-2 h-9 text-xs text-white flex items-center justify-between cursor-pointer focus:border-amber-500/50 transition-all hover:bg-white/5">
+                    <span id="selected-store-label" class="truncate font-bold opacity-80 uppercase tracking-tight"><?= htmlspecialchars($current_store_label) ?></span>
+                    <i class="fas fa-chevron-down text-[9px] text-gray-500 ml-2"></i>
+                </div>
+
+                <!-- Custom Menu -->
+                <div id="store-filter-menu" class="absolute top-[calc(100%+4px)] left-0 right-0 bg-[#0f172a] border border-white/10 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[100] hidden max-h-64 overflow-y-auto overflow-x-hidden backdrop-blur-xl">
+                    <div class="sticky top-0 bg-[#0f172a] p-2 border-b border-white/5 z-20">
+                        <input type="text" id="store-search-filter" class="w-full bg-slate-900 border border-white/10 rounded-lg px-3 py-1.5 text-[10px] text-white focus:outline-none focus:border-amber-500/50" placeholder="Search store..." autocomplete="off">
+                    </div>
+                    <div class="store-option px-3 py-2.5 text-[11px] text-white hover:bg-white/5 cursor-pointer flex justify-between items-center transition-all border-b border-white/5 last:border-0 <?= $filter_store_code === '' ? 'bg-amber-500/10' : '' ?>" data-value="">
+                        <span class="font-bold">All Stores</span>
+                    </div>
+                    <?php foreach($stores_list as $st): 
+                        $sel = ($filter_store_code == $st['scode']);
+                        $displayName = $st['scode'] . " - " . $st['sname'];
+                    ?>
+                        <div class="store-option px-3 py-2.5 text-[11px] text-white hover:bg-white/5 cursor-pointer flex justify-between items-center transition-all border-b border-white/5 last:border-0 <?= $sel ? 'bg-amber-500/10' : '' ?>" 
+                             data-value="<?= htmlspecialchars($st['scode']) ?>" 
+                             data-label="<?= htmlspecialchars($displayName) ?>">
+                            <div class="flex flex-col truncate">
+                                <span class="font-bold truncate"><?= htmlspecialchars($st['scode']) ?></span>
+                                <span class="text-[9px] text-gray-500 truncate uppercase tracking-tighter"><?= htmlspecialchars($st['sname']) ?></span>
+                            </div>
+                        </div>
                     <?php endforeach; ?>
-                </select>
+                </div>
+
+                <!-- Hidden input for form submission -->
+                <input type="hidden" name="store_code" id="store-filter-value" value="<?= htmlspecialchars($filter_store_code) ?>">
             </div>
         </div>
         <?php endif; ?>
