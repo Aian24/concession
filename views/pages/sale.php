@@ -368,7 +368,9 @@ if (isset($_GET['ajax'])) {
         
         document.getElementById('entry-rows').appendChild(row);
         updateBadge();
-        row.querySelector('input').focus();
+        const itemInput = row.querySelector('[name="item_no"]');
+        itemInput.addEventListener('input', function() { lookupPrismPrice(this); });
+        itemInput.focus();
     };
 
     window.removeRow = function (btn) {
@@ -617,7 +619,59 @@ if (isset($_GET['ajax'])) {
         updateBulkDeleteVisibility();
     }
 
-    document.querySelectorAll('.entry-row input').forEach(i => i.addEventListener('input', updateSummary));
+    window.updateSummary = function() {
+        let items = 0, qty = 0, total = 0;
+        document.querySelectorAll('.entry-row').forEach(row => {
+            const itm = row.querySelector('[name="item_no"]').value.trim();
+            const amt = parseFloat(row.querySelector('[name="amount_sold"]').value) || 0;
+            const q   = parseInt(row.querySelector('[name="quantity"]').value) || 0;
+            if (itm) items++;
+            qty += q;
+            total += amt * q;
+        });
+        document.getElementById('summary-items').textContent = items;
+        document.getElementById('summary-qty').textContent = qty;
+        document.getElementById('summary-total').textContent = '₱' + total.toLocaleString('en-US', {minimumFractionDigits:2});
+    };
+
+    window.lookupPrismPrice = function(input) {
+        const item_no = input.value.trim();
+        if (item_no.length < 3) return; // Minimum length to trigger lookup
+
+        const row = input.closest('.entry-row');
+        if (!row) return;
+
+        const amountInput = row.querySelector('[name="amount_sold"]');
+        if (!amountInput) return;
+
+        fetch(`api/get_prism_price.php?item_no=${encodeURIComponent(item_no)}`)
+        .then(r => r.json())
+        .then(res => {
+            if (res.success) {
+                amountInput.value = res.srp;
+                window.updateSummary();
+                // Visual feedback
+                amountInput.classList.add('ring-2', 'ring-green-500/50');
+                setTimeout(() => amountInput.classList.remove('ring-2', 'ring-green-500/50'), 1000);
+            }
+        });
+    };
+
+    // Attach listener to initial rows
+    document.querySelectorAll('[name="item_no"]').forEach(input => {
+        input.addEventListener('input', function() {
+            window.lookupPrismPrice(this);
+        });
+    });
+
+    // Global listener for any input change in the entry rows
+    document.getElementById('entry-rows').addEventListener('input', (e) => {
+        if (e.target.tagName === 'INPUT') window.updateSummary();
+    });
+    document.getElementById('entry-rows').addEventListener('change', (e) => {
+        if (e.target.tagName === 'INPUT') window.updateSummary();
+    });
+
     initTableEvents();
     window.refreshSaleTable = refreshTable;
 

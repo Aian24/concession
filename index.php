@@ -110,7 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // ── Routing ───────────────────────────────────────────────────
-$allowed_pages = ['dashboard', 'monitoring', 'sale', 'return', 'receiving', 'ros_supplies', 'submitted', 'admin', 'history', 'pullout', 'stores'];
+$allowed_pages = ['dashboard', 'monitoring', 'sale', 'return', 'receiving', 'ros_supplies', 'submitted', 'admin', 'history', 'pullout', 'stores', 'prism_data'];
 
 if (!in_array($action, $allowed_pages)) {
     $is_admin = (($_SESSION['role'] ?? 'user') === 'admin' || ($_SESSION['user'] ?? '') === 'admin');

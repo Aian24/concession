@@ -58,6 +58,10 @@ $receiving_count = (int) ($receiving_data['total_count'] ?? 0);
 $store_count_res = $db->query("SELECT COUNT(*) as total FROM storecode" . ($is_store_admin ? " WHERE scode = '$session_store_code'" : ""));
 $total_stores = $store_count_res ? (int)$store_count_res->fetch_assoc()['total'] : 0;
 
+// 4.1 Active Stores (with transactions in selected range)
+$active_stores_res = $db->query("SELECT COUNT(DISTINCT store_code) as active FROM sales WHERE DATE(created_at) BETWEEN '$start_date' AND '$end_date' $store_clause");
+$active_stores_count = $active_stores_res ? (int)$active_stores_res->fetch_assoc()['active'] : 0;
+
 // Chart Data Generation
 $chart_labels = [];
 $chart_sales_values = [];
@@ -169,7 +173,7 @@ if (!function_exists('time_elapsed_string')) {
     </form>
 </div>
 
-<div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-8">
+<div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6 mb-8">
     <!-- Stats Cards -->
     <div class="glass-panel p-6 border border-white/5 relative overflow-hidden group hover:border-purple-500/30 transition-all duration-500">
         <div class="absolute -right-4 -top-4 w-24 h-24 bg-purple-500/10 rounded-full blur-2xl group-hover:bg-purple-500/20 transition-all"></div>
@@ -237,7 +241,21 @@ if (!function_exists('time_elapsed_string')) {
         </div>
         <p class="text-3xl font-bold text-white mb-1"><?= number_format($total_stores) ?></p>
         <div class="flex items-center gap-2">
-            <span class="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full uppercase">Active</span>
+            <span class="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full uppercase">Total</span>
+        </div>
+    </div>
+
+    <div class="glass-panel p-6 border border-white/5 relative overflow-hidden group hover:border-orange-500/30 transition-all duration-500">
+        <div class="absolute -right-4 -top-4 w-24 h-24 bg-orange-500/10 rounded-full blur-2xl group-hover:bg-orange-500/20 transition-all"></div>
+        <div class="flex items-center gap-4 mb-4">
+            <div class="w-12 h-12 rounded-2xl bg-orange-500/10 flex items-center justify-center text-orange-400 border border-orange-500/20 shadow-lg shadow-orange-500/5">
+                <i class="fas fa-signal text-xl"></i>
+            </div>
+            <h3 class="text-xs font-black text-gray-500 uppercase tracking-[0.2em]">Activity</h3>
+        </div>
+        <p class="text-3xl font-bold text-white mb-1"><?= number_format($active_stores_count) ?><span class="text-lg text-gray-500 font-medium">/<?= number_format($total_stores) ?></span></p>
+        <div class="flex items-center gap-2">
+            <span class="text-[10px] font-bold text-orange-400 bg-orange-500/10 px-2 py-0.5 rounded-full uppercase">Active vs Total</span>
         </div>
     </div>
 </div>

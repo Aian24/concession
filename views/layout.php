@@ -288,6 +288,7 @@
             if ($is_full_admin) {
                 $nav_items['admin'] = ['icon' => 'fa-users-cog', 'title' => 'Manage Users'];
                 $nav_items['stores'] = ['icon' => 'fa-store', 'title' => 'Manage Stores'];
+                $nav_items['prism_data'] = ['icon' => 'fa-gem', 'title' => 'Manage Prism Data'];
             }
 
             foreach ($nav_items as $key => $item):
@@ -517,7 +518,7 @@
             const btnProceed = document.getElementById('confirm-proceed');
             const btnCancel = document.getElementById('confirm-cancel');
 
-            msg.textContent = message;
+            msg.innerHTML = message;
             ttl.textContent = title;
             modal.classList.remove('hidden');
 
