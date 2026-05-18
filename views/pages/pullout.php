@@ -290,8 +290,11 @@ if (isset($_GET['ajax'])) {
             r.querySelector('.entry-title').textContent = `Entry #${i + 1}`;
             const rem = r.querySelector('.remove-btn');
             if (rem) {
-                rem.style.opacity = rows.length > 1 ? '1' : '0';
-                rem.style.pointerEvents = rows.length > 1 ? 'all' : 'none';
+                if (i === 0) {
+                    rem.classList.add('hidden');
+                } else {
+                    rem.classList.remove('hidden');
+                }
             }
         });
     }
