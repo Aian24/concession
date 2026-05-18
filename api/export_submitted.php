@@ -90,7 +90,7 @@ if ($result->num_rows > 0) {
         $data_rows[] = $r;
     }
     
-    if (!empty($update_ids)) {
+    if (!empty($update_ids) && $type === 'txt') {
         $id_list = implode(',', $update_ids);
         $db->query("UPDATE sales SET is_exported = 1 WHERE id IN ($id_list)");
     }
