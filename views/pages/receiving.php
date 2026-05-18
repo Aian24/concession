@@ -83,9 +83,18 @@ if (isset($_GET['ajax'])) {
     include 'views/pages/receiving_table_partial.php';
     exit;
 }
+
+// Fetch all stores for the From/To dropdowns
+$all_stores_stmt = $db->prepare("SELECT scode, sname FROM storecode ORDER BY scode");
+$all_stores_stmt->execute();
+$all_stores = $all_stores_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+$all_stores_stmt->close();
 ?>
 
 <div class="pb-12 animate-fade-in">
+    <script>
+        window.STORE_LIST = <?= json_encode($all_stores) ?>;
+    </script>
     <?php if ($can_submit): ?>
     <!-- New Receiving Form -->
     <div class="glass-panel border border-white/5 shadow-xl mb-10 min-h-[70vh] flex flex-col">
@@ -158,7 +167,7 @@ if (isset($_GET['ajax'])) {
 
             <div>
                 <div id="entry-rows" class="space-y-4">
-                    <div class="entry-row glass-panel border border-white/5 shadow-lg overflow-hidden bg-[#0d1527]/30 animate-slide-in">
+                    <div class="entry-row glass-panel border border-white/5 shadow-lg bg-[#0d1527]/30 animate-slide-in rounded-xl">
                         <div class="px-4 py-2 bg-white/5 border-b border-white/5 flex items-center justify-between">
                             <span class="entry-title text-[10px] font-black text-gray-500 uppercase tracking-widest">Entry #1</span>
                             <button type="button" onclick="removeRow(this)" class="remove-btn hidden text-red-500/50 hover:text-red-500 transition-colors flex items-center gap-1.5 group">
@@ -173,11 +182,11 @@ if (isset($_GET['ajax'])) {
                             </div>
                             <div class="relative">
                                 <span class="absolute top-0 -translate-y-1/2 left-3 px-1 bg-[#0d1527] text-[8px] font-black text-cyan-400/80 uppercase tracking-widest z-10">From (Store)</span>
-                                <input type="text" name="from_store" class="bg-slate-900/50 border border-white/10 rounded-xl px-4 py-2.5 w-full text-xs text-white focus:outline-none focus:border-cyan-500/50 font-medium" placeholder="WH-01">
+                                <input type="text" name="from_store" autocomplete="off" class="store-autocomplete bg-slate-900/50 border border-white/10 rounded-xl px-4 py-2.5 w-full text-xs text-white focus:outline-none focus:border-cyan-500/50 font-medium" placeholder="Search store...">
                             </div>
                             <div class="relative">
                                 <span class="absolute top-0 -translate-y-1/2 left-3 px-1 bg-[#0d1527] text-[8px] font-black text-cyan-400/80 uppercase tracking-widest z-10">To (Store)</span>
-                                <input type="text" name="to_store" class="bg-slate-900/50 border border-white/10 rounded-xl px-4 py-2.5 w-full text-xs text-white focus:outline-none focus:border-cyan-500/50 font-medium" placeholder="STR-01">
+                                <input type="text" name="to_store" autocomplete="off" class="store-autocomplete bg-slate-900/50 border border-white/10 rounded-xl px-4 py-2.5 w-full text-xs text-white focus:outline-none focus:border-cyan-500/50 font-medium" placeholder="Search store...">
                             </div>
                             <div class="relative">
                                 <span class="absolute top-0 -translate-y-1/2 left-3 px-1 bg-[#0d1527] text-[8px] font-black text-cyan-400/80 uppercase tracking-widest z-10">Qty</span>
@@ -235,7 +244,7 @@ if (isset($_GET['ajax'])) {
 <!-- Edit Receiving Modal -->
 <div id="edit-receiving-modal" class="fixed inset-0 z-[102] flex items-center justify-center opacity-0 pointer-events-none transition-all duration-300 scale-95">
     <div class="absolute inset-0 bg-slate-950/60 backdrop-blur-md" onclick="closeEditReceivingModal()"></div>
-    <div class="relative glass-panel border border-white/10 shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+    <div class="relative glass-panel border border-white/10 shadow-2xl w-full max-w-md mx-4 rounded-xl">
         <div class="bg-gradient-to-tr from-cyan-600/20 to-blue-600/20 p-5 border-b border-white/5 relative">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-full bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
@@ -263,13 +272,13 @@ if (isset($_GET['ajax'])) {
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
-                    <div class="space-y-1">
+                    <div class="space-y-1 relative">
                         <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">From Store</label>
-                        <input type="text" name="from_store" id="edit-from-store" class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-500/50 transition-all font-medium">
+                        <input type="text" name="from_store" id="edit-from-store" autocomplete="off" class="store-autocomplete w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-500/50 transition-all font-medium" placeholder="Search store...">
                     </div>
-                    <div class="space-y-1">
+                    <div class="space-y-1 relative">
                         <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">To Store</label>
-                        <input type="text" name="to_store" id="edit-to-store" class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-500/50 transition-all font-medium">
+                        <input type="text" name="to_store" id="edit-to-store" autocomplete="off" class="store-autocomplete w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-500/50 transition-all font-medium" placeholder="Search store...">
                     </div>
                 </div>
                 <div class="space-y-1">
@@ -373,9 +382,13 @@ if (isset($_GET['ajax'])) {
         const entries = [];
         document.querySelectorAll('.entry-row').forEach(row => {
             const os   = row.querySelector('[name="os_no"]').value.trim();
-            const from = row.querySelector('[name="from_store"]').value.trim();
-            const to   = row.querySelector('[name="to_store"]').value.trim();
+            let from = row.querySelector('[name="from_store"]').value.trim();
+            let to   = row.querySelector('[name="to_store"]').value.trim();
             const qty  = row.querySelector('[name="quantity"]').value;
+            
+            if (from.includes(' - ')) from = from.split(' - ')[0];
+            if (to.includes(' - ')) to = to.split(' - ')[0];
+
             if (os && qty > 0) {
                 entries.push({ item_no: '', os_no: os, from_store: from, to_store: to, quantity: qty });
             }
@@ -551,11 +564,17 @@ if (isset($_GET['ajax'])) {
 
     document.getElementById('edit-receiving-form')?.addEventListener('submit', function(e) {
         e.preventDefault();
+        
+        let from = this.from_store.value.trim();
+        let to = this.to_store.value.trim();
+        if (from.includes(' - ')) from = from.split(' - ')[0];
+        if (to.includes(' - ')) to = to.split(' - ')[0];
+
         const data = {
             id: this.id.value,
             os_no: this.os_no.value,
-            from_store: this.from_store.value,
-            to_store: this.to_store.value,
+            from_store: from,
+            to_store: to,
             quantity: this.quantity.value,
             created_at: this.created_at.value
         };
@@ -580,6 +599,68 @@ if (isset($_GET['ajax'])) {
 
     document.querySelectorAll('.entry-row input').forEach(i => i.addEventListener('input', updateSummary));
     
+    // --- Custom Autocomplete Dropdown Logic ---
+    function renderStoreDropdown(input) {
+        const wrapper = input.closest('.relative');
+        let dropdown = wrapper.querySelector('.store-dropdown');
+        if (!dropdown) {
+            dropdown = document.createElement('div');
+            dropdown.className = 'store-dropdown absolute top-full mt-1 left-0 right-0 bg-[#0f172a] border border-white/10 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[100] max-h-48 overflow-y-auto backdrop-blur-xl';
+            wrapper.appendChild(dropdown);
+        }
+        
+        const query = input.value.toLowerCase();
+        let html = '';
+        let count = 0;
+        
+        window.STORE_LIST.forEach(st => {
+            const text = st.scode + (st.sname ? ' - ' + st.sname : '');
+            if (text.toLowerCase().includes(query)) {
+                html += `<div class="store-ac-option px-3 py-2.5 text-[11px] text-white hover:bg-white/5 cursor-pointer transition-all border-b border-white/5 last:border-0" data-value="${st.scode} - ${st.sname || ''}">
+                    <div class="font-bold">${st.scode}</div>
+                    ${st.sname ? `<div class="text-[9px] text-gray-500 truncate uppercase tracking-tighter">${st.sname}</div>` : ''}
+                </div>`;
+                count++;
+            }
+        });
+        
+        if (count === 0) {
+            html = `<div class="px-3 py-2.5 text-[10px] text-gray-500 text-center italic">No stores found</div>`;
+        }
+        
+        dropdown.innerHTML = html;
+        dropdown.classList.remove('hidden');
+    }
+
+    document.addEventListener('focusin', function(e) {
+        if (e.target.classList.contains('store-autocomplete')) {
+            renderStoreDropdown(e.target);
+        }
+    });
+
+    document.addEventListener('input', function(e) {
+        if (e.target.classList.contains('store-autocomplete')) {
+            renderStoreDropdown(e.target);
+        }
+    });
+
+    document.addEventListener('click', function(e) {
+        const opt = e.target.closest('.store-ac-option');
+        if (opt) {
+            const wrapper = opt.closest('.relative');
+            const input = wrapper.querySelector('.store-autocomplete');
+            if (input) {
+                input.value = opt.getAttribute('data-value').replace(/ - $/, ''); // Clean up trailing ' - ' if sname is empty
+                opt.closest('.store-dropdown').classList.add('hidden');
+                // Trigger change event if needed
+                input.dispatchEvent(new Event('change'));
+            }
+        } else if (!e.target.classList.contains('store-autocomplete')) {
+            document.querySelectorAll('.store-dropdown').forEach(d => d.classList.add('hidden'));
+        }
+    });
+    // ------------------------------------------
+
     window.refreshReceivingTable = refreshTable;
     initTableEvents();
 })();
