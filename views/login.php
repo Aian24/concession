@@ -87,7 +87,7 @@
             <!-- 1. Username -->
             <div>
                 <label class="block text-[10px] font-black text-purple-400 uppercase tracking-widest mb-1 ml-1">Username</label>
-                <input type="text" name="username" id="login-username" required class="input-modern w-full" placeholder="Enter username" autocomplete="username">
+                <input type="text" name="username" id="login-username" required class="input-modern w-full" placeholder="Enter username" autocomplete="username" value="<?= htmlspecialchars($remembered_username ?? '') ?>">
             </div>
 
             <!-- 2. Password -->
@@ -140,6 +140,19 @@
                 </div>
             </div>
 
+            <!-- Remember Me -->
+            <div class="flex items-center justify-between">
+                <label for="remember-me" class="flex items-center gap-2.5 cursor-pointer group select-none">
+                    <div class="relative flex items-center justify-center w-4 h-4">
+                        <input type="checkbox" name="remember_me" id="remember-me"
+                               class="peer w-4 h-4 appearance-none rounded border border-white/20 bg-slate-800 checked:bg-purple-600 checked:border-purple-600 transition-all cursor-pointer"
+                               <?= !empty($remembered_username) ? 'checked' : '' ?>>
+                        <i class="fas fa-check text-[7px] text-white absolute pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity"></i>
+                    </div>
+                    <span class="text-sm text-gray-400 group-hover:text-gray-300 transition-colors">Remember me</span>
+                </label>
+            </div>
+
             <button type="submit" name="login" id="login-btn" class="btn-primary w-full py-3 rounded-xl font-semibold text-lg hover:-translate-y-1 transition-transform shadow-lg shadow-purple-500/30">
                 Sign In
             </button>
@@ -166,6 +179,15 @@
             const storeLoadingOverlay = document.getElementById('store-loading-overlay');
             const loginBtn = document.getElementById('login-btn');
             const loginForm = document.getElementById('login-form');
+
+            // ── Pre-fill Remembered Store ────────────────────────────
+            const rememberedStoreCode = <?= json_encode($remembered_store_code ?? '') ?>;
+            if (rememberedStoreCode) {
+                const matchedOpt = storeItems.find(o => o.dataset.code === rememberedStoreCode);
+                if (matchedOpt) {
+                    selectStore(matchedOpt.dataset.code, matchedOpt.dataset.name, false);
+                }
+            }
 
             // --- Password Toggle ---
             if (togglePasswordBtn) {

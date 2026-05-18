@@ -2,6 +2,10 @@
 session_start();
 require_once 'includes/db.php';
 
+// ── Remember Me Cookies ──────────────────────────────────────
+$remembered_username   = $_COOKIE['remember_username']   ?? '';
+$remembered_store_code = $_COOKIE['remember_store_code'] ?? '';
+
 $action = $_GET['action'] ?? 'sale';
 
 // ── Logout ───────────────────────────────────────────────────
@@ -43,6 +47,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
             $_SESSION['avatar']     = $user['avatar'];
 
             $_SESSION['transaction_date'] = date('Y-m-d');
+
+            // ── Remember Me ───────────────────────────────────
+            if (!empty($_POST['remember_me'])) {
+                $cookie_expire = time() + (30 * 24 * 60 * 60); // 30 days
+                setcookie('remember_username',   $uname,      $cookie_expire, '/');
+                setcookie('remember_store_code', $store_code, $cookie_expire, '/');
+            } else {
+                setcookie('remember_username',   '', time() - 3600, '/');
+                setcookie('remember_store_code', '', time() - 3600, '/');
+            }
             
             if ($user['role'] === 'admin' || $user['role'] === 'admin_view' || $user['role'] === 'store_admin' || $uname === 'admin') {
                 header("Location: dashboard");
