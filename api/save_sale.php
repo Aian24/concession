@@ -50,6 +50,7 @@ foreach ($entries as $entry) {
 
     if ($stmt->execute()) {
         $saved++;
+        log_activity($db, $username, 'create', 'Sale', $store_code, $item_no, $quantity, "Created sale entry for item #$item_no");
     } else {
         $errors[] = "DB error for item '{$item_no}': " . $stmt->error;
     }

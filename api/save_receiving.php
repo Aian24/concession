@@ -38,6 +38,7 @@ foreach ($entries as $row) {
     $stmt->bind_param("sssssis", $username, $store_code, $os, $from, $to, $qty, $created_at);
     if ($stmt->execute()) {
         $success_count++;
+        log_activity($db, $username, 'create', 'Receiving', $store_code, $os, $qty, "Created receiving entry for OS #$os from $from");
     }
 }
 

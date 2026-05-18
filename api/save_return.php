@@ -72,6 +72,9 @@ foreach ($entries as $data) {
 
     if ($stmt->execute()) {
         $saved++;
+        $ref_item = ($return_item !== '') ? $return_item : ($ex_item !== '' ? $ex_item : 'Return Item');
+        $log_qty = ($qty > 0) ? $qty : ($ex_qty > 0 ? $ex_qty : 1);
+        log_activity($db, $username, 'create', 'Return', $store_code, $ref_item, $log_qty, "Created return/exchange entry for item #$ref_item");
     } else {
         $errors[] = $stmt->error;
     }

@@ -13,43 +13,63 @@ if (!$is_full_admin) {
 require_once 'includes/db.php';
 $db = db_connect();
 
+// Ensure table exists and is backpopulated (in case log_activity hasn't been called yet)
+$table_check = $db->query("SHOW TABLES LIKE 'activity_log'");
+if ($table_check && $table_check->num_rows === 0) {
+    $db->query("CREATE TABLE activity_log (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        username VARCHAR(100) NOT NULL,
+        action_type VARCHAR(50) NOT NULL,
+        module ENUM('Sale', 'Return', 'Receiving', 'Pullout') DEFAULT NULL,
+        store_code VARCHAR(50) DEFAULT NULL,
+        reference VARCHAR(150) DEFAULT NULL,
+        quantity INT NOT NULL DEFAULT 0,
+        details TEXT DEFAULT NULL,
+        description TEXT DEFAULT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_username (username),
+        INDEX idx_action_type (action_type),
+        INDEX idx_module (module),
+        INDEX idx_created_at (created_at)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
+
+    // Backpopulate existing entries as 'create' actions
+    $db->query("INSERT INTO activity_log (username, action_type, module, store_code, reference, quantity, details, created_at)
+        SELECT username, 'create', 'Sale', store_code, item_no, quantity, CONCAT('Created sale entry for item #', item_no), created_at FROM sales");
+    $db->query("INSERT INTO activity_log (username, action_type, module, store_code, reference, quantity, details, created_at)
+        SELECT username, 'create', 'Return', store_code, COALESCE(return_item, exchange_item, 'Return Item'), quantity, CONCAT('Created return/exchange entry for item #', COALESCE(return_item, exchange_item, 'Return Item')), created_at FROM returns");
+    $db->query("INSERT INTO activity_log (username, action_type, module, store_code, reference, quantity, details, created_at)
+        SELECT username, 'create', 'Receiving', store_code, os_no, quantity, CONCAT('Created receiving entry for OS #', os_no), created_at FROM receiving");
+    $db->query("INSERT INTO activity_log (username, action_type, module, store_code, reference, quantity, details, created_at)
+        SELECT username, 'create', 'Pullout', store_code, item_no, quantity, CONCAT('Created pullout entry for item #', item_no), created_at FROM pullouts");
+} else {
+    // Table exists, let's verify and alter if columns are missing
+    $cols = [];
+    $res = $db->query("DESCRIBE activity_log");
+    if ($res) {
+        while ($row = $res->fetch_assoc()) {
+            $cols[] = strtolower($row['Field']);
+        }
+    }
+    if (!in_array('module', $cols)) {
+        $db->query("ALTER TABLE activity_log ADD COLUMN module ENUM('Sale', 'Return', 'Receiving', 'Pullout') DEFAULT NULL AFTER action_type");
+    }
+    if (!in_array('reference', $cols)) {
+        $db->query("ALTER TABLE activity_log ADD COLUMN reference VARCHAR(150) DEFAULT NULL AFTER store_code");
+    }
+    if (!in_array('quantity', $cols)) {
+        $db->query("ALTER TABLE activity_log ADD COLUMN quantity INT NOT NULL DEFAULT 0 AFTER reference");
+    }
+    if (!in_array('details', $cols)) {
+        $db->query("ALTER TABLE activity_log ADD COLUMN details TEXT DEFAULT NULL AFTER quantity");
+    }
+}
+
 // Fetch activities from the last 7 days across all transaction tables
 $query = "
-    (SELECT 'Sale' COLLATE utf8mb4_unicode_ci as type, 
-            username COLLATE utf8mb4_unicode_ci as username, 
-            store_code COLLATE utf8mb4_unicode_ci as store_code, 
-            created_at, 
-            item_no COLLATE utf8mb4_unicode_ci as reference, 
-            quantity 
-     FROM sales 
-     WHERE created_at >= DATE_SUB(NOW(), INTERVAL 1 WEEK))
-    UNION ALL
-    (SELECT 'Return' COLLATE utf8mb4_unicode_ci as type, 
-            username COLLATE utf8mb4_unicode_ci as username, 
-            store_code COLLATE utf8mb4_unicode_ci as store_code, 
-            created_at, 
-            return_item COLLATE utf8mb4_unicode_ci as reference, 
-            quantity 
-     FROM returns 
-     WHERE created_at >= DATE_SUB(NOW(), INTERVAL 1 WEEK))
-    UNION ALL
-    (SELECT 'Receiving' COLLATE utf8mb4_unicode_ci as type, 
-            username COLLATE utf8mb4_unicode_ci as username, 
-            store_code COLLATE utf8mb4_unicode_ci as store_code, 
-            created_at, 
-            os_no COLLATE utf8mb4_unicode_ci as reference, 
-            quantity 
-     FROM receiving 
-     WHERE created_at >= DATE_SUB(NOW(), INTERVAL 1 WEEK))
-    UNION ALL
-    (SELECT 'Pullout' COLLATE utf8mb4_unicode_ci as type, 
-            username COLLATE utf8mb4_unicode_ci as username, 
-            store_code COLLATE utf8mb4_unicode_ci as store_code, 
-            created_at, 
-            item_no COLLATE utf8mb4_unicode_ci as reference, 
-            quantity 
-     FROM pullouts 
-     WHERE created_at >= DATE_SUB(NOW(), INTERVAL 1 WEEK))
+    SELECT module AS type, action_type, username, store_code, created_at, reference, quantity, details 
+    FROM activity_log 
+    WHERE created_at >= DATE_SUB(NOW(), INTERVAL 1 WEEK)
     ORDER BY created_at DESC
 ";
 
@@ -143,15 +163,16 @@ while ($row = $stores_res->fetch_assoc()) {
                         <th class="px-6 py-4 text-[10px] font-black text-purple-400 uppercase tracking-[0.2em] border-b border-white/5">Timestamp</th>
                         <th class="px-6 py-4 text-[10px] font-black text-purple-400 uppercase tracking-[0.2em] border-b border-white/5">User</th>
                         <th class="px-6 py-4 text-[10px] font-black text-purple-400 uppercase tracking-[0.2em] border-b border-white/5">Store</th>
-                        <th class="px-6 py-4 text-[10px] font-black text-purple-400 uppercase tracking-[0.2em] border-b border-white/5">Transaction</th>
+                        <th class="px-6 py-4 text-[10px] font-black text-purple-400 uppercase tracking-[0.2em] border-b border-white/5">Action / Module</th>
                         <th class="px-6 py-4 text-[10px] font-black text-purple-400 uppercase tracking-[0.2em] border-b border-white/5">Reference</th>
+                        <th class="px-6 py-4 text-[10px] font-black text-purple-400 uppercase tracking-[0.2em] border-b border-white/5">Details</th>
                         <th class="px-6 py-4 text-[10px] font-black text-purple-400 uppercase tracking-[0.2em] border-b border-white/5 text-right">Qty</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-white/5">
                     <?php if (empty($activities)): ?>
                         <tr>
-                            <td colspan="6" class="px-6 py-20 text-center">
+                            <td colspan="7" class="px-6 py-20 text-center">
                                 <div class="flex flex-col items-center">
                                     <div class="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center mb-4 border border-white/5">
                                         <i class="fas fa-history text-gray-600 text-xl"></i>
@@ -166,9 +187,14 @@ while ($row = $stores_res->fetch_assoc()) {
                                 'Sale'      => 'bg-green-500/10 text-green-400 border-green-500/20',
                                 'Return'    => 'bg-red-500/10 text-red-400 border-red-500/20',
                                 'Receiving' => 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
-                                'Pullout'   => 'bg-amber-500/10 text-amber-400 border-amber-500/20',
-                                'Supplies'  => 'bg-purple-500/10 text-purple-400 border-purple-500/20'
+                                'Pullout'   => 'bg-amber-500/10 text-amber-400 border-amber-500/20'
                             ][$act['type']] ?? 'bg-slate-500/10 text-slate-400 border-slate-500/20';
+
+                            $action_badge = [
+                                'create' => 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+                                'edit'   => 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+                                'delete' => 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                            ][$act['action_type']] ?? 'bg-slate-500/10 text-slate-400 border-slate-500/20';
 
                             $date = new DateTime($act['created_at']);
                         ?>
@@ -193,13 +219,21 @@ while ($row = $stores_res->fetch_assoc()) {
                                         <span class="text-[9px] text-gray-500 font-black tracking-widest"><?= htmlspecialchars($act['store_code']) ?></span>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4" data-label="Transaction">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border <?= $type_color ?>">
-                                        <?= $act['type'] ?>
-                                    </span>
+                                <td class="px-6 py-4" data-label="Action / Module">
+                                    <div class="flex flex-col gap-1 items-start">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border <?= $type_color ?>">
+                                            <?= $act['type'] ?>
+                                        </span>
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border <?= $action_badge ?>">
+                                            <?= $act['action_type'] ?>
+                                        </span>
+                                    </div>
                                 </td>
                                 <td class="px-6 py-4" data-label="Reference">
                                     <span class="text-xs font-mono text-purple-300/80"><?= htmlspecialchars($act['reference']) ?></span>
+                                </td>
+                                <td class="px-6 py-4" data-label="Details">
+                                    <span class="text-xs text-gray-300 font-medium whitespace-normal break-words inline-block max-w-xs"><?= htmlspecialchars($act['details'] ?: 'Transaction recorded') ?></span>
                                 </td>
                                 <td class="px-6 py-4 text-right" data-label="Qty">
                                     <span class="text-xs font-black text-white"><?= number_format($act['quantity']) ?></span>

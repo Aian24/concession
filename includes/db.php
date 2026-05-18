@@ -61,3 +61,68 @@ function db_connect(): mysqli {
 
     return $conn;
 }
+
+/**
+ * Log user activity in a unified audit trail table
+ */
+function log_activity(mysqli $db, string $username, string $action_type, string $module, string $store_code, string $reference, int $quantity, ?string $details = null): bool {
+    // Auto-create and backpopulate if table does not exist
+    $table_check = $db->query("SHOW TABLES LIKE 'activity_log'");
+    if ($table_check && $table_check->num_rows === 0) {
+        $db->query("CREATE TABLE activity_log (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            username VARCHAR(100) NOT NULL,
+            action_type VARCHAR(50) NOT NULL,
+            module ENUM('Sale', 'Return', 'Receiving', 'Pullout') DEFAULT NULL,
+            store_code VARCHAR(50) DEFAULT NULL,
+            reference VARCHAR(150) DEFAULT NULL,
+            quantity INT NOT NULL DEFAULT 0,
+            details TEXT DEFAULT NULL,
+            description TEXT DEFAULT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_username (username),
+            INDEX idx_action_type (action_type),
+            INDEX idx_module (module),
+            INDEX idx_created_at (created_at)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
+
+        // Backpopulate existing entries as 'create' actions
+        $db->query("INSERT INTO activity_log (username, action_type, module, store_code, reference, quantity, details, created_at)
+            SELECT username, 'create', 'Sale', store_code, item_no, quantity, CONCAT('Created sale entry for item #', item_no), created_at FROM sales");
+        $db->query("INSERT INTO activity_log (username, action_type, module, store_code, reference, quantity, details, created_at)
+            SELECT username, 'create', 'Return', store_code, COALESCE(return_item, exchange_item, 'Return Item'), quantity, CONCAT('Created return/exchange entry for item #', COALESCE(return_item, exchange_item, 'Return Item')), created_at FROM returns");
+        $db->query("INSERT INTO activity_log (username, action_type, module, store_code, reference, quantity, details, created_at)
+            SELECT username, 'create', 'Receiving', store_code, os_no, quantity, CONCAT('Created receiving entry for OS #', os_no), created_at FROM receiving");
+        $db->query("INSERT INTO activity_log (username, action_type, module, store_code, reference, quantity, details, created_at)
+            SELECT username, 'create', 'Pullout', store_code, item_no, quantity, CONCAT('Created pullout entry for item #', item_no), created_at FROM pullouts");
+    } else {
+        // Table exists, let's verify and alter if columns are missing
+        $cols = [];
+        $res = $db->query("DESCRIBE activity_log");
+        if ($res) {
+            while ($row = $res->fetch_assoc()) {
+                $cols[] = strtolower($row['Field']);
+            }
+        }
+        if (!in_array('module', $cols)) {
+            $db->query("ALTER TABLE activity_log ADD COLUMN module ENUM('Sale', 'Return', 'Receiving', 'Pullout') DEFAULT NULL AFTER action_type");
+        }
+        if (!in_array('reference', $cols)) {
+            $db->query("ALTER TABLE activity_log ADD COLUMN reference VARCHAR(150) DEFAULT NULL AFTER store_code");
+        }
+        if (!in_array('quantity', $cols)) {
+            $db->query("ALTER TABLE activity_log ADD COLUMN quantity INT NOT NULL DEFAULT 0 AFTER reference");
+        }
+        if (!in_array('details', $cols)) {
+            $db->query("ALTER TABLE activity_log ADD COLUMN details TEXT DEFAULT NULL AFTER quantity");
+        }
+    }
+
+    $stmt = $db->prepare("INSERT INTO activity_log (username, action_type, module, store_code, reference, quantity, details) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    if (!$stmt) return false;
+    $stmt->bind_param("sssssis", $username, $action_type, $module, $store_code, $reference, $quantity, $details);
+    $ok = $stmt->execute();
+    $stmt->close();
+    return $ok;
+}
+

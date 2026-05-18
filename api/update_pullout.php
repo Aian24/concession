@@ -33,7 +33,24 @@ if (!empty($created_at)) {
     $stmt->bind_param("sii", $item_no, $quantity, $id);
 }
 
+// Fetch original record for logging
+$old_res = $db->query("SELECT store_code, item_no, quantity FROM pullouts WHERE id = " . intval($id));
+$old_row = $old_res ? $old_res->fetch_assoc() : null;
+$store_code = $old_row ? $old_row['store_code'] : '';
+$old_qty = $old_row ? $old_row['quantity'] : 0;
+$old_item = $old_row ? $old_row['item_no'] : '';
+
 if ($stmt->execute()) {
+    log_activity(
+        $db, 
+        $_SESSION['user'], 
+        'edit', 
+        'Pullout', 
+        $store_code, 
+        $item_no, 
+        $quantity, 
+        "Edited Pullout #$id: Changed item from '$old_item' to '$item_no', qty from $old_qty to $quantity"
+    );
     echo json_encode(['success' => true, 'message' => 'Record updated successfully.']);
 } else {
     echo json_encode(['success' => false, 'message' => 'Failed to update record.']);

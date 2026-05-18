@@ -42,7 +42,25 @@ if (!empty($created_at)) {
     $stmt->bind_param("sidsissidi", $return_item, $qty, $return_amount, $reason, $is_exchange, $ex_name, $ex_item, $ex_qty, $ex_amount, $id);
 }
 
+// Fetch original record for logging
+$old_res = $db->query("SELECT store_code, return_item, exchange_item, quantity FROM returns WHERE id = " . intval($id));
+$old_row = $old_res ? $old_res->fetch_assoc() : null;
+$store_code = $old_row ? $old_row['store_code'] : '';
+$old_qty = $old_row ? $old_row['quantity'] : 0;
+$old_item = $old_row ? ($old_row['return_item'] ?: $old_row['exchange_item']) : '';
+
 if ($stmt->execute()) {
+    $ref_item = ($return_item !== '') ? $return_item : ($ex_item !== '' ? $ex_item : 'Return Item');
+    log_activity(
+        $db, 
+        $_SESSION['user'], 
+        'edit', 
+        'Return', 
+        $store_code, 
+        $ref_item, 
+        $qty, 
+        "Edited Return #$id: Changed item from '$old_item' to '$ref_item', qty from $old_qty to $qty"
+    );
     echo json_encode(['success' => true, 'message' => 'Record updated successfully.']);
 } else {
     echo json_encode(['success' => false, 'message' => 'Failed to update record.']);

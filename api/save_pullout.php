@@ -74,6 +74,7 @@ foreach ($entries as $index => $row) {
     
     if ($stmt->execute()) {
         $success_count++;
+        log_activity($db, $username, 'create', 'Pullout', $store_code, $item_no, $quantity, "Created pullout entry for item #$item_no");
     }
 }
 

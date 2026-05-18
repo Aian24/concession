@@ -48,10 +48,50 @@ if ($table === 'pullouts') {
     }
 }
 
+// Fetch original records BEFORE deleting
+$records_to_log = [];
+$module_name = '';
+if (in_array($table, ['sales', 'receiving', 'returns', 'pullouts'])) {
+    $module_map = [
+        'sales' => 'Sale',
+        'receiving' => 'Receiving',
+        'returns' => 'Return',
+        'pullouts' => 'Pullout'
+    ];
+    $module_name = $module_map[$table];
+    
+    // Choose correct reference column based on table
+    $ref_col = 'item_no';
+    if ($table === 'receiving') $ref_col = 'os_no';
+    elseif ($table === 'returns') $ref_col = 'COALESCE(return_item, exchange_item, \'Return Item\')';
+    
+    $old_res = $db->query("SELECT id, store_code, $ref_col AS reference, quantity FROM `$table` WHERE id IN ($id_list)");
+    if ($old_res) {
+        while ($row = $old_res->fetch_assoc()) {
+            $records_to_log[] = $row;
+        }
+    }
+}
+
 $query = "DELETE FROM `$table` WHERE id IN ($id_list) $extra_where";
 
 if ($db->query($query)) {
     $affected = $db->affected_rows;
+    // Log activity for each deleted record
+    if (!empty($records_to_log)) {
+        foreach ($records_to_log as $r) {
+            log_activity(
+                $db,
+                $_SESSION['user'],
+                'delete',
+                $module_name,
+                $r['store_code'],
+                $r['reference'],
+                $r['quantity'],
+                "Bulk Deleted $module_name #{$r['id']}: Item '{$r['reference']}', quantity {$r['quantity']}"
+            );
+        }
+    }
     echo json_encode(['success' => true, 'message' => "$affected records successfully removed."]);
 } else {
     echo json_encode(['success' => false, 'message' => 'Database error: ' . $db->error]);
