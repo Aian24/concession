@@ -55,7 +55,7 @@
         }
     </style>
 </head>
-<body class="bg-slate-900 bg-[url('images/bg.png')] bg-cover bg-center bg-no-repeat bg-fixed text-white font-outfit min-h-screen min-h-[100dvh] flex items-center justify-center relative overflow-x-hidden overflow-y-auto">
+<body class="bg-slate-900 bg-[url('images/bg.png')] bg-cover bg-center bg-no-repeat bg-fixed text-white font-outfit min-h-screen min-h-[100dvh] flex items-center justify-center relative overflow-hidden">
 
 
     <!-- Animated background glowing orbs -->
@@ -141,17 +141,20 @@
             </div>
 
             <!-- Remember Me -->
-            <div class="flex items-center justify-between">
-                <label for="remember-me" class="flex items-center gap-2.5 cursor-pointer group select-none">
-                    <div class="relative flex items-center justify-center w-4 h-4">
-                        <input type="checkbox" name="remember_me" id="remember-me"
-                               class="peer w-4 h-4 appearance-none rounded border border-white/20 bg-slate-800 checked:bg-purple-600 checked:border-purple-600 transition-all cursor-pointer"
-                               <?= !empty($remembered_username) ? 'checked' : '' ?>>
-                        <i class="fas fa-check text-[7px] text-white absolute pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity"></i>
-                    </div>
-                    <span class="text-sm text-gray-400 group-hover:text-gray-300 transition-colors">Remember me</span>
-                </label>
-            </div>
+            <label for="remember-me" class="flex items-center gap-2.5 cursor-pointer group select-none">
+                <div id="remember-toggle"
+                     class="flex items-center justify-center rounded transition-all flex-shrink-0"
+                     style="width:1rem; height:1rem; min-width:1rem; min-height:1rem;
+                            border: 1px solid rgba(255,255,255,0.2);
+                            background:<?= !empty($remembered_username) ? 'rgb(147,51,234)' : '#1e293b' ?>;
+                            border-color:<?= !empty($remembered_username) ? 'rgb(147,51,234)' : 'rgba(255,255,255,0.2)' ?>;">
+                    <i id="remember-check-icon"
+                       class="fas fa-check text-white"
+                       style="font-size:7px; opacity:<?= !empty($remembered_username) ? '1' : '0' ?>; transition:opacity .15s;"></i>
+                </div>
+                <input type="checkbox" name="remember_me" id="remember-me" class="sr-only" <?= !empty($remembered_username) ? 'checked' : '' ?>>
+                <span class="text-sm text-gray-400 group-hover:text-gray-300 transition-colors">Remember me</span>
+            </label>
 
             <button type="submit" name="login" id="login-btn" class="btn-primary w-full py-3 rounded-xl font-semibold text-lg hover:-translate-y-1 transition-transform shadow-lg shadow-purple-500/30">
                 Sign In
@@ -188,6 +191,25 @@
                     selectStore(matchedOpt.dataset.code, matchedOpt.dataset.name, false);
                 }
             }
+
+            // ── Remember Me Toggle ───────────────────────────────────
+            const rememberCb     = document.getElementById('remember-me');
+            const rememberToggle = document.getElementById('remember-toggle');
+            const rememberIcon   = document.getElementById('remember-check-icon');
+
+            function syncRememberUI() {
+                if (rememberCb.checked) {
+                    rememberToggle.style.backgroundColor = 'rgb(147,51,234)';
+                    rememberToggle.style.borderColor     = 'rgb(147,51,234)';
+                    rememberIcon.style.opacity           = '1';
+                } else {
+                    rememberToggle.style.backgroundColor = '#1e293b';
+                    rememberToggle.style.borderColor     = 'rgba(255,255,255,0.2)';
+                    rememberIcon.style.opacity           = '0';
+                }
+            }
+
+            if (rememberCb) rememberCb.addEventListener('change', syncRememberUI);
 
             // --- Password Toggle ---
             if (togglePasswordBtn) {
