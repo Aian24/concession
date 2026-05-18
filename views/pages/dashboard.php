@@ -219,89 +219,89 @@ if (!function_exists('time_elapsed_string')) {
     </form>
 </div>
 
-<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6 mb-8">
+<div class="grid grid-cols-2 md:grid-cols-3 min-[1400px]:grid-cols-6 gap-4 min-[1400px]:gap-6 mb-8">
     <!-- Stats Cards -->
-    <div class="glass-panel p-6 border border-white/5 relative overflow-hidden group hover:border-purple-500/30 transition-all duration-500">
+    <div class="glass-panel p-4 sm:p-5 xl:p-6 border border-white/5 relative overflow-hidden group hover:border-purple-500/30 transition-all duration-500">
         <div class="absolute -right-4 -top-4 w-24 h-24 bg-purple-500/10 rounded-full blur-2xl group-hover:bg-purple-500/20 transition-all"></div>
-        <div class="flex items-center gap-4 mb-4">
-            <div class="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-400 border border-purple-500/20 shadow-lg shadow-purple-500/5">
-                <i class="fas fa-shopping-bag text-xl"></i>
+        <div class="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-400 border border-purple-500/20 shadow-lg shadow-purple-500/5">
+                <i class="fas fa-shopping-bag text-lg sm:text-xl"></i>
             </div>
-            <h3 class="text-xs font-black text-gray-500 uppercase tracking-[0.2em]">Sales</h3>
+            <h3 class="text-[10px] sm:text-xs font-black text-gray-500 uppercase tracking-widest sm:tracking-[0.2em] truncate" title="Sales">Sales</h3>
         </div>
-        <p class="text-xl md:text-2xl font-bold text-white mb-1">₱<?= number_format($total_sales, 2) ?></p>
+        <p class="text-lg sm:text-xl min-[1400px]:text-lg xl:text-xl 2xl:text-2xl font-bold text-white mb-1 truncate" title="₱<?= number_format($total_sales, 2) ?>">₱<?= number_format($total_sales, 2) ?></p>
         <div class="flex items-center gap-2">
-            <span class="text-[10px] font-bold text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-full uppercase"><?= number_format($total_sales_count) ?> Trans</span>
+            <span class="text-[10px] font-bold text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-full uppercase truncate"><?= number_format($total_sales_count) ?> Trans</span>
         </div>
     </div>
 
-    <div class="glass-panel p-6 border border-white/5 relative overflow-hidden group hover:border-pink-500/30 transition-all duration-500">
+    <div class="glass-panel p-4 sm:p-5 xl:p-6 border border-white/5 relative overflow-hidden group hover:border-pink-500/30 transition-all duration-500">
         <div class="absolute -right-4 -top-4 w-24 h-24 bg-pink-500/10 rounded-full blur-2xl group-hover:bg-pink-500/20 transition-all"></div>
-        <div class="flex items-center gap-4 mb-4">
-            <div class="w-12 h-12 rounded-2xl bg-pink-500/10 flex items-center justify-center text-pink-400 border border-pink-500/20 shadow-lg shadow-pink-500/5">
-                <i class="fas fa-box text-xl"></i>
+        <div class="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-pink-500/10 flex items-center justify-center text-pink-400 border border-pink-500/20 shadow-lg shadow-pink-500/5">
+                <i class="fas fa-box text-lg sm:text-xl"></i>
             </div>
-            <h3 class="text-xs font-black text-gray-500 uppercase tracking-[0.2em]">Total Quantity</h3>
+            <h3 class="text-[10px] sm:text-xs font-black text-gray-500 uppercase tracking-widest sm:tracking-[0.2em] truncate" title="Total Quantity">Total Quantity</h3>
         </div>
-        <p class="text-xl md:text-2xl font-bold text-white mb-1"><?= number_format($total_sales_qty) ?></p>
+        <p class="text-lg sm:text-xl min-[1400px]:text-lg xl:text-xl 2xl:text-2xl font-bold text-white mb-1 truncate" title="<?= number_format($total_sales_qty) ?>"><?= number_format($total_sales_qty) ?></p>
         <div class="flex items-center gap-2">
-            <span class="text-[10px] font-bold text-pink-400 bg-pink-500/10 px-2 py-0.5 rounded-full uppercase">Quantity Sold</span>
+            <span class="text-[10px] font-bold text-pink-400 bg-pink-500/10 px-2 py-0.5 rounded-full uppercase truncate">Quantity Sold</span>
         </div>
     </div>
 
-    <div class="glass-panel p-6 border border-white/5 relative overflow-hidden group hover:border-blue-500/30 transition-all duration-500">
+    <div class="glass-panel p-4 sm:p-5 xl:p-6 border border-white/5 relative overflow-hidden group hover:border-blue-500/30 transition-all duration-500">
         <div class="absolute -right-4 -top-4 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-all"></div>
-        <div class="flex items-center gap-4 mb-4">
-            <div class="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-400 border border-blue-500/20 shadow-lg shadow-blue-500/5">
-                <i class="fas fa-undo-alt text-xl"></i>
+        <div class="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-400 border border-blue-500/20 shadow-lg shadow-blue-500/5">
+                <i class="fas fa-undo-alt text-lg sm:text-xl"></i>
             </div>
-            <h3 class="text-xs font-black text-gray-500 uppercase tracking-[0.2em]">Returns</h3>
+            <h3 class="text-[10px] sm:text-xs font-black text-gray-500 uppercase tracking-widest sm:tracking-[0.2em] truncate" title="Returns">Returns</h3>
         </div>
-        <p class="text-xl md:text-2xl font-bold text-white mb-1"><?= number_format($total_returns_count) ?></p>
+        <p class="text-lg sm:text-xl min-[1400px]:text-lg xl:text-xl 2xl:text-2xl font-bold text-white mb-1 truncate" title="<?= number_format($total_returns_count) ?>"><?= number_format($total_returns_count) ?></p>
         <div class="flex items-center gap-2">
-            <span class="text-[10px] font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full uppercase">₱<?= number_format($total_returns, 0) ?></span>
+            <span class="text-[10px] font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full uppercase truncate">₱<?= number_format($total_returns, 0) ?></span>
         </div>
     </div>
 
-    <div class="glass-panel p-6 border border-white/5 relative overflow-hidden group hover:border-emerald-500/30 transition-all duration-500">
+    <div class="glass-panel p-4 sm:p-5 xl:p-6 border border-white/5 relative overflow-hidden group hover:border-emerald-500/30 transition-all duration-500">
         <div class="absolute -right-4 -top-4 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition-all"></div>
-        <div class="flex items-center gap-4 mb-4">
-            <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 border border-emerald-500/20 shadow-lg shadow-emerald-500/5">
-                <i class="fas fa-truck-loading text-xl"></i>
+        <div class="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 border border-emerald-500/20 shadow-lg shadow-emerald-500/5">
+                <i class="fas fa-truck-loading text-lg sm:text-xl"></i>
             </div>
-            <h3 class="text-xs font-black text-gray-500 uppercase tracking-[0.2em]">Received</h3>
+            <h3 class="text-[10px] sm:text-xs font-black text-gray-500 uppercase tracking-widest sm:tracking-[0.2em] truncate" title="Received">Received</h3>
         </div>
-        <p class="text-xl md:text-2xl font-bold text-white mb-1"><?= number_format($total_received_qty) ?></p>
+        <p class="text-lg sm:text-xl min-[1400px]:text-lg xl:text-xl 2xl:text-2xl font-bold text-white mb-1 truncate" title="<?= number_format($total_received_qty) ?>"><?= number_format($total_received_qty) ?></p>
         <div class="flex items-center gap-2">
-            <span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full uppercase"><?= number_format($receiving_count) ?> Batch</span>
+            <span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full uppercase truncate"><?= number_format($receiving_count) ?> Batch</span>
         </div>
     </div>
 
-    <div class="glass-panel p-6 border border-white/5 relative overflow-hidden group hover:border-amber-500/30 transition-all duration-500">
+    <div class="glass-panel p-4 sm:p-5 xl:p-6 border border-white/5 relative overflow-hidden group hover:border-amber-500/30 transition-all duration-500">
         <div class="absolute -right-4 -top-4 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl group-hover:bg-amber-500/20 transition-all"></div>
-        <div class="flex items-center gap-4 mb-4">
-            <div class="w-12 h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-400 border border-amber-500/20 shadow-lg shadow-amber-500/5">
-                <i class="fas fa-store text-xl"></i>
+        <div class="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-400 border border-amber-500/20 shadow-lg shadow-amber-500/5">
+                <i class="fas fa-store text-lg sm:text-xl"></i>
             </div>
-            <h3 class="text-xs font-black text-gray-500 uppercase tracking-[0.2em]">Stores</h3>
+            <h3 class="text-[10px] sm:text-xs font-black text-gray-500 uppercase tracking-widest sm:tracking-[0.2em] truncate" title="Stores">Stores</h3>
         </div>
-        <p class="text-xl md:text-2xl font-bold text-white mb-1"><?= number_format($total_stores) ?></p>
+        <p class="text-lg sm:text-xl min-[1400px]:text-lg xl:text-xl 2xl:text-2xl font-bold text-white mb-1 truncate" title="<?= number_format($total_stores) ?>"><?= number_format($total_stores) ?></p>
         <div class="flex items-center gap-2">
-            <span class="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full uppercase">Total</span>
+            <span class="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full uppercase truncate">Total</span>
         </div>
     </div>
 
-    <div class="glass-panel p-6 border border-white/5 relative overflow-hidden group hover:border-orange-500/30 transition-all duration-500">
+    <div class="glass-panel p-4 sm:p-5 xl:p-6 border border-white/5 relative overflow-hidden group hover:border-orange-500/30 transition-all duration-500">
         <div class="absolute -right-4 -top-4 w-24 h-24 bg-orange-500/10 rounded-full blur-2xl group-hover:bg-orange-500/20 transition-all"></div>
-        <div class="flex items-center gap-4 mb-4">
-            <div class="w-12 h-12 rounded-2xl bg-orange-500/10 flex items-center justify-center text-orange-400 border border-orange-500/20 shadow-lg shadow-orange-500/5">
-                <i class="fas fa-signal text-xl"></i>
+        <div class="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-orange-500/10 flex items-center justify-center text-orange-400 border border-orange-500/20 shadow-lg shadow-orange-500/5">
+                <i class="fas fa-signal text-lg sm:text-xl"></i>
             </div>
-            <h3 class="text-xs font-black text-gray-500 uppercase tracking-[0.2em]">Activity</h3>
+            <h3 class="text-[10px] sm:text-xs font-black text-gray-500 uppercase tracking-widest sm:tracking-[0.2em] truncate" title="Activity">Activity</h3>
         </div>
-        <p class="text-xl md:text-2xl font-bold text-white mb-1"><?= number_format($active_stores_count) ?><span class="text-lg text-gray-500 font-medium">/<?= number_format($total_stores) ?></span></p>
+        <p class="text-lg sm:text-xl min-[1400px]:text-lg xl:text-xl 2xl:text-2xl font-bold text-white mb-1 truncate" title="<?= number_format($active_stores_count) ?>/<?= number_format($total_stores) ?>"><?= number_format($active_stores_count) ?><span class="text-sm text-gray-500 font-medium">/<?= number_format($total_stores) ?></span></p>
         <div class="flex items-center gap-2">
-            <span class="text-[10px] font-bold text-orange-400 bg-orange-500/10 px-2 py-0.5 rounded-full uppercase">Active vs Total</span>
+            <span class="text-[10px] font-bold text-orange-400 bg-orange-500/10 px-2 py-0.5 rounded-full uppercase truncate">Active vs Total</span>
         </div>
     </div>
 </div>
