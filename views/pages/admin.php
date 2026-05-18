@@ -189,8 +189,13 @@ if (isset($_GET['edit'])) {
                     <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">
                         <?= $editUser ? 'New Password (leave blank to keep)' : 'Password' ?>
                     </label>
-                    <input type="password" name="password" <?= $editUser ? '' : 'required' ?> class="input-modern w-full" 
-                           placeholder="<?= $editUser ? '••••••••' : 'Enter password' ?>">
+                    <div class="relative">
+                        <input type="password" name="password" id="user-password" <?= $editUser ? '' : 'required' ?> class="input-modern w-full pr-12" 
+                               placeholder="<?= $editUser ? '••••••••' : 'Enter password' ?>">
+                        <button type="button" id="toggle-user-password" class="absolute right-0 top-0 h-full px-4 text-gray-500 hover:text-purple-400 transition-colors focus:outline-none">
+                            <i class="fas fa-eye text-sm" id="user-eye-icon"></i>
+                        </button>
+                    </div>
                 </div>
                 
 
@@ -367,6 +372,20 @@ if (isset($_GET['edit'])) {
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
+    // Password visibility toggle
+    const passwordInput = document.getElementById('user-password');
+    const togglePasswordBtn = document.getElementById('toggle-user-password');
+    const eyeIcon = document.getElementById('user-eye-icon');
+    
+    if (togglePasswordBtn && passwordInput) {
+        togglePasswordBtn.addEventListener('click', () => {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            eyeIcon.classList.toggle('fa-eye');
+            eyeIcon.classList.toggle('fa-eye-slash');
+        });
+    }
+
     const tableBody = document.querySelector('.glass-table tbody');
     if (!tableBody) return;
 
