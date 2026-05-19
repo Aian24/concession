@@ -282,7 +282,7 @@
             $nav_items['sale']       = ['icon' => 'fa-shopping-cart',  'title' => 'Sale'];
             $nav_items['return']     = ['icon' => 'fa-undo',           'title' => 'Return'];
             $nav_items['receiving']  = ['icon' => 'fa-box-open',       'title' => 'Receiving'];
-            $nav_items['pullout']    = ['icon' => 'fa-arrow-right-from-bracket', 'title' => 'Pullout'];
+            // $nav_items['pullout']    = ['icon' => 'fa-arrow-right-from-bracket', 'title' => 'Pullout'];
             $nav_items['ros_supplies'] = ['icon' => 'fa-boxes-stacked','title' => 'ROS Supplies'];
             
             if ($is_full_admin) {
