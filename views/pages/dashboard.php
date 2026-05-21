@@ -189,7 +189,7 @@ if (!function_exists('time_elapsed_string')) {
                 </div>
 
                 <!-- Custom Menu -->
-                <div id="store-filter-menu" class="absolute top-[calc(100%+4px)] left-0 right-0 bg-[#0f172a] border border-white/10 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[100] hidden max-h-64 overflow-y-auto overflow-x-hidden backdrop-blur-xl">
+                <div id="store-filter-menu" class="absolute top-[calc(100%+4px)] right-0 min-w-[280px] w-full bg-[#0f172a] border border-white/10 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[100] hidden max-h-64 overflow-y-auto overflow-x-hidden backdrop-blur-xl">
                     <div class="sticky top-0 bg-[#0f172a] p-2 border-b border-white/5 z-20">
                         <input type="text" id="store-search-filter" class="w-full bg-slate-900 border border-white/10 rounded-lg px-3 py-1.5 text-[10px] text-white focus:outline-none focus:border-amber-500/50" placeholder="Search store..." autocomplete="off">
                     </div>
@@ -203,7 +203,7 @@ if (!function_exists('time_elapsed_string')) {
                         <div class="store-option px-3 py-2.5 text-[11px] text-white hover:bg-white/5 cursor-pointer flex justify-between items-center transition-all border-b border-white/5 last:border-0 <?= $sel ? 'bg-amber-500/10' : '' ?>" 
                              data-value="<?= htmlspecialchars($st['scode']) ?>" 
                              data-label="<?= htmlspecialchars($displayName) ?>">
-                            <div class="flex flex-col truncate">
+                            <div class="flex flex-col min-w-0 flex-1">
                                 <span class="font-bold truncate"><?= htmlspecialchars($st['scode']) ?></span>
                                 <span class="text-[9px] text-gray-500 truncate uppercase tracking-tighter"><?= htmlspecialchars($st['sname']) ?></span>
                             </div>
