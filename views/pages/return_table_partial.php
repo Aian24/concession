@@ -300,7 +300,7 @@ if (!isset($can_delete)) {
                             <?php endif; ?>
                         </td>
                         <td class="px-5 py-3.5 text-center" data-label="Reason">
-                            <span class="text-gray-300 text-xs truncate max-w-[100px] inline-block md:mx-auto" title="<?= htmlspecialchars($r['reason'] ?: '—') ?>">
+                            <span class="text-gray-300 text-xs md:mx-auto whitespace-normal break-words break-all w-full min-w-0 inline-block" title="<?= htmlspecialchars($r['reason'] ?: '—') ?>">
                                 <?= htmlspecialchars($r['reason'] ?: '—') ?>
                             </span>
                         </td>
