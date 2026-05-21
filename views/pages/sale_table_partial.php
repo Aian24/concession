@@ -306,7 +306,13 @@ if (!isset($can_delete)) {
                                 <span class="text-gray-300 text-xs"><?= htmlspecialchars($s['username']) ?></span>
                             </span>
                         </td>
-                        <td class="px-5 py-3.5 text-gray-300 text-[11px] text-center font-medium tracking-tight whitespace-nowrap" data-label="Date" data-date="<?= date('Y-m-d', strtotime($s['created_at'])) ?>"><?= date('M d, Y • h:i A', strtotime($s['created_at'])) ?></td>
+                        <td class="px-5 py-3.5 text-center" data-label="Date" data-date="<?= date('Y-m-d', strtotime($s['created_at'])) ?>">
+                            <div class="flex flex-col md:flex-row md:items-center justify-center gap-0.5 md:gap-1">
+                                <span class="text-gray-300 text-[11px] font-medium whitespace-nowrap"><?= date('M d, Y', strtotime($s['created_at'])) ?></span>
+                                <span class="hidden md:inline text-gray-500 font-bold">•</span>
+                                <span class="text-gray-400 text-[9px] md:text-[11px] font-bold whitespace-nowrap"><?= date('h:i A', strtotime($s['created_at'])) ?></span>
+                            </div>
+                        </td>
                         <td class="px-5 py-3.5 text-center" data-label="Status">
                             <?php if ($s['is_exported']): ?>
                                 <div class="w-6 h-6 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center text-green-400 mx-auto" title="Already Exported">

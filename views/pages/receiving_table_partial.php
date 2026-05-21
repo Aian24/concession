@@ -369,8 +369,12 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
                                 <span class="text-gray-400 text-xs font-medium"><?= htmlspecialchars($r['username']) ?></span>
                             </div>
                         </td>
-                        <td class="px-5 py-3.5 text-center text-gray-500 text-[11px] font-medium tracking-tight whitespace-nowrap" data-label="Date Received" data-date="<?= date('Y-m-d', strtotime($r['created_at'])) ?>">
-                            <?= date('M d, Y • h:i A', strtotime($r['created_at'])) ?>
+                        <td class="px-5 py-3.5 text-center" data-label="Date Received" data-date="<?= date('Y-m-d', strtotime($r['created_at'])) ?>">
+                            <div class="flex flex-col md:flex-row md:items-center justify-center gap-0.5 md:gap-1">
+                                <span class="text-gray-300 text-[11px] font-medium whitespace-nowrap"><?= date('M d, Y', strtotime($r['created_at'])) ?></span>
+                                <span class="hidden md:inline text-gray-500 font-bold">•</span>
+                                <span class="text-gray-400 text-[9px] md:text-[11px] font-bold whitespace-nowrap"><?= date('h:i A', strtotime($r['created_at'])) ?></span>
+                            </div>
                         </td>
                         <td class="px-5 py-3.5 text-center" data-label="Status">
                             <?php if ($r['is_exported']): ?>
