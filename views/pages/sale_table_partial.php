@@ -36,6 +36,7 @@ if (!isset($can_delete)) {
             border: none; 
             white-space: normal;
             min-width: 0;
+            text-align: left !important;
         }
         #submitted-history-table td::before { 
             content: attr(data-label); 

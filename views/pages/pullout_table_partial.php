@@ -38,6 +38,7 @@ if (!isset($can_delete)) {
             white-space: normal;
             min-width: 0;
             grid-column: span 1 !important;
+            text-align: left !important;
         }
         #pullout-history-table td::before { 
             content: attr(data-label); 

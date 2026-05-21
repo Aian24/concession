@@ -115,6 +115,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         white-space: normal;
         min-width: 0;
         grid-column: span 1 !important;
+        text-align: left !important;
     }
     #receiving-history-table td::before { 
         content: attr(data-label); 

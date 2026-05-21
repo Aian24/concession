@@ -34,6 +34,7 @@ if (!isset($can_delete)) {
             white-space: normal;
             min-width: 0;
             grid-column: span 1 !important;
+            text-align: left !important;
         }
         #return-history-table td::before { 
             content: attr(data-label); 
@@ -298,8 +299,10 @@ if (!isset($can_delete)) {
                                 <span class="text-gray-600">—</span>
                             <?php endif; ?>
                         </td>
-                        <td class="px-5 py-3.5 text-gray-300 text-xs truncate max-w-[100px] text-center mx-auto" title="<?= htmlspecialchars($r['reason'] ?: '—') ?>" data-label="Reason">
-                            <?= htmlspecialchars($r['reason'] ?: '—') ?>
+                        <td class="px-5 py-3.5 text-center" data-label="Reason">
+                            <span class="text-gray-300 text-xs truncate max-w-[100px] inline-block md:mx-auto" title="<?= htmlspecialchars($r['reason'] ?: '—') ?>">
+                                <?= htmlspecialchars($r['reason'] ?: '—') ?>
+                            </span>
                         </td>
                         <td class="px-5 py-3.5 text-center" data-label="Exchange">
                             <?php if ($r['is_exchange']): ?>
