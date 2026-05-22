@@ -361,7 +361,6 @@
                 </div>
             </div>
             <div class="flex items-center gap-6">
-                <?php if ($is_admin): ?>
                     <div class="flex items-center gap-3 cursor-pointer group px-3 py-1.5 rounded-xl hover:bg-white/5 transition-all" onclick="showProfileSettings()">
                         <div class="text-right hidden sm:block whitespace-nowrap">
                             <div class="flex items-center justify-end gap-1.5 mb-0.5">
@@ -385,7 +384,6 @@
                             </div>
                         </div>
                     </div>
-                <?php endif; ?>
             </div>
         </header>
 
