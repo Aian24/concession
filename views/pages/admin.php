@@ -47,15 +47,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_user'])) {
             $_SESSION['toast'] = "User created successfully.";
         }
         
-        // Handle multi_store_admin assignments
+        // Handle multi_store_admin and user assignments
         $db->query("DELETE FROM user_store_assignments WHERE user_id = " . intval($uid));
-        if ($role === 'multi_store_admin' && !empty($multi_stores)) {
+        if (in_array($role, ['multi_store_admin', 'user']) && !empty($multi_stores)) {
             $insert_stmt = $db->prepare("INSERT IGNORE INTO user_store_assignments (user_id, store_code) VALUES (?, ?)");
             foreach ($multi_stores as $m_code) {
                 $insert_stmt->bind_param("is", $uid, $m_code);
                 $insert_stmt->execute();
             }
             $insert_stmt->close();
+            
+            // Set primary store code to the first selected to maintain backward compatibility
+            $first_store = $db->real_escape_string($multi_stores[0]);
+            $db->query("UPDATE users SET store_code = '{$first_store}' WHERE id = " . intval($uid));
         }
 
         echo "<script>window.location.href='admin';</script>";
@@ -162,9 +166,12 @@ if (isset($_GET['edit'])) {
     $eid = intval($_GET['edit']);
     foreach($all_users as $u) if (intval($u['id']) === $eid) $editUser = $u;
     
-    if ($editUser && $editUser['role'] === 'multi_store_admin') {
+    if ($editUser && in_array($editUser['role'], ['multi_store_admin', 'user'])) {
         $assigned = get_user_assigned_stores($db, $eid);
         $assigned_multi_stores = array_column($assigned, 'store_code');
+        if (empty($assigned_multi_stores) && !empty($editUser['store_code'])) {
+            $assigned_multi_stores[] = $editUser['store_code'];
+        }
     }
 }
 ?>
@@ -660,7 +667,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function toggleStoreContainers() {
         if (!roleSelect) return;
-        if (roleSelect.value === 'multi_store_admin') {
+        if (roleSelect.value === 'multi_store_admin' || roleSelect.value === 'user') {
             storeContainer.classList.add('hidden');
             multiStoreContainer.classList.remove('hidden');
         } else {

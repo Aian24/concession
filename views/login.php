@@ -237,7 +237,9 @@
                 storeItems.forEach(opt => {
                     const code = opt.dataset.code.toLowerCase();
                     const name = opt.dataset.name.toLowerCase();
-                    if (code.includes(query) || name.includes(query)) {
+                    const isAssigned = opt.dataset.assigned !== 'false';
+                    
+                    if (isAssigned && (code.includes(query) || name.includes(query))) {
                         opt.classList.remove('hidden');
                         hasMatches = true;
                     } else {
@@ -319,10 +321,38 @@
                     .then(data => {
                         storeLoadingOverlay.classList.add('hidden');
                         if (data.success) {
-                            selectStore(data.store_code, data.sname, true);
-                            // Highlight verified state
-                            storeSelectedDisplay.classList.add('ring-2', 'ring-purple-500/50');
-                            setTimeout(() => storeSelectedDisplay.classList.remove('ring-2', 'ring-purple-500/50'), 1000);
+                            if (data.assigned_stores && data.assigned_stores.length > 0) {
+                                // Filter dropdown to only show assigned stores
+                                const assignedCodes = data.assigned_stores.map(s => s.store_code);
+                                
+                                storeItems.forEach(opt => {
+                                    if (assignedCodes.includes(opt.dataset.code) || data.role === 'admin' || data.role === 'admin_view') {
+                                        opt.classList.remove('hidden');
+                                        opt.dataset.assigned = 'true';
+                                    } else {
+                                        opt.classList.add('hidden');
+                                        opt.dataset.assigned = 'false';
+                                    }
+                                });
+
+                                if (data.assigned_stores.length === 1 && data.role !== 'admin' && data.role !== 'admin_view') {
+                                    // Auto-select if only 1 store
+                                    selectStore(data.assigned_stores[0].store_code, data.assigned_stores[0].sname, true);
+                                    storeSelectedDisplay.classList.add('ring-2', 'ring-purple-500/50');
+                                    setTimeout(() => storeSelectedDisplay.classList.remove('ring-2', 'ring-purple-500/50'), 1000);
+                                } else {
+                                    // Multiple stores assigned
+                                    resetStoreField();
+                                    storeSearchInput.placeholder = "Select an assigned store...";
+                                    storeSearchInput.focus();
+                                    showDropdown();
+                                }
+                            } else {
+                                // Fallback
+                                selectStore(data.store_code, data.sname, true);
+                                storeSelectedDisplay.classList.add('ring-2', 'ring-purple-500/50');
+                                setTimeout(() => storeSelectedDisplay.classList.remove('ring-2', 'ring-purple-500/50'), 1000);
+                            }
                         }
                     })
                     .catch(() => {
