@@ -276,10 +276,14 @@ if (isset($_GET['edit'])) {
                         </div>
 
                         <!-- Search -->
-                        <div class="p-2 border-b border-white/5 bg-slate-900 sticky top-0 z-10">
-                            <div class="relative">
+                        <div class="p-2 border-b border-white/5 bg-slate-900 sticky top-0 z-10 flex flex-col gap-2">
+                            <div class="relative w-full">
                                 <input type="text" id="multi-store-search" class="w-full bg-slate-800 border border-white/5 rounded-lg pl-8 pr-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500/50" placeholder="Search stores...">
                                 <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-500"></i>
+                            </div>
+                            <div class="flex justify-between items-center px-1">
+                                <span class="text-[9px] text-gray-500 uppercase font-bold tracking-widest" id="multi-store-count">0 Selected</span>
+                                <button type="button" id="multi-store-select-all" class="text-[9px] font-bold text-purple-400 hover:text-pink-400 transition-colors uppercase tracking-widest">Select All</button>
                             </div>
                         </div>
 
@@ -686,13 +690,27 @@ document.addEventListener("DOMContentLoaded", () => {
     const multiStoreItems = document.querySelectorAll('.multi-store-item');
     const multiStoreCheckboxes = document.querySelectorAll('.multi-store-cb');
     const multiStoreDisplay = document.getElementById('multi-store-selected-display');
+    const multiStoreSelectAllBtn = document.getElementById('multi-store-select-all');
+    const multiStoreCount = document.getElementById('multi-store-count');
 
     function updateMultiStoreDisplay() {
         if (!multiStoreDisplay) return;
         multiStoreDisplay.innerHTML = '';
         
-        multiStoreCheckboxes.forEach(cb => {
+        let checkedCount = 0;
+        let visibleCount = 0;
+        let visibleCheckedCount = 0;
+
+        multiStoreItems.forEach(item => {
+            const cb = item.querySelector('.multi-store-cb');
+            const isVisible = !item.classList.contains('hidden');
+            
+            if (isVisible) visibleCount++;
+            
             if (cb.checked) {
+                checkedCount++;
+                if (isVisible) visibleCheckedCount++;
+                
                 const displayTxt = cb.getAttribute('data-display');
                 const badge = document.createElement('div');
                 badge.className = 'flex items-center gap-1.5 px-2 py-1 rounded bg-purple-500/20 border border-purple-500/30 text-[10px] text-white whitespace-nowrap group';
@@ -703,6 +721,18 @@ document.addEventListener("DOMContentLoaded", () => {
                 multiStoreDisplay.appendChild(badge);
             }
         });
+
+        if (multiStoreCount) {
+            multiStoreCount.textContent = checkedCount + ' Selected';
+        }
+
+        if (multiStoreSelectAllBtn) {
+            if (visibleCount > 0 && visibleCheckedCount === visibleCount) {
+                multiStoreSelectAllBtn.textContent = 'Deselect All';
+            } else {
+                multiStoreSelectAllBtn.textContent = 'Select All';
+            }
+        }
 
         // Add event listeners to remove buttons
         multiStoreDisplay.querySelectorAll('.fa-times').forEach(icon => {
@@ -738,6 +768,23 @@ document.addEventListener("DOMContentLoaded", () => {
                     item.classList.add('hidden');
                 }
             });
+            updateMultiStoreDisplay(); // update select all text state
+        });
+    }
+
+    if (multiStoreSelectAllBtn) {
+        multiStoreSelectAllBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const isSelectAll = multiStoreSelectAllBtn.textContent.trim() === 'Select All';
+            
+            multiStoreItems.forEach(item => {
+                if (!item.classList.contains('hidden')) {
+                    const cb = item.querySelector('.multi-store-cb');
+                    if (cb) cb.checked = isSelectAll;
+                }
+            });
+            
+            updateMultiStoreDisplay();
         });
     }
 });
