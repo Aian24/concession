@@ -383,10 +383,11 @@ if (isset($_GET['edit'])) {
                             </td>
                             <td class="p-4" data-label="Store">
                                 <div class="flex flex-col">
-                                    <?php if ($u['role'] === 'multi_store_admin'): 
-                                        $assigned = get_user_assigned_stores($db, $u['id']);
+                                    <?php 
+                                    $assigned = get_user_assigned_stores($db, $u['id']);
+                                    if (count($assigned) > 1 || $u['role'] === 'multi_store_admin'): 
                                     ?>
-                                        <span class="text-white font-bold tracking-wide text-xs truncate max-w-[150px]"><?= count($assigned) ?> Stores Assigned</span>
+                                        <span class="text-white font-bold tracking-wide text-xs truncate max-w-[150px]"><?= max(count($assigned), 1) ?> Stores Assigned</span>
                                         <span class="text-[9px] font-extrabold uppercase tracking-widest text-purple-400">
                                             Multi-Store
                                         </span>
