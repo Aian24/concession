@@ -53,7 +53,11 @@
                     </div>
                     <div>
                         <h3 class="text-lg font-bold text-white leading-none mb-1"><?= htmlspecialchars($_SESSION['user']) ?></h3>
-                        <p class="text-[9px] text-gray-400 font-bold uppercase tracking-widest"><?= $_SESSION['role'] ?> • STORE: <?= htmlspecialchars($_SESSION['store_code']) ?></p>
+                        <?php if (($_SESSION['store_code'] ?? '') === 'MULTI' && !empty($_SESSION['assigned_stores'])): ?>
+                            <p class="text-[9px] text-gray-400 font-bold uppercase tracking-widest"><?= $_SESSION['role'] ?> • <?= count($_SESSION['assigned_stores']) ?> STORES ASSIGNED</p>
+                        <?php else: ?>
+                            <p class="text-[9px] text-gray-400 font-bold uppercase tracking-widest"><?= $_SESSION['role'] ?> • STORE: <?= htmlspecialchars($_SESSION['store_code']) ?></p>
+                        <?php endif; ?>
                     </div>
                 </div>
                 <button onclick="closeProfileModal()" class="absolute top-4 right-4 w-7 h-7 rounded-sm hover:bg-white/5 flex items-center justify-center text-gray-500 hover:text-white transition-colors">
@@ -250,20 +254,31 @@
             <?php
             // Fallback for current sessions that don't have store_name yet
             if (!isset($_SESSION['store_name']) && isset($_SESSION['store_code'])) {
-                $db_store = db_connect();
-                $s_stmt = $db_store->prepare("SELECT sname FROM storecode WHERE scode = ? LIMIT 1");
-                $s_stmt->bind_param("s", $_SESSION['store_code']);
-                $s_stmt->execute();
-                $s_data = $s_stmt->get_result()->fetch_assoc();
-                $_SESSION['store_name'] = $s_data['sname'] ?? 'N/A';
-                $s_stmt->close();
+                $sc = $_SESSION['store_code'];
+                if ($sc === 'MULTI') {
+                    $_SESSION['store_name'] = 'Multiple Stores';
+                } elseif ($sc === 'ALL') {
+                    $_SESSION['store_name'] = 'All Stores';
+                } else {
+                    $db_store = db_connect();
+                    $s_stmt = $db_store->prepare("SELECT sname FROM storecode WHERE scode = ? LIMIT 1");
+                    $s_stmt->bind_param("s", $sc);
+                    $s_stmt->execute();
+                    $s_data = $s_stmt->get_result()->fetch_assoc();
+                    $_SESSION['store_name'] = $s_data['sname'] ?? 'N/A';
+                    $s_stmt->close();
+                }
             }
             ?>
             <div class="bg-slate-800/80 backdrop-blur-md rounded-xl px-4 py-3 border border-white/5 shadow-lg flex items-center gap-3 overflow-hidden">
                 <div class="w-1.5 h-1.5 rounded-full bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.6)] animate-pulse shrink-0"></div>
                 <div class="flex items-center gap-1.5 min-w-0 overflow-hidden">
                     <span class="text-[11px] font-black text-white truncate"><?= htmlspecialchars($_SESSION['store_name'] ?? 'N/A') ?></span>
-                    <span class="text-[10px] font-bold text-gray-500 shrink-0 tracking-tighter uppercase">(<?= htmlspecialchars($_SESSION['store_code'] ?? '') ?>)</span>
+                    <?php if (($_SESSION['store_code'] ?? '') === 'MULTI' && !empty($_SESSION['assigned_stores'])): ?>
+                        <span class="text-[10px] font-bold text-purple-400 shrink-0 tracking-tighter uppercase">(<?= count($_SESSION['assigned_stores']) ?> Stores)</span>
+                    <?php else: ?>
+                        <span class="text-[10px] font-bold text-gray-500 shrink-0 tracking-tighter uppercase">(<?= htmlspecialchars($_SESSION['store_code'] ?? '') ?>)</span>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>

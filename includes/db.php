@@ -59,7 +59,63 @@ function db_connect(): mysqli {
         $adminStmt->close();
     }
 
+    // Ensure user_store_assignments table exists
+    $hasTable = $conn->query("SHOW TABLES LIKE 'user_store_assignments'");
+    if ($hasTable && $hasTable->num_rows === 0) {
+        $conn->query("CREATE TABLE IF NOT EXISTS user_store_assignments (
+            id          INT             AUTO_INCREMENT PRIMARY KEY,
+            user_id     INT             NOT NULL,
+            store_code  VARCHAR(50)     NOT NULL,
+            created_at  TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE KEY unique_assignment (user_id, store_code),
+            INDEX idx_user_id (user_id),
+            INDEX idx_store_code (store_code),
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
+    }
+
+    // Ensure multi_store_admin role exists in ENUM
+    $col_res = $conn->query("SHOW COLUMNS FROM users LIKE 'role'");
+    if ($col_res && $col_res->num_rows > 0) {
+        $col = $col_res->fetch_assoc();
+        if (strpos($col['Type'], 'multi_store_admin') === false) {
+            $conn->query("ALTER TABLE users MODIFY COLUMN role ENUM('admin','user','admin_view','store_admin','multi_store_admin') DEFAULT 'user'");
+        }
+    }
+
     return $conn;
+}
+
+/**
+ * Get all store codes assigned to a user (for multi_store_admin role)
+ * Returns an array of store codes, or empty array if none assigned
+ */
+function get_user_assigned_stores(mysqli $db, int $user_id): array {
+    $stmt = $db->prepare("
+        SELECT usa.store_code, sc.sname 
+        FROM user_store_assignments usa 
+        LEFT JOIN storecode sc ON usa.store_code = sc.scode 
+        WHERE usa.user_id = ?
+        ORDER BY sc.sname ASC
+    ");
+    if (!$stmt) return [];
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+    return $result;
+}
+
+/**
+ * Build a SQL WHERE clause for multi-store filtering
+ * Returns the SQL fragment and parameters for use with prepared statements
+ */
+function build_multi_store_clause(string $column, array $store_codes): string {
+    if (empty($store_codes)) return " AND 1=0"; // no stores assigned = no access
+    $placeholders = implode(',', array_map(function($code) {
+        return "'" . addslashes($code) . "'";
+    }, $store_codes));
+    return " AND $column IN ($placeholders)";
 }
 
 /**

@@ -1,8 +1,13 @@
 <?php
 if (!isset($can_delete)) {
     $role       = $_SESSION['role'] ?? 'user';
-    $can_edit   = ($role === 'admin' || ($_SESSION['user'] ?? '') === 'admin' || $role === 'admin_view');
-    $can_delete = ($role === 'admin' || ($_SESSION['user'] ?? '') === 'admin');
+    $is_full_admin  = ($role === 'admin' || ($_SESSION['user'] ?? '') === 'admin');
+    $is_admin_view  = ($role === 'admin_view');
+    $is_store_admin = ($role === 'store_admin');
+    $is_multi_store_admin = ($role === 'multi_store_admin');
+    $is_admin       = ($is_full_admin || $is_admin_view || $is_store_admin || $is_multi_store_admin);
+    $can_edit   = ($is_full_admin || $is_admin_view || $is_multi_store_admin);
+    $can_delete = ($is_full_admin);
 }
 ?>
 <style>
@@ -115,7 +120,7 @@ if (!isset($can_delete)) {
                 </div>
             </div>
 
-            <?php if ($is_full_admin || $is_admin_view): ?>
+            <?php if ($is_full_admin || $is_admin_view || $is_multi_store_admin): ?>
             <div class="space-y-1 relative" id="store-filter-container">
                 <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Store Filter</label>
                 
@@ -123,6 +128,11 @@ if (!isset($can_delete)) {
                 $q_params = [];
                 $q_types = "";
                 $q_where = "WHERE 1=1";
+                
+                if ($is_multi_store_admin) {
+                    $assigned = $_SESSION['assigned_stores'] ?? [];
+                    $q_where .= build_multi_store_clause('s.store_code', $assigned);
+                }
 
                 if (!empty($start_date)) {
                     $q_where .= " AND s.created_at >= ?";

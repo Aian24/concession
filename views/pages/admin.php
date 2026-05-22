@@ -20,6 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_user'])) {
     $password   = trim($_POST['password'] ?? '');
     $role       = $_POST['role'] ?? 'user';
     $store_code = $_POST['store_code'] ?? '';
+    $multi_stores = $_POST['multi_stores'] ?? [];
 
     if ($uname) {
         if ($uid > 0) {
@@ -41,11 +42,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_user'])) {
             $stmt = $db->prepare("INSERT INTO users (username, password, role, store_code) VALUES (?, ?, ?, ?)");
             $stmt->bind_param("ssss", $uname, $hashed, $role, $store_code);
             $stmt->execute();
+            $uid = $stmt->insert_id;
             $stmt->close();
             $_SESSION['toast'] = "User created successfully.";
         }
-            echo "<script>window.location.href='admin';</script>";
-            exit;
+        
+        // Handle multi_store_admin assignments
+        $db->query("DELETE FROM user_store_assignments WHERE user_id = " . intval($uid));
+        if ($role === 'multi_store_admin' && !empty($multi_stores)) {
+            $insert_stmt = $db->prepare("INSERT IGNORE INTO user_store_assignments (user_id, store_code) VALUES (?, ?)");
+            foreach ($multi_stores as $m_code) {
+                $insert_stmt->bind_param("is", $uid, $m_code);
+                $insert_stmt->execute();
+            }
+            $insert_stmt->close();
+        }
+
+        echo "<script>window.location.href='admin';</script>";
+        exit;
     }
 }
 
@@ -143,9 +157,15 @@ unset($_SESSION['toast']);
 
 // Editing state
 $editUser = null;
+$assigned_multi_stores = [];
 if (isset($_GET['edit'])) {
     $eid = intval($_GET['edit']);
     foreach($all_users as $u) if (intval($u['id']) === $eid) $editUser = $u;
+    
+    if ($editUser && $editUser['role'] === 'multi_store_admin') {
+        $assigned = get_user_assigned_stores($db, $eid);
+        $assigned_multi_stores = array_column($assigned, 'store_code');
+    }
 }
 ?>
 
@@ -202,11 +222,12 @@ if (isset($_GET['edit'])) {
                 
                 <div>
                     <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Permission Role</label>
-                    <select name="role" class="input-modern w-full appearance-none bg-slate-900">
+                    <select name="role" id="role-select" class="input-modern w-full appearance-none bg-slate-900">
                         <option value="user" <?= ($editUser['role']??'') === 'user' ? 'selected' : '' ?>>Standard User</option>
                         <option value="admin" <?= ($editUser['role']??'') === 'admin' ? 'selected' : '' ?>>System Administrator</option>
                         <option value="admin_view" <?= ($editUser['role']??'') === 'admin_view' ? 'selected' : '' ?>>View-Only Admin (All Stores)</option>
                         <option value="store_admin" <?= ($editUser['role']??'') === 'store_admin' ? 'selected' : '' ?>>Store Admin (Specific Store Only)</option>
+                        <option value="multi_store_admin" <?= ($editUser['role']??'') === 'multi_store_admin' ? 'selected' : '' ?>>Multi-Store Admin (Multiple Stores)</option>
                     </select>
                 </div>
 
@@ -235,6 +256,39 @@ if (isset($_GET['edit'])) {
                                 </div>
                             <?php endforeach; ?>
                             <div id="no-results" class="hidden p-4 text-center text-xs text-gray-500 italic">No stores found...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="relative hidden flex-col" id="multi-store-select-container">
+                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Assigned Stores (Select Multiple)</label>
+                    
+                    <div class="bg-slate-900 border border-white/10 rounded-xl overflow-hidden flex flex-col">
+                        <!-- Currently Selected Tags -->
+                        <div id="multi-store-selected-display" class="p-2 border-b border-white/5 bg-slate-800/50 flex flex-wrap gap-1.5 empty:hidden max-h-24 overflow-y-auto">
+                        </div>
+
+                        <!-- Search -->
+                        <div class="p-2 border-b border-white/5 bg-slate-900 sticky top-0 z-10">
+                            <div class="relative">
+                                <input type="text" id="multi-store-search" class="w-full bg-slate-800 border border-white/5 rounded-lg pl-8 pr-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500/50" placeholder="Search stores...">
+                                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-500"></i>
+                            </div>
+                        </div>
+
+                        <!-- List -->
+                        <div class="max-h-48 overflow-y-auto p-2 space-y-1" id="multi-store-list">
+                            <?php foreach($store_list as $s): 
+                                $checked = in_array($s['scode'], $assigned_multi_stores) ? 'checked' : '';
+                            ?>
+                                <label class="multi-store-item flex items-center gap-3 p-2 hover:bg-white/5 rounded-lg cursor-pointer transition-colors group" data-name="<?= htmlspecialchars(strtolower($s['sname'])) ?>" data-code="<?= htmlspecialchars(strtolower($s['scode'])) ?>">
+                                    <input type="checkbox" name="multi_stores[]" value="<?= htmlspecialchars($s['scode']) ?>" data-display="<?= htmlspecialchars($s['scode']) ?> - <?= htmlspecialchars($s['sname']) ?>" <?= $checked ?> class="multi-store-cb rounded border-white/20 bg-slate-900 text-purple-500 focus:ring-purple-500/20">
+                                    <div class="flex flex-col">
+                                        <span class="text-xs font-bold text-white group-hover:text-purple-400 transition-colors"><?= htmlspecialchars($s['sname']) ?></span>
+                                        <span class="text-[9px] text-gray-500 font-bold tracking-widest uppercase"><?= htmlspecialchars($s['scode']) ?></span>
+                                    </div>
+                                </label>
+                            <?php endforeach; ?>
                         </div>
                     </div>
                 </div>
@@ -318,10 +372,19 @@ if (isset($_GET['edit'])) {
                             </td>
                             <td class="p-4" data-label="Store">
                                 <div class="flex flex-col">
-                                    <span class="text-white font-bold tracking-wide text-xs"><?= htmlspecialchars($u['store_name'] ?: ($u['store_code'] ?: 'N/A')) ?></span>
-                                    <span class="text-[9px] font-extrabold uppercase tracking-widest text-gray-500">
-                                        <?= htmlspecialchars($u['store_code'] ?: '---') ?>
-                                    </span>
+                                    <?php if ($u['role'] === 'multi_store_admin'): 
+                                        $assigned = get_user_assigned_stores($db, $u['id']);
+                                    ?>
+                                        <span class="text-white font-bold tracking-wide text-xs truncate max-w-[150px]"><?= count($assigned) ?> Stores Assigned</span>
+                                        <span class="text-[9px] font-extrabold uppercase tracking-widest text-purple-400">
+                                            Multi-Store
+                                        </span>
+                                    <?php else: ?>
+                                        <span class="text-white font-bold tracking-wide text-xs"><?= htmlspecialchars($u['store_name'] ?: ($u['store_code'] ?: 'N/A')) ?></span>
+                                        <span class="text-[9px] font-extrabold uppercase tracking-widest text-gray-500">
+                                            <?= htmlspecialchars($u['store_code'] ?: '---') ?>
+                                        </span>
+                                    <?php endif; ?>
                                 </div>
                             </td>
 
@@ -586,6 +649,87 @@ document.addEventListener("DOMContentLoaded", () => {
                 storeSearchInput.value = name;
                 storeCodeHidden.value = code;
                 storeResults.classList.add('hidden');
+            });
+        });
+    }
+
+    // Role select logic for Multi-Store
+    const roleSelect = document.getElementById('role-select');
+    const storeContainer = document.getElementById('store-select-container');
+    const multiStoreContainer = document.getElementById('multi-store-select-container');
+
+    function toggleStoreContainers() {
+        if (!roleSelect) return;
+        if (roleSelect.value === 'multi_store_admin') {
+            storeContainer.classList.add('hidden');
+            multiStoreContainer.classList.remove('hidden');
+        } else {
+            storeContainer.classList.remove('hidden');
+            multiStoreContainer.classList.add('hidden');
+        }
+    }
+
+    if (roleSelect) {
+        roleSelect.addEventListener('change', toggleStoreContainers);
+        toggleStoreContainers(); // Call on load
+    }
+
+    // Multi-store functionality: search and badges
+    const multiStoreSearch = document.getElementById('multi-store-search');
+    const multiStoreItems = document.querySelectorAll('.multi-store-item');
+    const multiStoreCheckboxes = document.querySelectorAll('.multi-store-cb');
+    const multiStoreDisplay = document.getElementById('multi-store-selected-display');
+
+    function updateMultiStoreDisplay() {
+        if (!multiStoreDisplay) return;
+        multiStoreDisplay.innerHTML = '';
+        
+        multiStoreCheckboxes.forEach(cb => {
+            if (cb.checked) {
+                const displayTxt = cb.getAttribute('data-display');
+                const badge = document.createElement('div');
+                badge.className = 'flex items-center gap-1.5 px-2 py-1 rounded bg-purple-500/20 border border-purple-500/30 text-[10px] text-white whitespace-nowrap group';
+                badge.innerHTML = `
+                    <span class="font-bold tracking-tight">${displayTxt}</span>
+                    <i class="fas fa-times text-purple-400 hover:text-red-400 cursor-pointer p-0.5 transition-colors" data-val="${cb.value}"></i>
+                `;
+                multiStoreDisplay.appendChild(badge);
+            }
+        });
+
+        // Add event listeners to remove buttons
+        multiStoreDisplay.querySelectorAll('.fa-times').forEach(icon => {
+            icon.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const val = icon.getAttribute('data-val');
+                const targetCb = Array.from(multiStoreCheckboxes).find(c => c.value === val);
+                if (targetCb) {
+                    targetCb.checked = false;
+                    updateMultiStoreDisplay();
+                }
+            });
+        });
+    }
+
+    if (multiStoreCheckboxes.length > 0) {
+        multiStoreCheckboxes.forEach(cb => {
+            cb.addEventListener('change', updateMultiStoreDisplay);
+        });
+        updateMultiStoreDisplay(); // initial load
+    }
+
+    if (multiStoreSearch) {
+        multiStoreSearch.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            multiStoreItems.forEach(item => {
+                const name = item.getAttribute('data-name');
+                const code = item.getAttribute('data-code');
+                if (name.includes(query) || code.includes(query)) {
+                    item.classList.remove('hidden');
+                } else {
+                    item.classList.add('hidden');
+                }
             });
         });
     }

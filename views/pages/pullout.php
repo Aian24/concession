@@ -8,9 +8,10 @@ if (!isset($is_admin)) {
     $is_full_admin   = ($role === 'admin' || ($_SESSION['user'] ?? '') === 'admin');
     $is_admin_view   = ($role === 'admin_view');
     $is_store_admin  = ($role === 'store_admin');
-    $is_admin        = ($is_full_admin || $is_admin_view || $is_store_admin);
+    $is_multi_store_admin = ($role === 'multi_store_admin');
+    $is_admin        = ($is_full_admin || $is_admin_view || $is_store_admin || $is_multi_store_admin);
     $can_submit      = ($role === 'user');
-    $can_edit        = ($is_full_admin || $is_admin_view);
+    $can_edit        = ($is_full_admin || $is_admin_view || $is_multi_store_admin);
     $can_delete      = ($is_full_admin);
 }
 
@@ -31,10 +32,19 @@ $where = "WHERE 1=1";
 $params = [];
 $types = "";
 
-if ($is_store_admin || !$is_admin) {
+if ($is_store_admin || (!$is_admin && !$is_multi_store_admin)) {
     $where .= " AND s.store_code = ?";
     $params[] = $pull_store_code;
     $types .= "s";
+} elseif ($is_multi_store_admin) {
+    $assigned = $_SESSION['assigned_stores'] ?? [];
+    if ($store_filter !== '' && in_array($store_filter, $assigned)) {
+        $where .= " AND s.store_code = ?";
+        $params[] = $store_filter;
+        $types .= "s";
+    } else {
+        $where .= build_multi_store_clause('s.store_code', $assigned);
+    }
 } elseif ($is_admin && $store_filter !== '') {
     $where .= " AND s.store_code = ?";
     $params[] = $store_filter;

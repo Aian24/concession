@@ -40,13 +40,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
             $s_data = $s_stmt->get_result()->fetch_assoc();
             $s_stmt->close();
 
+            $store_name = $s_data['sname'] ?? '';
+            if (empty($store_name)) {
+                if ($store_code === 'MULTI') $store_name = 'Multiple Stores';
+                elseif ($store_code === 'ALL') $store_name = 'All Stores';
+            }
+
+            $_SESSION['user_id']    = $user['id'];
             $_SESSION['user']       = $uname;
             $_SESSION['store_code'] = $store_code;
-            $_SESSION['store_name'] = $s_data['sname'] ?? '';
+            $_SESSION['store_name'] = $store_name;
             $_SESSION['role']       = $user['role'];
             $_SESSION['avatar']     = $user['avatar'];
 
             $_SESSION['transaction_date'] = date('Y-m-d');
+
+            // ── Load Multi-Store Assignments ──────────────────
+            if ($user['role'] === 'multi_store_admin') {
+                $assigned = get_user_assigned_stores($db, $user['id']);
+                $_SESSION['assigned_stores'] = array_column($assigned, 'store_code');
+                $_SESSION['assigned_stores_data'] = $assigned;
+            } else {
+                $_SESSION['assigned_stores'] = [];
+                $_SESSION['assigned_stores_data'] = [];
+            }
 
             // ── Remember Me ───────────────────────────────────
             if (!empty($_POST['remember_me'])) {
@@ -58,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                 setcookie('remember_store_code', '', time() - 3600, '/');
             }
             
-            if ($user['role'] === 'admin' || $user['role'] === 'admin_view' || $user['role'] === 'store_admin' || $uname === 'admin') {
+            if ($user['role'] === 'admin' || $user['role'] === 'admin_view' || $user['role'] === 'store_admin' || $user['role'] === 'multi_store_admin' || $uname === 'admin') {
                 header("Location: dashboard");
             } else {
                 header("Location: history");
@@ -76,18 +93,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
 
 // ── Role & Permission Flags ──────────────────────────────────
 $role = $_SESSION['role'] ?? 'user';
-$is_full_admin   = ($role === 'admin' || ($_SESSION['user'] ?? '') === 'admin');
-$is_admin_view   = ($role === 'admin_view');
-$is_store_admin  = ($role === 'store_admin');
+$is_full_admin       = ($role === 'admin' || ($_SESSION['user'] ?? '') === 'admin');
+$is_admin_view       = ($role === 'admin_view');
+$is_store_admin      = ($role === 'store_admin');
+$is_multi_store_admin = ($role === 'multi_store_admin');
 
 // General admin flag for showing admin-only modules/data
-$is_admin = ($is_full_admin || $is_admin_view || $is_store_admin);
+$is_admin = ($is_full_admin || $is_admin_view || $is_store_admin || $is_multi_store_admin);
 
 // Can submit NEW transactions (create) - Only regular users can create entries
 $can_submit = ($role === 'user');
 
 // Can edit EXISTING records (admin_view can edit, store_admin is view-only)
-$can_edit = ($is_full_admin || $is_admin_view);
+$can_edit = ($is_full_admin || $is_admin_view || $is_multi_store_admin);
 
 // Can delete records (only full admin)
 $can_delete = ($is_full_admin);

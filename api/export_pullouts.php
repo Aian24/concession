@@ -16,13 +16,22 @@ $role            = $_SESSION['role'] ?? 'user';
 $is_full_admin   = ($role === 'admin' || ($_SESSION['user'] ?? '') === 'admin');
 $is_admin_view   = ($role === 'admin_view');
 $is_store_admin  = ($role === 'store_admin');
-$is_admin        = ($is_full_admin || $is_admin_view || $is_store_admin);
+$is_multi_store_admin = ($role === 'multi_store_admin');
+$is_admin        = ($is_full_admin || $is_admin_view || $is_store_admin || $is_multi_store_admin);
 
 $store_code = $_SESSION['store_code'];
 
 $where = "WHERE 1=1";
-if ($is_store_admin || !$is_admin) {
+if ($is_store_admin || (!$is_admin && !$is_multi_store_admin)) {
     $where .= " AND s.store_code = '$store_code'";
+} elseif ($is_multi_store_admin) {
+    $assigned = $_SESSION['assigned_stores'] ?? [];
+    if ($store_filter !== '' && in_array($store_filter, $assigned)) {
+        $store_filter_escaped = $db->real_escape_string($store_filter);
+        $where .= " AND s.store_code = '$store_filter_escaped'";
+    } else {
+        $where .= build_multi_store_clause('s.store_code', $assigned);
+    }
 } elseif ($is_admin && $store_filter !== '') {
     $store_filter_escaped = $db->real_escape_string($store_filter);
     $where .= " AND s.store_code = '$store_filter_escaped'";

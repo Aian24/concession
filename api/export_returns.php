@@ -9,7 +9,8 @@ $role            = $_SESSION['role'] ?? 'user';
 $is_full_admin   = ($role === 'admin' || ($_SESSION['user'] ?? '') === 'admin');
 $is_admin_view   = ($role === 'admin_view');
 $is_store_admin  = ($role === 'store_admin');
-$is_admin        = ($is_full_admin || $is_admin_view || $is_store_admin);
+$is_multi_store_admin = ($role === 'multi_store_admin');
+$is_admin        = ($is_full_admin || $is_admin_view || $is_store_admin || $is_multi_store_admin);
 
 $search       = $_GET['search']       ?? '';
 $type         = $_GET['type']         ?? 'csv';
@@ -29,10 +30,19 @@ $params = [];
 $types  = "";
 
 // Role-based filtering
-if ($is_store_admin || !$is_admin) {
+if ($is_store_admin || (!$is_admin && !$is_multi_store_admin)) {
     $sql .= " AND s.store_code = ?";
     $params[] = $my_store;
     $types .= "s";
+} elseif ($is_multi_store_admin) {
+    $assigned = $_SESSION['assigned_stores'] ?? [];
+    if ($store_filter !== '' && in_array($store_filter, $assigned)) {
+        $sql .= " AND s.store_code = ?";
+        $params[] = $store_filter;
+        $types .= "s";
+    } else {
+        $sql .= build_multi_store_clause('s.store_code', $assigned);
+    }
 } elseif ($is_admin && $store_filter !== '') {
     $sql .= " AND s.store_code = ?";
     $params[] = $store_filter;

@@ -19,7 +19,10 @@ if (isset($_GET['start_date'])) {
 // Store Filtering Logic
 $role = $_SESSION['role'] ?? 'user';
 $is_store_admin = ($role === 'store_admin');
-$is_admin = ($role === 'admin' || ($_SESSION['user'] ?? '') === 'admin' || $role === 'admin_view');
+$is_multi_store_admin = ($role === 'multi_store_admin');
+$is_full_admin = ($role === 'admin' || ($_SESSION['user'] ?? '') === 'admin');
+$is_admin_view = ($role === 'admin_view');
+$is_admin = ($is_full_admin || $is_admin_view || $is_multi_store_admin);
 $session_store_code = $_SESSION['store_code'] ?? '';
 
 // Filter store code from GET
@@ -28,7 +31,14 @@ $filter_store_code = $_GET['store_code'] ?? '';
 $store_clause = "";
 if ($is_store_admin) {
     $store_clause = " AND store_code = '$session_store_code'";
-} elseif ($is_admin) {
+} elseif ($is_multi_store_admin) {
+    $assigned = $_SESSION['assigned_stores'] ?? [];
+    if ($filter_store_code !== '' && in_array($filter_store_code, $assigned)) {
+        $store_clause = " AND store_code = '$filter_store_code'";
+    } else {
+        $store_clause = build_multi_store_clause('store_code', $assigned);
+    }
+} elseif ($is_full_admin || $is_admin_view) {
     if ($filter_store_code !== '') {
         $store_clause = " AND store_code = '$filter_store_code'";
     }
@@ -39,11 +49,16 @@ if ($is_store_admin) {
 
 // Fetch stores for filter dropdown
 $stores_list = [];
-if ($is_admin) {
+if ($is_full_admin || $is_admin_view) {
     $stores_res = $db->query("SELECT scode, sname FROM storecode ORDER BY sname ASC");
     if ($stores_res) {
         $stores_list = $stores_res->fetch_all(MYSQLI_ASSOC);
     }
+} elseif ($is_multi_store_admin) {
+    $assigned_data = $_SESSION['assigned_stores_data'] ?? [];
+    $stores_list = array_map(function($s) {
+        return ['scode' => $s['store_code'], 'sname' => $s['sname']];
+    }, $assigned_data);
 }
 
 // 1. Total Sales
@@ -66,7 +81,13 @@ $total_received_qty = (int) ($receiving_data['total_received'] ?? 0);
 $receiving_count = (int) ($receiving_data['total_count'] ?? 0);
 
 // 4. Total Stores
-$store_count_res = $db->query("SELECT COUNT(*) as total FROM storecode" . ($is_store_admin ? " WHERE scode = '$session_store_code'" : ""));
+if ($is_store_admin) {
+    $store_count_res = $db->query("SELECT COUNT(*) as total FROM storecode WHERE scode = '$session_store_code'");
+} elseif ($is_multi_store_admin) {
+    $store_count_res = $db->query("SELECT COUNT(*) as total FROM user_store_assignments WHERE user_id = " . intval($_SESSION['user_id'] ?? 0));
+} else {
+    $store_count_res = $db->query("SELECT COUNT(*) as total FROM storecode");
+}
 $total_stores = $store_count_res ? (int)$store_count_res->fetch_assoc()['total'] : 0;
 
 // 4.1 Active Stores (with transactions in selected range)

@@ -10,8 +10,9 @@ if (!isset($received_items)) {
     $is_full_admin  = ($role === 'admin' || ($_SESSION['user'] ?? '') === 'admin');
     $is_admin_view  = ($role === 'admin_view');
     $is_store_admin = ($role === 'store_admin');
-    $is_admin       = ($is_full_admin || $is_admin_view || $is_store_admin);
-    $can_edit       = ($is_full_admin || $is_admin_view);
+    $is_multi_store_admin = ($role === 'multi_store_admin');
+    $is_admin       = ($is_full_admin || $is_admin_view || $is_store_admin || $is_multi_store_admin);
+    $can_edit       = ($is_full_admin || $is_admin_view || $is_multi_store_admin);
     $can_delete     = ($is_full_admin);
     
     $limit        = isset($_GET['limit']) ? max(1, intval($_GET['limit'])) : 10;
@@ -27,15 +28,22 @@ if (!isset($received_items)) {
     $params = [];
     $types = "";
 
-    if ($is_admin) {
-        if ($store_filter !== '') {
+    if ($is_store_admin || (!$is_admin && !$is_multi_store_admin)) {
+        $where .= " AND s.store_code = ?";
+        $params[] = $rec_store_code;
+        $types .= "s";
+    } elseif ($is_multi_store_admin) {
+        $assigned = $_SESSION['assigned_stores'] ?? [];
+        if ($store_filter !== '' && in_array($store_filter, $assigned)) {
             $where .= " AND s.store_code = ?";
             $params[] = $store_filter;
             $types .= "s";
+        } else {
+            $where .= build_multi_store_clause('s.store_code', $assigned);
         }
-    } else {
+    } elseif ($is_admin && $store_filter !== '') {
         $where .= " AND s.store_code = ?";
-        $params[] = $rec_store_code;
+        $params[] = $store_filter;
         $types .= "s";
     }
 
@@ -193,12 +201,17 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
                 <input type="text" name="search" value="<?= htmlspecialchars($search) ?>" placeholder="OS, Item, Store or ID..." class="w-full bg-slate-900/50 border border-white/5 rounded-lg pl-9 pr-4 py-2 text-xs text-white focus:outline-none focus:border-cyan-500/30 transition-all">
             </div>
 
-            <?php if ($is_full_admin || $is_admin_view): ?>
+            <?php if ($is_full_admin || $is_admin_view || $is_multi_store_admin): ?>
             <div class="relative" id="store-filter-container">
                 <?php
                 $q_params = [];
                 $q_types = "";
                 $q_where = "WHERE 1=1";
+
+                if ($is_multi_store_admin) {
+                    $assigned = $_SESSION['assigned_stores'] ?? [];
+                    $q_where .= build_multi_store_clause('s.store_code', $assigned);
+                }
 
                 if (!empty($start_date)) {
                     $q_where .= " AND s.created_at >= ?";
