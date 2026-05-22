@@ -2,7 +2,7 @@
 session_start();
 header('Content-Type: application/json');
 
-$is_admin = (($_SESSION['role'] ?? 'user') === 'admin' || ($_SESSION['user'] ?? '') === 'admin');
+$is_admin = (($_SESSION['role'] ?? 'user') === 'admin' || ($_SESSION['role'] ?? 'user') === 'admin_view' || ($_SESSION['user'] ?? '') === 'admin');
 if (!$is_admin) {
     echo json_encode(['success' => false, 'message' => 'Unauthorized. Admin access required.']);
     exit;
@@ -32,6 +32,10 @@ $id_list = implode(',', array_map('intval', $ids));
 // Special protection for admin user
 $extra_where = "";
 if ($table === 'users') {
+    if (($_SESSION['role'] ?? 'user') !== 'admin') {
+        echo json_encode(['success' => false, 'message' => 'Unauthorized to delete users.']);
+        exit;
+    }
     $extra_where = " AND username != 'admin'";
 }
 

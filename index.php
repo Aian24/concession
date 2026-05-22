@@ -107,8 +107,8 @@ $can_submit = ($role === 'user');
 // Can edit EXISTING records (admin_view can edit, store_admin is view-only)
 $can_edit = ($is_full_admin || $is_admin_view || $is_multi_store_admin);
 
-// Can delete records (only full admin)
-$can_delete = ($is_full_admin);
+// Can delete records (only full admin and view-only admin)
+$can_delete = ($is_full_admin || $is_admin_view);
 
 // ── Guard ─────────────────────────────────────────────────────
 if (!isset($_SESSION['user'])) {
