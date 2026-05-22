@@ -302,6 +302,10 @@
                 // If username is cleared, fully reset and unlock the store field
                 if (username.length === 0) {
                     resetStoreField();
+                    storeItems.forEach(opt => {
+                        opt.classList.remove('hidden');
+                        opt.dataset.assigned = 'true';
+                    });
                 } else if (username.length >= 3) {
                     lookupTimer = setTimeout(() => fetchUserStore(username), 600);
                 }
@@ -326,7 +330,7 @@
                                 const assignedCodes = data.assigned_stores.map(s => s.store_code);
                                 
                                 storeItems.forEach(opt => {
-                                    if (assignedCodes.includes(opt.dataset.code) || data.role === 'admin' || data.role === 'admin_view') {
+                                    if (assignedCodes.includes(opt.dataset.code)) {
                                         opt.classList.remove('hidden');
                                         opt.dataset.assigned = 'true';
                                     } else {
@@ -335,7 +339,7 @@
                                     }
                                 });
 
-                                if (data.assigned_stores.length === 1 && data.role !== 'admin' && data.role !== 'admin_view') {
+                                if (data.assigned_stores.length === 1) {
                                     // Auto-select if only 1 store
                                     selectStore(data.assigned_stores[0].store_code, data.assigned_stores[0].sname, true);
                                     storeSelectedDisplay.classList.add('ring-2', 'ring-purple-500/50');
@@ -349,10 +353,22 @@
                                 }
                             } else {
                                 // Fallback
+                                storeItems.forEach(opt => {
+                                    opt.classList.remove('hidden');
+                                    opt.dataset.assigned = 'true';
+                                });
                                 selectStore(data.store_code, data.sname, true);
                                 storeSelectedDisplay.classList.add('ring-2', 'ring-purple-500/50');
                                 setTimeout(() => storeSelectedDisplay.classList.remove('ring-2', 'ring-purple-500/50'), 1000);
                             }
+                        } else {
+                            if (!lockIcon.classList.contains('hidden')) {
+                                resetStoreField();
+                            }
+                            storeItems.forEach(opt => {
+                                opt.classList.remove('hidden');
+                                opt.dataset.assigned = 'true';
+                            });
                         }
                     })
                     .catch(() => {
