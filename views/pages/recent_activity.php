@@ -156,8 +156,14 @@ while ($row = $stores_res->fetch_assoc()) {
     </div>
 
     <div class="glass-panel border border-white/5 overflow-hidden shadow-2xl">
-        <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse" id="recent-activity-table">
+        <div class="overflow-x-auto min-h-[200px] relative">
+            <div id="table-loader" class="absolute inset-0 flex items-center justify-center bg-slate-900/80 z-20 backdrop-blur-sm">
+                <div class="flex flex-col items-center gap-3">
+                    <i class="fas fa-spinner animate-spin text-purple-500 text-4xl"></i>
+                    <span class="text-xs font-bold text-purple-400 uppercase tracking-widest">Formatting Data...</span>
+                </div>
+            </div>
+            <table class="w-full text-left border-collapse hidden" id="recent-activity-table">
                 <thead>
                     <tr class="bg-white/5">
                         <th class="px-6 py-4 text-[10px] font-black text-purple-400 uppercase tracking-[0.2em] border-b border-white/5">Timestamp</th>
@@ -251,3 +257,91 @@ while ($row = $stores_res->fetch_assoc()) {
         </div>
     </div>
 </div>
+
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<!-- jQuery & DataTables JS -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    $('#recent-activity-table').DataTable({
+        pageLength: 10,
+        ordering: false,
+        language: {
+            search: "_INPUT_",
+            searchPlaceholder: "Search activities...",
+            lengthMenu: "Show _MENU_ entries"
+        },
+        initComplete: function() {
+            $('#recent-activity-table').removeClass('hidden').hide().fadeIn(300);
+            $('#table-loader').fadeOut(300, function() {
+                $(this).remove();
+            });
+        }
+    });
+});
+</script>
+<style>
+/* Dark mode DataTables styling overrides */
+.dataTables_wrapper .dataTables_length, 
+.dataTables_wrapper .dataTables_filter, 
+.dataTables_wrapper .dataTables_info, 
+.dataTables_wrapper .dataTables_processing, 
+.dataTables_wrapper .dataTables_paginate {
+    color: #9ca3af !important; 
+    font-size: 0.875rem; 
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    padding: 0 1.5rem;
+    font-weight: 600;
+}
+.dataTables_wrapper .dataTables_length select, 
+.dataTables_wrapper .dataTables_filter input {
+    background-color: rgba(15, 23, 42, 0.5) !important; 
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: white !important;
+    border-radius: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    margin-left: 0.5rem;
+    outline: none;
+}
+.dataTables_wrapper .dataTables_filter input:focus {
+    border-color: #a855f7 !important;
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    color: #9ca3af !important;
+    border: 1px solid transparent !important;
+    border-radius: 0.5rem;
+    margin: 0 0.25rem;
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: white !important;
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button.current, 
+.dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+    background: #a855f7 !important; 
+    color: white !important;
+    border: 1px solid #a855f7 !important;
+}
+table.dataTable.no-footer {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+/* Ensure table header border matches theme */
+table.dataTable thead th, table.dataTable thead td {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+/* Fix for search input width and spacing */
+.dataTables_wrapper .dataTables_filter {
+    text-align: right;
+}
+@media (max-width: 768px) {
+    .dataTables_wrapper .dataTables_filter, .dataTables_wrapper .dataTables_length {
+        text-align: left;
+        padding: 0 1rem;
+    }
+}
+</style>
