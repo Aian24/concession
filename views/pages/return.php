@@ -351,7 +351,7 @@ if (isset($_GET['ajax'])) {
                     <div class="grid grid-cols-2 gap-3">
                         <div class="relative mt-2">
                             <span class="absolute top-0 -translate-y-1/2 left-3 px-1 bg-[#0d1527] text-[8px] font-black text-orange-400/80 uppercase tracking-widest z-10">Item #</span>
-                            <input type="number" min="0" oninput="if(this.value.length > 6) this.value = this.value.slice(0, 6);" onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();" class="entry-item bg-slate-900 border border-white/10 rounded-lg px-3 py-2 w-full text-xs text-white focus:outline-none focus:border-orange-500/50" placeholder="100123">
+                            <input type="number" min="0" oninput="if(this.value.length > 6) this.value = this.value.slice(0, 6); lookupPrismPrice(this, '.entry-amt');" onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();" class="entry-item bg-slate-900 border border-white/10 rounded-lg px-3 py-2 w-full text-xs text-white focus:outline-none focus:border-orange-500/50" placeholder="100123">
                         </div>
                         <div class="relative mt-2">
                             <span class="absolute top-0 -translate-y-1/2 left-3 px-1 bg-[#0d1527] text-[8px] font-black text-orange-400/80 uppercase tracking-widest z-10">Qty</span>
@@ -389,7 +389,7 @@ if (isset($_GET['ajax'])) {
                         <div class="grid grid-cols-3 gap-3">
                             <div class="relative mt-2">
                                 <span class="absolute top-0 -translate-y-1/2 left-3 px-1 bg-[#0d1527] text-[8px] font-black text-blue-400/80 uppercase tracking-widest z-10">Item #</span>
-                                <input type="number" min="0" oninput="if(this.value.length > 6) this.value = this.value.slice(0, 6);" onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();" class="entry-ex-item bg-slate-900 border border-white/10 rounded-lg px-3 py-2 w-full text-xs text-white focus:outline-none focus:border-blue-500/50" placeholder="100123">
+                                <input type="number" min="0" oninput="if(this.value.length > 6) this.value = this.value.slice(0, 6); lookupPrismPrice(this, '.entry-ex-amt');" onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();" class="entry-ex-item bg-slate-900 border border-white/10 rounded-lg px-3 py-2 w-full text-xs text-white focus:outline-none focus:border-blue-500/50" placeholder="100123">
                             </div>
                             <div class="relative mt-2">
                                 <span class="absolute top-0 -translate-y-1/2 left-3 px-1 bg-[#0d1527] text-[8px] font-black text-blue-400/80 uppercase tracking-widest z-10">Qty</span>
@@ -444,6 +444,28 @@ if (isset($_GET['ajax'])) {
                 updateStats();
             }, 200);
         }
+    };
+
+    window.lookupPrismPrice = function(input, targetSelector) {
+        const item_no = input.value.trim();
+        if (item_no.length < 3) return;
+
+        const row = input.closest('div[id^="row-"]');
+        if (!row) return;
+
+        const amountInput = row.querySelector(targetSelector);
+        if (!amountInput) return;
+
+        fetch(`api/get_prism_price.php?item_no=${encodeURIComponent(item_no)}`)
+        .then(r => r.json())
+        .then(res => {
+            if (res.success) {
+                amountInput.value = res.srp;
+                window.updateStats();
+                amountInput.classList.add('ring-2', 'ring-green-500/50');
+                setTimeout(() => amountInput.classList.remove('ring-2', 'ring-green-500/50'), 1000);
+            }
+        }).catch(err => console.error("Prism price lookup failed", err));
     };
 
     window.updateStats = function() {
