@@ -134,16 +134,16 @@ if (!empty($store_filter)) {
                 <div class="hidden lg:block w-px h-8 bg-white/10"></div>
                 <div class="flex flex-wrap items-center gap-3">
                     <div class="bg-slate-900/50 border border-white/5 rounded-lg px-3 py-1.5 flex flex-col justify-center shadow-inner">
-                        <span class="text-[8px] text-gray-500 font-bold uppercase tracking-widest leading-none mb-1">Total Sales</span>
-                        <span class="text-xs font-black text-green-400 leading-none">₱<?= number_format($grand_total_amount, 2) ?></span>
+                        <span class="text-[9px] text-gray-500 font-bold uppercase tracking-widest leading-none mb-1">Total Sales</span>
+                        <span class="text-sm font-black text-green-400 leading-none">₱<?= number_format($grand_total_amount, 2) ?></span>
                     </div>
                     <div class="bg-slate-900/50 border border-white/5 rounded-lg px-3 py-1.5 flex flex-col justify-center shadow-inner">
-                        <span class="text-[8px] text-gray-500 font-bold uppercase tracking-widest leading-none mb-1">Total Qty</span>
-                        <span class="text-xs font-black text-white leading-none"><?= number_format($grand_total_qty) ?></span>
+                        <span class="text-[9px] text-gray-500 font-bold uppercase tracking-widest leading-none mb-1">Total Qty</span>
+                        <span class="text-sm font-black text-white leading-none"><?= number_format($grand_total_qty) ?></span>
                     </div>
                     <div class="bg-slate-900/50 border border-white/5 rounded-lg px-3 py-1.5 flex flex-col justify-center shadow-inner cursor-help" title="<?= htmlspecialchars($affected_stores_list) ?>">
-                        <span class="text-[8px] text-gray-500 font-bold uppercase tracking-widest leading-none mb-1"><?= htmlspecialchars($display_store_title) ?></span>
-                        <span class="text-xs font-bold text-gray-300 leading-none"><?= htmlspecialchars($display_store_label) ?></span>
+                        <span class="text-[9px] text-gray-500 font-bold uppercase tracking-widest leading-none mb-1"><?= htmlspecialchars($display_store_title) ?></span>
+                        <span class="text-sm font-bold text-gray-300 leading-none"><?= htmlspecialchars($display_store_label) ?></span>
                     </div>
                 </div>
             </div>
