@@ -387,7 +387,7 @@ if (!function_exists('time_elapsed_string')) {
             <!-- Rankings Section (Left) -->
             <div class="xl:col-span-1 flex flex-col gap-6 order-2 xl:order-1">
                 <!-- Top 10 Sellers (Users) -->
-                <div class="bg-slate-900/40 rounded-xl border border-white/5 p-4 flex-1 max-h-[192px] overflow-hidden flex flex-col relative group">
+                <div class="bg-slate-900/40 rounded-xl border border-white/5 p-4 flex-1 max-h-[170px] overflow-hidden flex flex-col relative group">
                     <div class="absolute -right-4 -top-4 w-24 h-24 bg-purple-500/10 rounded-full blur-2xl group-hover:bg-purple-500/20 transition-all pointer-events-none"></div>
                     <h4 class="text-xs font-black text-purple-400 uppercase tracking-widest mb-3 flex items-center gap-2"><i class="fas fa-users"></i> Top Sellers</h4>
                     <div class="overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 pr-2 space-y-2 flex-1">
@@ -411,7 +411,7 @@ if (!function_exists('time_elapsed_string')) {
                 
                 <?php if ($is_admin): ?>
                 <!-- Top 10 Stores -->
-                <div class="bg-slate-900/40 rounded-xl border border-white/5 p-4 flex-1 max-h-[192px] overflow-hidden flex flex-col relative group">
+                <div class="bg-slate-900/40 rounded-xl border border-white/5 p-4 flex-1 max-h-[170px] overflow-hidden flex flex-col relative group">
                     <div class="absolute -right-4 -top-4 w-24 h-24 bg-[#3b82f6]/10 rounded-full blur-2xl group-hover:bg-[#3b82f6]/20 transition-all pointer-events-none"></div>
                     <h4 class="text-xs font-black text-[#3b82f6] uppercase tracking-widest mb-3 flex items-center gap-2"><i class="fas fa-trophy"></i> Top Stores</h4>
                     <div class="overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 pr-2 space-y-2 flex-1">
@@ -439,7 +439,7 @@ if (!function_exists('time_elapsed_string')) {
             </div>
 
             <!-- Chart Section (Right) -->
-            <div class="xl:col-span-3 relative h-[400px] order-1 xl:order-2">
+            <div class="xl:col-span-3 relative h-[370px] order-1 xl:order-2">
                 <canvas id="monthlyActivityChart"></canvas>
             </div>
         </div>
