@@ -95,47 +95,31 @@ if ($type === 'csv') {
     }
     fclose($output);
 } elseif ($type === 'xls') {
-    header('Content-Type: application/vnd.ms-excel');
-    header('Content-Disposition: attachment; filename="' . $filename . '.xls"');
-    header('Cache-Control: max-age=0');
+    require_once '../includes/SimpleXLSXGen.php';
     
     $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
     $base_url = $protocol . "://" . $_SERVER['HTTP_HOST'] . dirname(dirname($_SERVER['REQUEST_URI'])) . "/";
 
-    echo '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">';
-    echo '<head><meta http-equiv="Content-type" content="text/html;charset=utf-8" /></head>';
-    echo '<body>';
-    echo '<table border="0">';
-    echo '<tr style="background-color: #f2f2f2; font-weight: bold;">';
-    echo '<td>Date</td><td>Time</td><td>Store</td><td>Item #</td><td>Qty</td><td>User</td><td>Image Proof</td>';
-    echo '</tr>';
+    $excel_data = [];
+    $excel_data[] = ['Date', 'Time', 'Store', 'Item #', 'Qty', 'User', 'Image Proof'];
     
     foreach ($data_rows as $row) {
-        $d = date('M d, Y', strtotime($row['created_at']));
-        $t = date('h:i A', strtotime($row['created_at']));
         $img_link = $row['image_path'] ? $base_url . $row['image_path'] : '';
         
-        echo '<tr>';
-        echo '<td>' . $d . '</td>';
-        echo '<td>' . $t . '</td>';
-        echo '<td>' . ($row['sname'] ? "{$row['sname']} ({$row['store_code']})" : $row['store_code']) . '</td>';
-        echo '<td>' . $row['item_no'] . '</td>';
-        echo '<td>' . $row['quantity'] . '</td>';
-        echo '<td>' . $row['username'] . '</td>';
-        echo '<td>';
-        if ($img_link) {
-            echo '<a href="' . $img_link . '" target="_blank">';
-            echo '<img src="' . $img_link . '" width="60" height="60" style="display:block;">';
-            echo '</a><br>';
-            echo '<span style="font-size: 8pt; color: blue;">Click to View</span>';
-        } else {
-            echo 'No Image';
-        }
-        echo '</td>';
-        echo '</tr>';
+        $excel_data[] = [
+            date('M d, Y', strtotime($row['created_at'])),
+            date('h:i A', strtotime($row['created_at'])),
+            $row['sname'] ? "{$row['sname']} ({$row['store_code']})" : $row['store_code'],
+            $row['item_no'],
+            (int)$row['quantity'],
+            $row['username'],
+            $img_link ?: 'No Image'
+        ];
     }
-    echo '</table>';
-    echo '</body></html>';
+    
+    $xlsx = Shuchkin\SimpleXLSXGen::fromArray($excel_data);
+    $xlsx->downloadAs("{$filename}.xlsx");
+    exit;
 } else {
     header('Content-Type: text/plain');
     header('Content-Disposition: attachment; filename="' . $filename . '.txt"');

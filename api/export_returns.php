@@ -99,37 +99,28 @@ if ($result->num_rows > 0) {
 }
 
 if ($type === 'xls') {
-    header("Content-Type: application/vnd.ms-excel; charset=UTF-8");
-    header("Content-Disposition: attachment; filename={$filename}.xls");
-    header("Cache-Control: max-age=0");
+    require_once '../includes/SimpleXLSXGen.php';
     
-    echo '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">';
-    echo '<head><meta http-equiv="Content-type" content="text/html;charset=utf-8" /></head>';
-    echo '<body>';
-    echo '<table border="0">';
-    echo '<tr style="background-color: #f2f2f2; font-weight: bold;">';
-    foreach ($headers as $h) echo "<td>$h</td>";
-    echo '</tr>';
-
+    $excel_data = [];
+    $excel_data[] = $headers;
+    
     foreach ($data_rows as $row) {
-        $line = [
+        $excel_data[] = [
             date('M d, Y', strtotime($row['created_at'])),
             date('h:i A', strtotime($row['created_at'])),
             $row['sname'] ? "{$row['sname']} ({$row['store_code']})" : $row['store_code'],
             $row['return_item'] ?: 'Exchange Only',
-            $row['return_amount'] ? number_format($row['return_amount'], 2) : '0.00',
+            $row['return_amount'] ? (float)$row['return_amount'] : 0.00,
             $row['reason'] ?: '—',
             $row['exchange_name'] ?: ($row['is_exchange'] ? 'Replacement' : '—'),
             $row['exchange_item'] ?: '—',
-            $row['exchange_amount'] ? number_format($row['exchange_amount'], 2) : '0.00',
+            $row['exchange_amount'] ? (float)$row['exchange_amount'] : 0.00,
             $row['username']
         ];
-        echo '<tr>';
-        foreach ($line as $val) echo "<td>$val</td>";
-        echo '</tr>';
     }
-    echo '</table>';
-    echo '</body></html>';
+    
+    $xlsx = Shuchkin\SimpleXLSXGen::fromArray($excel_data);
+    $xlsx->downloadAs("{$filename}.xlsx");
     exit;
 }
 
