@@ -469,7 +469,7 @@ if ($is_single_day && ($is_admin || $is_multi_store_admin) && empty($store_filte
                         <?php if ($can_edit): ?>
                             <td class="px-5 py-3.5 text-center" data-label="Actions">
                                 <div class="flex items-center justify-center md:justify-center gap-2">
-                                    <button onclick="editSale(<?= $s['id'] ?>)" class="w-7 h-7 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 transition-all flex items-center justify-center" title="Edit Record"><i class="fas fa-edit text-[10px]"></i></button>
+                                    <button onclick="editSale(<?= $s['id'] ?>, '<?= htmlspecialchars($s['store_code']) ?>')" class="w-7 h-7 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 transition-all flex items-center justify-center" title="Edit Record"><i class="fas fa-edit text-[10px]"></i></button>
                                     <?php if ($can_delete): ?>
                                     <button onclick="deleteSale(<?= $s['id'] ?>)" class="w-7 h-7 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 transition-all flex items-center justify-center" title="Delete Record"><i class="fas fa-trash-alt text-[10px]"></i></button>
                                     <?php endif; ?>

@@ -309,6 +309,27 @@ if (isset($_GET['ajax'])) {
                         </div>
                     </div>
 
+                    <?php if ($is_admin || $is_multi_store_admin): ?>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Store</label>
+                        <div class="relative group">
+                            <i class="fas fa-store absolute left-5 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-blue-400 transition-colors"></i>
+                            <select name="store_code" id="edit-store" 
+                                   class="w-full bg-slate-950/50 border border-white/10 rounded-2xl pl-12 pr-5 py-4 text-sm text-white focus:outline-none focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all font-bold appearance-none cursor-pointer">
+                                <option value="" disabled>Select Store...</option>
+                                <?php 
+                                $stores_list = $db->query("SELECT scode, sname FROM storecode ORDER BY scode ASC")->fetch_all(MYSQLI_ASSOC);
+                                foreach ($stores_list as $st): 
+                                    if ($is_multi_store_admin && !in_array($st['scode'], $_SESSION['assigned_stores'] ?? [])) continue;
+                                ?>
+                                    <option value="<?= htmlspecialchars($st['scode']) ?>"><?= htmlspecialchars($st['scode']) ?> - <?= htmlspecialchars($st['sname']) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                            <i class="fas fa-chevron-down absolute right-5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none text-[10px]"></i>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+
                     <div class="grid grid-cols-2 gap-4">
                         <div class="space-y-2">
                             <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Sale Price (₱)</label>
@@ -548,7 +569,7 @@ if (isset($_GET['ajax'])) {
         );
     };
 
-    window.editSale = function (id) {
+    window.editSale = function (id, storeCode = null) {
         const row = document.querySelector(`input[value="${id}"].sale-checkbox`)?.closest('tr');
         if (!row) return;
 
@@ -572,6 +593,10 @@ if (isset($_GET['ajax'])) {
         document.getElementById('edit-amount').value = price;
         document.getElementById('edit-qty').value = qty;
         document.getElementById('edit-date').value = rawDate;
+        
+        if (storeCode && document.getElementById('edit-store')) {
+            document.getElementById('edit-store').value = storeCode;
+        }
 
         const modal = document.getElementById('edit-modal');
         // Move modal to body to escape transform container and fix scroll visibility
@@ -596,6 +621,10 @@ if (isset($_GET['ajax'])) {
             quantity: this.quantity.value,
             created_at: this.created_at.value
         };
+        
+        if (this.store_code) {
+            data.store_code = this.store_code.value;
+        }
 
         const btn = this.querySelector('button[type="submit"]');
         const origText = btn.innerText;

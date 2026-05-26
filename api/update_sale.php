@@ -3,7 +3,7 @@ session_start();
 header('Content-Type: application/json');
 
 $role      = $_SESSION['role'] ?? 'user';
-$can_edit  = ($role === 'admin' || ($_SESSION['user'] ?? '') === 'admin' || $role === 'admin_view');
+$can_edit  = ($role === 'admin' || ($_SESSION['user'] ?? '') === 'admin' || $role === 'admin_view' || $role === 'multi_store_admin');
 if (!$can_edit) {
     echo json_encode(['success' => false, 'message' => 'Unauthorized.']);
     exit;
@@ -18,6 +18,7 @@ $id      = $data['id'] ?? 0;
 $item_no = trim($data['item_no'] ?? '');
 $amount  = floatval($data['amount_sold'] ?? 0);
 $qty     = intval($data['quantity'] ?? 0);
+$store_code_new = trim($data['store_code'] ?? '');
 
 $created_at = $data['created_at'] ?? '';
 
@@ -29,14 +30,21 @@ if (!$id || $item_no === '') {
 $line_total = $amount * $qty;
 
 if (!empty($created_at)) {
-    // If we only have the date, we might want to preserve the time if it's already there, 
-    // but usually, a simple date change sets it to 00:00:00 or current time.
-    // For simplicity, we'll just set it to the provided date.
-    $stmt = $db->prepare("UPDATE sales SET item_no = ?, amount_sold = ?, quantity = ?, line_total = ?, created_at = ? WHERE id = ?");
-    $stmt->bind_param("sdidsi", $item_no, $amount, $qty, $line_total, $created_at, $id);
+    if ($store_code_new !== '') {
+        $stmt = $db->prepare("UPDATE sales SET item_no = ?, amount_sold = ?, quantity = ?, line_total = ?, created_at = ?, store_code = ? WHERE id = ?");
+        $stmt->bind_param("sdidssi", $item_no, $amount, $qty, $line_total, $created_at, $store_code_new, $id);
+    } else {
+        $stmt = $db->prepare("UPDATE sales SET item_no = ?, amount_sold = ?, quantity = ?, line_total = ?, created_at = ? WHERE id = ?");
+        $stmt->bind_param("sdidsi", $item_no, $amount, $qty, $line_total, $created_at, $id);
+    }
 } else {
-    $stmt = $db->prepare("UPDATE sales SET item_no = ?, amount_sold = ?, quantity = ?, line_total = ? WHERE id = ?");
-    $stmt->bind_param("sdidi", $item_no, $amount, $qty, $line_total, $id);
+    if ($store_code_new !== '') {
+        $stmt = $db->prepare("UPDATE sales SET item_no = ?, amount_sold = ?, quantity = ?, line_total = ?, store_code = ? WHERE id = ?");
+        $stmt->bind_param("sdidsi", $item_no, $amount, $qty, $line_total, $store_code_new, $id);
+    } else {
+        $stmt = $db->prepare("UPDATE sales SET item_no = ?, amount_sold = ?, quantity = ?, line_total = ? WHERE id = ?");
+        $stmt->bind_param("sdidi", $item_no, $amount, $qty, $line_total, $id);
+    }
 }
 
 // Fetch original record for logging
@@ -46,16 +54,18 @@ $store_code = $old_row ? $old_row['store_code'] : '';
 $old_qty = $old_row ? $old_row['quantity'] : 0;
 $old_item = $old_row ? $old_row['item_no'] : '';
 
+$final_store = ($store_code_new !== '' && $store_code_new !== $store_code) ? $store_code_new : $store_code;
+
 if ($stmt->execute()) {
     log_activity(
         $db, 
         $_SESSION['user'], 
         'edit', 
         'Sale', 
-        $store_code, 
+        $final_store, 
         $item_no, 
         $qty, 
-        "Edited Sale #$id: Changed item from '$old_item' to '$item_no', qty from $old_qty to $qty"
+        "Edited Sale #$id: Changed item from '$old_item' to '$item_no', qty from $old_qty to $qty" . ($store_code_new !== '' && $store_code_new !== $store_code ? ", store from '$store_code' to '$store_code_new'" : "")
     );
     echo json_encode(['success' => true, 'message' => 'Record updated successfully.']);
 } else {
