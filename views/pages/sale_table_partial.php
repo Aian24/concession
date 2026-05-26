@@ -74,7 +74,9 @@ if ($is_single_day && ($is_admin || $is_multi_store_admin) && empty($store_filte
                         SELECT DISTINCT s.store_code 
                         FROM sales s 
                         WHERE s.created_at >= ? AND s.created_at <= ?
-                    )";
+                    )
+                    AND sc.scode NOT IN ('HO', 'HEADOFFICE', 'HEAD OFFICE')
+                    AND (sc.sname IS NULL OR (sc.sname NOT LIKE '%Head Office%' AND sc.sname NOT LIKE '%HO%'))";
     $m_params = [$start_date . ' 00:00:00', $end_date . ' 23:59:59'];
     $m_types = "ss";
 
