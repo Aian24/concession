@@ -323,7 +323,7 @@ if (!isset($can_delete)) {
                         </td>
                         <td class="px-5 py-3.5 text-center" data-label="Ex. Item #">
                             <?php if ($r['is_exchange']): ?>
-                                <span class="text-blue-400 font-mono text-[11px] font-bold">#<?= htmlspecialchars($r['exchange_item'] ?: 'N/A') ?></span>
+                                <span class="text-blue-400 font-bold">#<?= htmlspecialchars($r['exchange_item'] ?: 'N/A') ?></span>
                             <?php else: ?>
                                 <span class="text-gray-600 text-[10px]">—</span>
                             <?php endif; ?>

@@ -16,14 +16,33 @@ $affected_stores_count = 0;
 $affected_stores_list = '';
 
 if (isset($where) && isset($params) && isset($types)) {
-    $sum_stmt = $db->prepare("SELECT SUM(s.quantity), SUM(s.line_total), COUNT(DISTINCT s.store_code), GROUP_CONCAT(DISTINCT CONCAT(s.store_code, COALESCE(CONCAT(' (', sc.sname, ')'), '')) SEPARATOR ', ') FROM sales s LEFT JOIN storecode sc ON s.store_code = sc.scode COLLATE utf8mb4_unicode_ci $where");
+    $sum_stmt = $db->prepare("SELECT SUM(s.quantity), SUM(s.line_total), COUNT(DISTINCT s.store_code), GROUP_CONCAT(DISTINCT CONCAT(s.store_code, COALESCE(CONCAT(' (', sc.sname, ')'), '')) SEPARATOR '||') FROM sales s LEFT JOIN storecode sc ON s.store_code = sc.scode COLLATE utf8mb4_unicode_ci $where");
     if (!empty($params)) $sum_stmt->bind_param($types, ...$params);
     $sum_stmt->execute();
     $sum_res = $sum_stmt->get_result()->fetch_row();
     $grand_total_qty = $sum_res[0] ?? 0;
     $grand_total_amount = $sum_res[1] ?? 0;
     $affected_stores_count = $sum_res[2] ?? 0;
-    $affected_stores_list = $sum_res[3] ?? '';
+    $affected_raw = $sum_res[3] ?? '';
+    
+    // Build styled HTML for affected stores
+    $affected_stores_html = '';
+    if ($affected_raw) {
+        $arr = explode('||', $affected_raw);
+        $styled_arr = [];
+        foreach ($arr as $store_str) {
+            $parts = explode(' ', $store_str, 2);
+            if (count($parts) === 2) {
+                $styled_arr[] = "<span class='text-white font-bold'>" . htmlspecialchars($parts[0]) . "</span> <span class='opacity-75'>" . htmlspecialchars($parts[1]) . "</span>";
+            } else {
+                $styled_arr[] = "<span class='text-white font-bold'>" . htmlspecialchars($store_str) . "</span>";
+            }
+        }
+        $affected_stores_html = implode('', array_map(function($html) {
+            return "<div class='bg-white/5 rounded px-2 py-1.5 truncate text-left border border-white/5' title='".htmlspecialchars(strip_tags($html))."'>" . $html . "</div>";
+        }, $styled_arr));
+    }
+    
     $sum_stmt->close();
 }
 
@@ -42,6 +61,43 @@ if (!empty($store_filter)) {
 } elseif ($affected_stores_count == 1) {
     $display_store_label = $affected_stores_list;
     $display_store_title = "Store Affected";
+}
+
+$missing_stores_count = 0;
+$missing_stores_list = '';
+$is_single_day = (!empty($start_date) && !empty($end_date) && $start_date === $end_date);
+
+if ($is_single_day && ($is_admin || $is_multi_store_admin) && empty($store_filter)) {
+    $missing_sql = "SELECT sc.scode, sc.sname 
+                    FROM storecode sc 
+                    WHERE sc.scode NOT IN (
+                        SELECT DISTINCT s.store_code 
+                        FROM sales s 
+                        WHERE s.created_at >= ? AND s.created_at <= ?
+                    )";
+    $m_params = [$start_date . ' 00:00:00', $end_date . ' 23:59:59'];
+    $m_types = "ss";
+
+    if ($is_multi_store_admin) {
+        $assigned = $_SESSION['assigned_stores'] ?? [];
+        $missing_sql .= build_multi_store_clause('sc.scode', $assigned);
+    }
+    
+    $missing_stmt = $db->prepare($missing_sql);
+    $missing_stmt->bind_param($m_types, ...$m_params);
+    $missing_stmt->execute();
+    $m_res = $missing_stmt->get_result();
+    
+    $missing_arr = [];
+    while ($row = $m_res->fetch_assoc()) {
+        $missing_arr[] = "<span class='text-white font-bold'>" . htmlspecialchars($row['scode']) . "</span>" . ($row['sname'] ? " <span class='opacity-75'>(" . htmlspecialchars($row['sname']) . ")</span>" : "");
+    }
+    $missing_stmt->close();
+    
+    $missing_stores_count = count($missing_arr);
+    $missing_stores_html = implode('', array_map(function($html) {
+        return "<div class='bg-red-500/10 rounded px-2 py-1.5 truncate text-left border border-red-500/10' title='".htmlspecialchars(strip_tags($html))."'>" . $html . "</div>";
+    }, $missing_arr));
 }
 ?>
 <style>
@@ -141,10 +197,34 @@ if (!empty($store_filter)) {
                         <span class="text-[9px] text-gray-500 font-bold uppercase tracking-widest leading-none mb-1">Total Qty</span>
                         <span class="text-sm font-black text-white leading-none"><?= number_format($grand_total_qty) ?></span>
                     </div>
-                    <div class="bg-slate-900/50 border border-white/5 rounded-lg px-3 py-1.5 flex flex-col justify-center shadow-inner cursor-help" title="<?= htmlspecialchars($affected_stores_list) ?>">
+                    <div class="relative group bg-slate-900/50 border border-white/5 rounded-lg px-3 py-1.5 flex flex-col justify-center shadow-inner cursor-help">
                         <span class="text-[9px] text-gray-500 font-bold uppercase tracking-widest leading-none mb-1"><?= htmlspecialchars($display_store_title) ?></span>
                         <span class="text-sm font-bold text-gray-300 leading-none"><?= htmlspecialchars($display_store_label) ?></span>
+                        
+                        <?php if (!empty($affected_stores_html) && $display_store_title !== 'Store Filter' && $display_store_title !== 'Store Affected'): ?>
+                        <!-- Custom Tooltip -->
+                        <div class="absolute top-full left-1/2 -translate-x-1/2 mt-3 min-w-[400px] max-w-xl w-max p-4 bg-slate-900 border border-white/10 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[100] pointer-events-none">
+                            <h4 class="text-xs font-black text-white uppercase tracking-widest mb-3 border-b border-white/5 pb-2">Affected Stores</h4>
+                            <div class="grid grid-cols-3 gap-2 text-[11px] text-gray-400 font-medium">
+                                <?= $affected_stores_html ?>
+                            </div>
+                        </div>
+                        <?php endif; ?>
                     </div>
+                    <?php if ($missing_stores_count > 0): ?>
+                    <div class="relative group bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-1.5 flex flex-col justify-center shadow-inner cursor-help">
+                        <span class="text-[9px] text-red-400 font-bold uppercase tracking-widest leading-none mb-1">No Submissions</span>
+                        <span class="text-sm font-bold text-red-300 leading-none"><?= $missing_stores_count ?> Stores</span>
+
+                        <!-- Custom Tooltip -->
+                        <div class="absolute top-full left-1/2 -translate-x-1/2 mt-3 min-w-[400px] max-w-xl w-max p-4 bg-[#1e0f14] border border-red-500/20 rounded-xl shadow-[0_20px_50px_rgba(220,38,38,0.2)] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[100] pointer-events-none">
+                            <h4 class="text-xs font-black text-red-400 uppercase tracking-widest mb-3 border-b border-red-500/10 pb-2">Stores with No Submissions</h4>
+                            <div class="grid grid-cols-3 gap-2 text-[11px] text-gray-400 font-medium">
+                                <?= $missing_stores_html ?>
+                            </div>
+                        </div>
+                    </div>
+                    <?php endif; ?>
                 </div>
             </div>
             
