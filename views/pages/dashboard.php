@@ -82,6 +82,27 @@ $total_sales = (float) ($sales_data['total_sales'] ?? 0.00);
 $total_sales_qty = (int) ($sales_data['total_qty'] ?? 0);
 $total_sales_count = (int) ($sales_data['total_count'] ?? 0);
 
+// 1.1 Top Sellers (Cashiers)
+$top_sellers_ranking = [];
+$top_sellers_res = $db->query("SELECT username, SUM(line_total) as total_sales FROM sales WHERE DATE(created_at) BETWEEN '$start_date' AND '$end_date' $store_clause GROUP BY username ORDER BY total_sales DESC LIMIT 20");
+if ($top_sellers_res) {
+    $top_sellers_ranking = $top_sellers_res->fetch_all(MYSQLI_ASSOC);
+}
+
+// 1.3 Top Store (Admin Only)
+$top_store_name = 'N/A';
+$top_stores_ranking = [];
+if ($is_admin) {
+    $top_store_res = $db->query("SELECT s.store_code, sc.sname, SUM(s.line_total) as total_sales FROM sales s LEFT JOIN storecode sc ON s.store_code = sc.scode COLLATE utf8mb4_unicode_ci WHERE DATE(s.created_at) BETWEEN '$start_date' AND '$end_date' $store_clause GROUP BY s.store_code, sc.sname ORDER BY total_sales DESC");
+    if ($top_store_res) {
+        $top_stores_ranking = $top_store_res->fetch_all(MYSQLI_ASSOC);
+        if (!empty($top_stores_ranking)) {
+            $top = $top_stores_ranking[0];
+            $top_store_name = $top['store_code'] . ($top['sname'] ? " (" . $top['sname'] . ")" : "");
+        }
+    }
+}
+
 // 2. Total Returns
 $returns_res = $db->query("SELECT SUM(return_amount) as total_returns, COUNT(id) as total_count FROM returns WHERE DATE(created_at) BETWEEN '$start_date' AND '$end_date' $store_clause");
 $returns_data = $returns_res ? $returns_res->fetch_assoc() : ['total_returns' => 0, 'total_count' => 0];
@@ -276,13 +297,15 @@ if (!function_exists('time_elapsed_string')) {
             <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-pink-500/10 flex items-center justify-center text-pink-400 border border-pink-500/20 shadow-lg shadow-pink-500/5">
                 <i class="fas fa-box text-lg sm:text-xl"></i>
             </div>
-            <h3 class="text-[10px] sm:text-xs font-black text-gray-500 uppercase tracking-widest sm:tracking-[0.2em] truncate" title="Total Quantity">Total Quantity</h3>
+            <h3 class="text-[10px] sm:text-xs font-black text-gray-500 uppercase tracking-widest sm:tracking-[0.2em] truncate" title="Total Qty">Total Qty</h3>
         </div>
         <p class="text-lg sm:text-xl min-[1400px]:text-lg xl:text-xl 2xl:text-2xl font-bold text-white mb-1 truncate" title="<?= number_format($total_sales_qty) ?>"><?= number_format($total_sales_qty) ?></p>
         <div class="flex items-center gap-2">
             <span class="text-[10px] font-bold text-pink-400 bg-pink-500/10 px-2 py-0.5 rounded-full uppercase truncate">Quantity Sold</span>
         </div>
     </div>
+
+
 
     <div class="glass-panel p-4 sm:p-5 xl:p-6 border border-white/5 relative overflow-hidden group hover:border-blue-500/30 transition-all duration-500">
         <div class="absolute -right-4 -top-4 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-all"></div>
@@ -360,8 +383,65 @@ if (!function_exists('time_elapsed_string')) {
             </div>
         </div>
         
-        <div class="relative h-[400px]">
-            <canvas id="monthlyActivityChart"></canvas>
+        <div class="grid grid-cols-1 xl:grid-cols-4 gap-8">
+            <!-- Rankings Section (Left) -->
+            <div class="xl:col-span-1 flex flex-col gap-6 order-2 xl:order-1">
+                <!-- Top 10 Sellers (Users) -->
+                <div class="bg-slate-900/40 rounded-xl border border-white/5 p-4 flex-1 max-h-[192px] overflow-hidden flex flex-col relative group">
+                    <div class="absolute -right-4 -top-4 w-24 h-24 bg-purple-500/10 rounded-full blur-2xl group-hover:bg-purple-500/20 transition-all pointer-events-none"></div>
+                    <h4 class="text-xs font-black text-purple-400 uppercase tracking-widest mb-3 flex items-center gap-2"><i class="fas fa-users"></i> Top Sellers</h4>
+                    <div class="overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 pr-2 space-y-2 flex-1">
+                        <?php if (empty($top_sellers_ranking)): ?>
+                            <div class="text-xs text-gray-500 italic text-center py-4">No data available</div>
+                        <?php else: ?>
+                            <?php $rank = 1; foreach($top_sellers_ranking as $usr): ?>
+                            <div class="flex justify-between items-center text-[10px] bg-purple-500/5 px-2 py-1.5 rounded border border-purple-500/10">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-black text-purple-500 w-3"><?= $rank++ ?></span>
+                                    <span class="font-bold text-gray-300 truncate max-w-[100px]"><?= htmlspecialchars($usr['username']) ?></span>
+                                </div>
+                                <span class="font-black text-emerald-400 shrink-0">₱<?= number_format($usr['total_sales'], 0) ?></span>
+                            </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+
+                
+                <?php if ($is_admin): ?>
+                <!-- Top 10 Stores -->
+                <div class="bg-slate-900/40 rounded-xl border border-white/5 p-4 flex-1 max-h-[192px] overflow-hidden flex flex-col relative group">
+                    <div class="absolute -right-4 -top-4 w-24 h-24 bg-[#3b82f6]/10 rounded-full blur-2xl group-hover:bg-[#3b82f6]/20 transition-all pointer-events-none"></div>
+                    <h4 class="text-xs font-black text-[#3b82f6] uppercase tracking-widest mb-3 flex items-center gap-2"><i class="fas fa-trophy"></i> Top Stores</h4>
+                    <div class="overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 pr-2 space-y-2 flex-1">
+                        <?php if (empty($top_stores_ranking)): ?>
+                            <div class="text-xs text-gray-500 italic text-center py-4">No data available</div>
+                        <?php else: ?>
+                            <?php $rank = 1; foreach($top_stores_ranking as $st): ?>
+                            <div class="flex justify-between items-center text-[10px] bg-[#3b82f6]/5 px-2 py-1.5 rounded border border-[#3b82f6]/10">
+                                <div class="flex items-center gap-2 mr-2 min-w-0">
+                                    <span class="font-black text-[#3b82f6] w-4 shrink-0"><?= $rank++ ?></span>
+                                    <span class="font-bold text-gray-300 truncate text-[10px]">
+                                        <?= htmlspecialchars($st['store_code']) ?>
+                                        <?php if ($st['sname']): ?>
+                                            <span class="text-[9px] text-gray-500 font-normal ml-0.5">(<?= htmlspecialchars($st['sname']) ?>)</span>
+                                        <?php endif; ?>
+                                    </span>
+                                </div>
+                                <span class="font-black text-emerald-400 shrink-0">₱<?= number_format($st['total_sales'], 0) ?></span>
+                            </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <?php endif; ?>
+            </div>
+
+            <!-- Chart Section (Right) -->
+            <div class="xl:col-span-3 relative h-[400px] order-1 xl:order-2">
+                <canvas id="monthlyActivityChart"></canvas>
+            </div>
         </div>
     </div>
 </div>
