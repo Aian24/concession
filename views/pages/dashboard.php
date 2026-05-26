@@ -2,9 +2,18 @@
 $db = db_connect();
 
 // Date Range Logic
-$end_date = $_GET['end_date'] ?? date('Y-m-d');
+if (isset($_GET['end_date'])) {
+    $end_date = $_GET['end_date'];
+    $_SESSION['dashboard_end_date'] = $end_date;
+} else {
+    $end_date = $_SESSION['dashboard_end_date'] ?? date('Y-m-d');
+}
+
 if (isset($_GET['start_date'])) {
     $start_date = $_GET['start_date'];
+    $_SESSION['dashboard_start_date'] = $start_date;
+} elseif (isset($_SESSION['dashboard_start_date'])) {
+    $start_date = $_SESSION['dashboard_start_date'];
 } else {
     // Default: Earliest transaction of the current month, or 1st of the month
     $min_date_res = $db->query("SELECT MIN(created_at) as min_date FROM sales WHERE MONTH(created_at) = MONTH(NOW()) AND YEAR(created_at) = YEAR(NOW())");
@@ -26,7 +35,12 @@ $is_admin = ($is_full_admin || $is_admin_view || $is_multi_store_admin);
 $session_store_code = $_SESSION['store_code'] ?? '';
 
 // Filter store code from GET
-$filter_store_code = $_GET['store_code'] ?? '';
+if (isset($_GET['store_code'])) {
+    $filter_store_code = $_GET['store_code'];
+    $_SESSION['dashboard_store_code'] = $filter_store_code;
+} else {
+    $filter_store_code = $_SESSION['dashboard_store_code'] ?? '';
+}
 
 $store_clause = "";
 if ($is_store_admin) {

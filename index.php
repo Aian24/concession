@@ -75,6 +75,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                 setcookie('remember_store_code', '', time() - 3600, '/');
             }
             
+            // ── Clear Filter Sessions ─────────────────────────
+            $filters = [
+                'history_tab', 'history_limit', 'history_page', 'history_search',
+                'monitoring_status', 'monitoring_limit', 'monitoring_page', 'monitoring_search', 'monitoring_start_date', 'monitoring_end_date',
+                'dashboard_start_date', 'dashboard_end_date', 'dashboard_store_code',
+                'sale_limit', 'sale_page', 'sale_search', 'sale_start_date', 'sale_end_date', 'sale_store_filter',
+                'return_limit', 'return_page', 'return_search', 'return_start_date', 'return_end_date', 'return_store_filter',
+                'receiving_limit', 'receiving_page', 'receiving_search', 'receiving_start_date', 'receiving_end_date', 'receiving_store_filter',
+                'receiving_partial_limit', 'receiving_partial_page', 'receiving_partial_search', 'receiving_partial_start_date', 'receiving_partial_end_date', 'receiving_partial_store_filter',
+                'pullout_status', 'pullout_limit', 'pullout_page', 'pullout_search', 'pullout_start_date', 'pullout_end_date', 'pullout_store_filter'
+            ];
+            foreach ($filters as $f) {
+                unset($_SESSION[$f]);
+            }
+            
             if ($user['role'] === 'admin' || $user['role'] === 'admin_view' || $user['role'] === 'store_admin' || $user['role'] === 'multi_store_admin' || $uname === 'admin') {
                 header("Location: dashboard");
             } else {

@@ -19,13 +19,30 @@ require_once 'includes/db.php';
 $db = db_connect();
 
 // ── Search & Pagination Logic ──────────────────────────────
-$limit        = isset($_GET['limit']) ? max(1, intval($_GET['limit'])) : 100;
-$page         = isset($_GET['p']) ? max(1, intval($_GET['p'])) : 1;
+$is_filter_request = isset($_GET['ajax']) || isset($_GET['search']) || isset($_GET['start_date']) || isset($_GET['end_date']) || isset($_GET['store_filter']);
+if ($is_filter_request) {
+    $limit        = isset($_GET['limit']) ? max(1, intval($_GET['limit'])) : 100;
+    $page         = isset($_GET['p']) ? max(1, intval($_GET['p'])) : 1;
+    $search       = $_GET['search'] ?? '';
+    $start_date   = $_GET['start_date'] ?? '';
+    $end_date     = $_GET['end_date']   ?? '';
+    $store_filter = $_GET['store_filter'] ?? '';
+    
+    $_SESSION['pullout_limit'] = $limit;
+    $_SESSION['pullout_page'] = $page;
+    $_SESSION['pullout_search'] = $search;
+    $_SESSION['pullout_start_date'] = $start_date;
+    $_SESSION['pullout_end_date'] = $end_date;
+    $_SESSION['pullout_store_filter'] = $store_filter;
+} else {
+    $limit        = $_SESSION['pullout_limit'] ?? 100;
+    $page         = $_SESSION['pullout_page'] ?? 1;
+    $search       = $_SESSION['pullout_search'] ?? '';
+    $start_date   = $_SESSION['pullout_start_date'] ?? '';
+    $end_date     = $_SESSION['pullout_end_date'] ?? '';
+    $store_filter = $_SESSION['pullout_store_filter'] ?? '';
+}
 $offset       = ($page - 1) * $limit;
-$search       = $_GET['search'] ?? '';
-$start_date   = $_GET['start_date'] ?? '';
-$end_date     = $_GET['end_date']   ?? '';
-$store_filter = $_GET['store_filter'] ?? '';
 
 // Build Query
 $where = "WHERE 1=1";
@@ -52,10 +69,10 @@ if ($is_store_admin || (!$is_admin && !$is_multi_store_admin)) {
 }
 
 if ($search !== '') {
-    $where .= " AND (s.item_no LIKE ? OR s.username LIKE ? OR s.id LIKE ?)";
+    $where .= " AND (s.item_no LIKE ? OR s.username LIKE ? OR s.id LIKE ? OR s.store_code LIKE ?)";
     $lk = "%$search%";
-    $params[] = $lk; $params[] = $lk; $params[] = $lk;
-    $types .= "sss";
+    $params[] = $lk; $params[] = $lk; $params[] = $lk; $params[] = $lk;
+    $types .= "ssss";
 }
 
 if ($start_date !== '') {

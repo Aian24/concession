@@ -9,6 +9,40 @@ if (!isset($can_delete)) {
     $can_edit       = ($is_full_admin || $is_admin_view || $is_multi_store_admin);
     $can_delete     = ($is_full_admin);
 }
+// Calculate Grand Totals based on current filters
+$grand_total_qty = 0;
+$grand_total_amount = 0;
+$affected_stores_count = 0;
+$affected_stores_list = '';
+
+if (isset($where) && isset($params) && isset($types)) {
+    $sum_stmt = $db->prepare("SELECT SUM(s.quantity), SUM(s.line_total), COUNT(DISTINCT s.store_code), GROUP_CONCAT(DISTINCT CONCAT(s.store_code, COALESCE(CONCAT(' (', sc.sname, ')'), '')) SEPARATOR ', ') FROM sales s LEFT JOIN storecode sc ON s.store_code = sc.scode COLLATE utf8mb4_unicode_ci $where");
+    if (!empty($params)) $sum_stmt->bind_param($types, ...$params);
+    $sum_stmt->execute();
+    $sum_res = $sum_stmt->get_result()->fetch_row();
+    $grand_total_qty = $sum_res[0] ?? 0;
+    $grand_total_amount = $sum_res[1] ?? 0;
+    $affected_stores_count = $sum_res[2] ?? 0;
+    $affected_stores_list = $sum_res[3] ?? '';
+    $sum_stmt->close();
+}
+
+$display_store_title = "Stores Affected";
+$display_store_label = $affected_stores_count . " Stores";
+
+if (!empty($store_filter)) {
+    $display_store_label = $store_filter;
+    $display_store_title = "Store Filter";
+} elseif (!$is_admin && !$is_multi_store_admin) {
+    $display_store_label = ($sale_store_code ?? $_SESSION['store_code'] ?? 'Unknown');
+    $display_store_title = "Store";
+} elseif ($is_store_admin) {
+    $display_store_label = ($sale_store_code ?? $_SESSION['store_code'] ?? 'Unknown');
+    $display_store_title = "Store";
+} elseif ($affected_stores_count == 1) {
+    $display_store_label = $affected_stores_list;
+    $display_store_title = "Store Affected";
+}
 ?>
 <style>
     @media (max-width: 768px) {
@@ -90,9 +124,28 @@ if (!isset($can_delete)) {
 <div class="glass-panel border border-white/5 shadow-xl overflow-hidden mt-6" id="submitted-sales-section">
     <div class="p-5 border-b border-white/5 bg-slate-800/30 space-y-4">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div class="flex items-center gap-2.5">
-                <i class="fas fa-history text-green-400 text-sm"></i>
-                <h3 class="text-sm font-bold text-white tracking-wide uppercase">Submitted Sales</h3>
+            <div class="flex flex-col lg:flex-row lg:items-center gap-4">
+                <div class="flex items-center gap-2.5">
+                    <i class="fas fa-history text-green-400 text-sm"></i>
+                    <h3 class="text-sm font-bold text-white tracking-wide uppercase">Submitted Sales</h3>
+                </div>
+                
+                <!-- Grand Totals Badges -->
+                <div class="hidden lg:block w-px h-8 bg-white/10"></div>
+                <div class="flex flex-wrap items-center gap-3">
+                    <div class="bg-slate-900/50 border border-white/5 rounded-lg px-3 py-1.5 flex flex-col justify-center shadow-inner">
+                        <span class="text-[8px] text-gray-500 font-bold uppercase tracking-widest leading-none mb-1">Total Sales</span>
+                        <span class="text-xs font-black text-green-400 leading-none">₱<?= number_format($grand_total_amount, 2) ?></span>
+                    </div>
+                    <div class="bg-slate-900/50 border border-white/5 rounded-lg px-3 py-1.5 flex flex-col justify-center shadow-inner">
+                        <span class="text-[8px] text-gray-500 font-bold uppercase tracking-widest leading-none mb-1">Total Qty</span>
+                        <span class="text-xs font-black text-white leading-none"><?= number_format($grand_total_qty) ?></span>
+                    </div>
+                    <div class="bg-slate-900/50 border border-white/5 rounded-lg px-3 py-1.5 flex flex-col justify-center shadow-inner cursor-help" title="<?= htmlspecialchars($affected_stores_list) ?>">
+                        <span class="text-[8px] text-gray-500 font-bold uppercase tracking-widest leading-none mb-1"><?= htmlspecialchars($display_store_title) ?></span>
+                        <span class="text-xs font-bold text-gray-300 leading-none"><?= htmlspecialchars($display_store_label) ?></span>
+                    </div>
+                </div>
             </div>
             
             <div class="flex flex-wrap items-center gap-2">

@@ -19,13 +19,30 @@ require_once 'includes/db.php';
 $db = db_connect();
 
 // ── Search & Pagination Logic ──────────────────────────────
-$limit        = isset($_GET['limit']) ? max(1, intval($_GET['limit'])) : 100;
-$page         = isset($_GET['p']) ? max(1, intval($_GET['p'])) : 1;
+$is_filter_request = isset($_GET['ajax']) || isset($_GET['search']) || isset($_GET['start_date']) || isset($_GET['end_date']) || isset($_GET['store_filter']);
+if ($is_filter_request) {
+    $limit        = isset($_GET['limit']) ? max(1, intval($_GET['limit'])) : 100;
+    $page         = isset($_GET['p']) ? max(1, intval($_GET['p'])) : 1;
+    $search       = $_GET['search'] ?? '';
+    $start_date   = $_GET['start_date'] ?? '';
+    $end_date     = $_GET['end_date']   ?? '';
+    $store_filter = $_GET['store_filter'] ?? '';
+    
+    $_SESSION['receiving_limit'] = $limit;
+    $_SESSION['receiving_page'] = $page;
+    $_SESSION['receiving_search'] = $search;
+    $_SESSION['receiving_start_date'] = $start_date;
+    $_SESSION['receiving_end_date'] = $end_date;
+    $_SESSION['receiving_store_filter'] = $store_filter;
+} else {
+    $limit        = $_SESSION['receiving_limit'] ?? 100;
+    $page         = $_SESSION['receiving_page'] ?? 1;
+    $search       = $_SESSION['receiving_search'] ?? '';
+    $start_date   = $_SESSION['receiving_start_date'] ?? '';
+    $end_date     = $_SESSION['receiving_end_date'] ?? '';
+    $store_filter = $_SESSION['receiving_store_filter'] ?? '';
+}
 $offset       = ($page - 1) * $limit;
-$search       = $_GET['search'] ?? '';
-$start_date   = $_GET['start_date'] ?? '';
-$end_date     = $_GET['end_date']   ?? '';
-$store_filter = $_GET['store_filter'] ?? '';
 
 // Build Query
 $where = "WHERE 1=1";

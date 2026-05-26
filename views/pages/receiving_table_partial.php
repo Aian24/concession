@@ -15,13 +15,30 @@ if (!isset($received_items)) {
     $can_edit       = ($is_full_admin || $is_admin_view || $is_multi_store_admin);
     $can_delete     = ($is_full_admin);
     
-    $limit        = isset($_GET['limit']) ? max(1, intval($_GET['limit'])) : 10;
-    $page         = isset($_GET['p']) ? max(1, intval($_GET['p'])) : 1;
+    $is_filter_request = isset($_GET['ajax']) || isset($_GET['search']) || isset($_GET['start_date']) || isset($_GET['end_date']) || isset($_GET['store_filter']);
+    if ($is_filter_request) {
+        $limit        = isset($_GET['limit']) ? max(1, intval($_GET['limit'])) : 10;
+        $page         = isset($_GET['p']) ? max(1, intval($_GET['p'])) : 1;
+        $search       = $_GET['search'] ?? '';
+        $start_date   = $_GET['start_date'] ?? '';
+        $end_date     = $_GET['end_date']   ?? '';
+        $store_filter = $_GET['store_filter'] ?? '';
+        
+        $_SESSION['receiving_partial_limit'] = $limit;
+        $_SESSION['receiving_partial_page'] = $page;
+        $_SESSION['receiving_partial_search'] = $search;
+        $_SESSION['receiving_partial_start_date'] = $start_date;
+        $_SESSION['receiving_partial_end_date'] = $end_date;
+        $_SESSION['receiving_partial_store_filter'] = $store_filter;
+    } else {
+        $limit        = $_SESSION['receiving_partial_limit'] ?? 10;
+        $page         = $_SESSION['receiving_partial_page'] ?? 1;
+        $search       = $_SESSION['receiving_partial_search'] ?? '';
+        $start_date   = $_SESSION['receiving_partial_start_date'] ?? '';
+        $end_date     = $_SESSION['receiving_partial_end_date'] ?? '';
+        $store_filter = $_SESSION['receiving_partial_store_filter'] ?? '';
+    }
     $offset       = ($page - 1) * $limit;
-    $search       = $_GET['search'] ?? '';
-    $start_date   = $_GET['start_date'] ?? '';
-    $end_date     = $_GET['end_date']   ?? '';
-    $store_filter = $_GET['store_filter'] ?? '';
 
     // Build Query
     $where = "WHERE 1=1";
