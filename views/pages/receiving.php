@@ -159,16 +159,17 @@ $all_stores_stmt->close();
                             </label>
 
                             <!-- Backdate Option -->
-                            <label class="relative cursor-pointer group" onclick="document.getElementById('page_custom_date').showPicker()">
+                            <label class="relative cursor-pointer group">
                                 <input type="radio" name="page_date_type" value="backdate" class="peer sr-only" onchange="handleDateTypeChange(this.value)">
                                 <div id="backdate-btn-content" class="py-1.5 px-3 flex items-center justify-center gap-2 rounded-lg bg-slate-900 border border-white/5 peer-checked:border-cyan-500/50 peer-checked:bg-cyan-500/10 transition-all overflow-hidden relative">
                                      <i class="fas fa-history text-[9px] text-gray-500 peer-checked:text-cyan-400"></i>
                                      <span id="backdate-text" class="text-[9px] font-bold text-gray-500 peer-checked:text-cyan-400 uppercase tracking-tighter">Backdate</span>
                                      <input type="date" id="page_custom_date" 
                                             max="<?= date('Y-m-d') ?>" 
-                                           class="absolute inset-0 opacity-0 cursor-pointer pointer-events-none" 
+                                            class="absolute inset-0 w-full h-full opacity-[0.01] cursor-pointer z-10" 
                                             value="<?= date('Y-m-d') ?>"
-                                            onchange="updateBackdateText(this.value)">
+                                            onchange="updateBackdateText(this.value)"
+                                            onclick="document.querySelector('input[name=\'page_date_type\'][value=\'backdate\']').checked = true; handleDateTypeChange('backdate'); try{this.showPicker();}catch(e){}">
                                 </div>
                             </label>
                         </div>
