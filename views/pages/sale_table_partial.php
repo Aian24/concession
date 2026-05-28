@@ -384,7 +384,7 @@ if ($is_single_day && ($is_admin || $is_multi_store_admin) && empty($store_filte
     </div>
     
     <div class="overflow-x-auto min-h-[300px]">
-        <table class="w-full md:min-w-max text-left border-collapse glass-table whitespace-nowrap" id="submitted-history-table">
+        <table class="w-full text-left border-collapse glass-table whitespace-nowrap" id="submitted-history-table">
             <thead>
                 <tr>
                     <th class="px-5 py-3 w-10 text-center">
@@ -401,7 +401,7 @@ if ($is_single_day && ($is_admin || $is_multi_store_admin) && empty($store_filte
                     <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Date</th>
                     <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Status</th>
                     <?php if ($can_edit): ?>
-                        <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Actions</th>
+                        <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center min-w-[100px]">Actions</th>
                     <?php endif; ?>
                 </tr>
             </thead>

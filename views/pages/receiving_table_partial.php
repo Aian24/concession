@@ -325,7 +325,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 
     <!-- Table -->
     <div class="overflow-x-auto">
-        <table class="w-full md:min-w-max text-left border-collapse" id="receiving-history-table">
+        <table class="w-full text-left border-collapse" id="receiving-history-table">
             <thead>
                 <tr>
                     <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 w-10 text-center">
@@ -343,7 +343,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
                     <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 text-center">Date Received</th>
                     <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 text-center">Status</th>
                     <?php if ($can_edit): ?>
-                        <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 text-center">Actions</th>
+                        <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 text-center min-w-[100px]">Actions</th>
                     <?php endif; ?>
                 </tr>
             </thead>

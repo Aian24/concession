@@ -235,7 +235,7 @@ if (!isset($can_delete)) {
     </div>
     
     <div class="overflow-x-auto min-h-[300px]">
-        <table class="w-full md:min-w-max text-left border-collapse glass-table whitespace-nowrap" id="return-history-table">
+        <table class="w-full text-left border-collapse glass-table whitespace-nowrap" id="return-history-table">
             <thead>
                 <tr>
                     <th class="px-5 py-3 w-10 text-center">
@@ -256,7 +256,7 @@ if (!isset($can_delete)) {
                     <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Date</th>
                     <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Status</th>
                     <?php if ($can_edit): ?>
-                        <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Actions</th>
+                        <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center min-w-[100px]">Actions</th>
                     <?php endif; ?>
                 </tr>
             </thead>
