@@ -27,20 +27,24 @@ if (!$id || $os_no === '') {
     exit;
 }
 
+// Fetch original record for logging and preserving time
+$old_res = $db->query("SELECT store_code, os_no, quantity, created_at FROM receiving WHERE id = " . intval($id));
+$old_row = $old_res ? $old_res->fetch_assoc() : null;
+$store_code = $old_row ? $old_row['store_code'] : '';
+$old_qty = $old_row ? $old_row['quantity'] : 0;
+$old_os = $old_row ? $old_row['os_no'] : '';
+$old_time = $old_row ? date('H:i:s', strtotime($old_row['created_at'])) : '00:00:00';
+
 if (!empty($created_at)) {
+    if (strlen($created_at) === 10) {
+        $created_at .= ' ' . $old_time;
+    }
     $stmt = $db->prepare("UPDATE receiving SET os_no = ?, from_store = ?, to_store = ?, quantity = ?, created_at = ? WHERE id = ?");
     $stmt->bind_param("sssisi", $os_no, $from_store, $to_store, $quantity, $created_at, $id);
 } else {
     $stmt = $db->prepare("UPDATE receiving SET os_no = ?, from_store = ?, to_store = ?, quantity = ? WHERE id = ?");
     $stmt->bind_param("sssii", $os_no, $from_store, $to_store, $quantity, $id);
 }
-
-// Fetch original record for logging
-$old_res = $db->query("SELECT store_code, os_no, quantity FROM receiving WHERE id = " . intval($id));
-$old_row = $old_res ? $old_res->fetch_assoc() : null;
-$store_code = $old_row ? $old_row['store_code'] : '';
-$old_qty = $old_row ? $old_row['quantity'] : 0;
-$old_os = $old_row ? $old_row['os_no'] : '';
 
 if ($stmt->execute()) {
     log_activity(

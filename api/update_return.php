@@ -32,22 +32,26 @@ if (!$id) {
     exit;
 }
 
+// Fetch original record for logging and preserving time
+$old_res = $db->query("SELECT store_code, return_item, exchange_item, quantity, created_at FROM returns WHERE id = " . intval($id));
+$old_row = $old_res ? $old_res->fetch_assoc() : null;
+$store_code = $old_row ? $old_row['store_code'] : '';
+$old_qty = $old_row ? $old_row['quantity'] : 0;
+$old_item = $old_row ? ($old_row['return_item'] ?: $old_row['exchange_item']) : '';
+$old_time = $old_row ? date('H:i:s', strtotime($old_row['created_at'])) : '00:00:00';
+
 $is_exchange = ($ex_item !== '' || $ex_amount > 0 || $ex_name !== '' || $ex_qty > 0) ? 1 : 0;
 
 if (!empty($created_at)) {
+    if (strlen($created_at) === 10) {
+        $created_at .= ' ' . $old_time;
+    }
     $stmt = $db->prepare("UPDATE returns SET return_item = ?, quantity = ?, return_amount = ?, reason = ?, is_exchange = ?, exchange_name = ?, exchange_item = ?, exchange_quantity = ?, exchange_amount = ?, created_at = ? WHERE id = ?");
     $stmt->bind_param("sidsissidsi", $return_item, $qty, $return_amount, $reason, $is_exchange, $ex_name, $ex_item, $ex_qty, $ex_amount, $created_at, $id);
 } else {
     $stmt = $db->prepare("UPDATE returns SET return_item = ?, quantity = ?, return_amount = ?, reason = ?, is_exchange = ?, exchange_name = ?, exchange_item = ?, exchange_quantity = ?, exchange_amount = ? WHERE id = ?");
     $stmt->bind_param("sidsissidi", $return_item, $qty, $return_amount, $reason, $is_exchange, $ex_name, $ex_item, $ex_qty, $ex_amount, $id);
 }
-
-// Fetch original record for logging
-$old_res = $db->query("SELECT store_code, return_item, exchange_item, quantity FROM returns WHERE id = " . intval($id));
-$old_row = $old_res ? $old_res->fetch_assoc() : null;
-$store_code = $old_row ? $old_row['store_code'] : '';
-$old_qty = $old_row ? $old_row['quantity'] : 0;
-$old_item = $old_row ? ($old_row['return_item'] ?: $old_row['exchange_item']) : '';
 
 if ($stmt->execute()) {
     $ref_item = ($return_item !== '') ? $return_item : ($ex_item !== '' ? $ex_item : 'Return Item');

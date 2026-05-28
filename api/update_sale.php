@@ -27,9 +27,22 @@ if (!$id || $item_no === '') {
     exit;
 }
 
+// Fetch original record for logging and preserving time
+$old_res = $db->query("SELECT store_code, item_no, quantity, created_at FROM sales WHERE id = " . intval($id));
+$old_row = $old_res ? $old_res->fetch_assoc() : null;
+$store_code = $old_row ? $old_row['store_code'] : '';
+$old_qty = $old_row ? $old_row['quantity'] : 0;
+$old_item = $old_row ? $old_row['item_no'] : '';
+$old_time = $old_row ? date('H:i:s', strtotime($old_row['created_at'])) : '00:00:00';
+
 $line_total = $amount * $qty;
 
 if (!empty($created_at)) {
+    // If only a date (YYYY-MM-DD) was provided, append the original time
+    if (strlen($created_at) === 10) {
+        $created_at .= ' ' . $old_time;
+    }
+    
     if ($store_code_new !== '') {
         $stmt = $db->prepare("UPDATE sales SET item_no = ?, amount_sold = ?, quantity = ?, line_total = ?, created_at = ?, store_code = ? WHERE id = ?");
         $stmt->bind_param("sdidssi", $item_no, $amount, $qty, $line_total, $created_at, $store_code_new, $id);
@@ -46,13 +59,6 @@ if (!empty($created_at)) {
         $stmt->bind_param("sdidi", $item_no, $amount, $qty, $line_total, $id);
     }
 }
-
-// Fetch original record for logging
-$old_res = $db->query("SELECT store_code, item_no, quantity FROM sales WHERE id = " . intval($id));
-$old_row = $old_res ? $old_res->fetch_assoc() : null;
-$store_code = $old_row ? $old_row['store_code'] : '';
-$old_qty = $old_row ? $old_row['quantity'] : 0;
-$old_item = $old_row ? $old_row['item_no'] : '';
 
 $final_store = ($store_code_new !== '' && $store_code_new !== $store_code) ? $store_code_new : $store_code;
 

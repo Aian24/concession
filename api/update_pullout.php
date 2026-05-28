@@ -25,20 +25,24 @@ if (!$id || $item_no === '' || $quantity <= 0) {
     exit;
 }
 
+// Fetch original record for logging and preserving time
+$old_res = $db->query("SELECT store_code, item_no, quantity, created_at FROM pullouts WHERE id = " . intval($id));
+$old_row = $old_res ? $old_res->fetch_assoc() : null;
+$store_code = $old_row ? $old_row['store_code'] : '';
+$old_qty = $old_row ? $old_row['quantity'] : 0;
+$old_item = $old_row ? $old_row['item_no'] : '';
+$old_time = $old_row ? date('H:i:s', strtotime($old_row['created_at'])) : '00:00:00';
+
 if (!empty($created_at)) {
+    if (strlen($created_at) === 10) {
+        $created_at .= ' ' . $old_time;
+    }
     $stmt = $db->prepare("UPDATE pullouts SET item_no = ?, quantity = ?, created_at = ? WHERE id = ?");
     $stmt->bind_param("sisi", $item_no, $quantity, $created_at, $id);
 } else {
     $stmt = $db->prepare("UPDATE pullouts SET item_no = ?, quantity = ? WHERE id = ?");
     $stmt->bind_param("sii", $item_no, $quantity, $id);
 }
-
-// Fetch original record for logging
-$old_res = $db->query("SELECT store_code, item_no, quantity FROM pullouts WHERE id = " . intval($id));
-$old_row = $old_res ? $old_res->fetch_assoc() : null;
-$store_code = $old_row ? $old_row['store_code'] : '';
-$old_qty = $old_row ? $old_row['quantity'] : 0;
-$old_item = $old_row ? $old_row['item_no'] : '';
 
 if ($stmt->execute()) {
     log_activity(
