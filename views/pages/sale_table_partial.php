@@ -190,16 +190,17 @@ if ($is_single_day && ($is_admin || $is_multi_store_admin) && empty($store_filte
                 
                 <!-- Grand Totals Badges -->
                 <div class="hidden lg:block w-px h-8 bg-white/10"></div>
-                <div class="flex flex-wrap items-center gap-3">
-                    <div class="bg-slate-900/50 border border-white/5 rounded-lg px-3 py-1.5 flex flex-col justify-center shadow-inner">
+                <div class="flex flex-nowrap overflow-x-auto items-center gap-2 sm:gap-3 pb-1 -mb-1 w-full max-w-[calc(100vw-3rem)]" style="scrollbar-width: none; -ms-overflow-style: none;">
+                    <style>.overflow-x-auto::-webkit-scrollbar { display: none; }</style>
+                    <div class="shrink-0 bg-slate-900/50 border border-white/5 rounded-lg px-3 py-1.5 flex flex-col justify-center shadow-inner">
                         <span class="text-[9px] text-gray-500 font-bold uppercase tracking-widest leading-none mb-1">Total Sales</span>
                         <span class="text-sm font-black text-green-400 leading-none">₱<?= number_format($grand_total_amount, 2) ?></span>
                     </div>
-                    <div class="bg-slate-900/50 border border-white/5 rounded-lg px-3 py-1.5 flex flex-col justify-center shadow-inner">
+                    <div class="shrink-0 bg-slate-900/50 border border-white/5 rounded-lg px-3 py-1.5 flex flex-col justify-center shadow-inner">
                         <span class="text-[9px] text-gray-500 font-bold uppercase tracking-widest leading-none mb-1">Total Qty</span>
                         <span class="text-sm font-black text-white leading-none"><?= number_format($grand_total_qty) ?></span>
                     </div>
-                    <div class="relative group bg-slate-900/50 border border-white/5 rounded-lg px-3 py-1.5 flex flex-col justify-center shadow-inner cursor-help">
+                    <div class="shrink-0 relative group bg-slate-900/50 border border-white/5 rounded-lg px-3 py-1.5 flex flex-col justify-center shadow-inner cursor-help">
                         <span class="text-[9px] text-gray-500 font-bold uppercase tracking-widest leading-none mb-1"><?= htmlspecialchars($display_store_title) ?></span>
                         <span class="text-sm font-bold text-gray-300 leading-none"><?= htmlspecialchars($display_store_label) ?></span>
                         
@@ -214,7 +215,7 @@ if ($is_single_day && ($is_admin || $is_multi_store_admin) && empty($store_filte
                         <?php endif; ?>
                     </div>
                     <?php if ($missing_stores_count > 0): ?>
-                    <div class="relative group bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-1.5 flex flex-col justify-center shadow-inner cursor-help">
+                    <div class="shrink-0 relative group bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-1.5 flex flex-col justify-center shadow-inner cursor-help">
                         <span class="text-[9px] text-red-400 font-bold uppercase tracking-widest leading-none mb-1">No Submissions</span>
                         <span class="text-sm font-bold text-red-300 leading-none"><?= $missing_stores_count ?> Stores</span>
 
