@@ -186,7 +186,8 @@ $all_stores_stmt->close();
 
                 function updateBackdateText(val) {
                     if (!val) return;
-                    const date = new Date(val);
+                    const [year, month, day] = val.split('-');
+                    const date = new Date(year, month - 1, day);
                     const formatted = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
                     document.getElementById('backdate-text').innerText = formatted;
                 }
