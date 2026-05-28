@@ -351,12 +351,12 @@ if (isset($_GET['ajax'])) {
                                        placeholder="0">
                             </div>
                         </div>
-                        <div class="space-y-2">
+                        <div class="space-y-2 col-span-2">
                             <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Transaction Date</label>
                             <div class="relative group">
                                 <i class="fas fa-calendar-day absolute left-5 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-blue-400 transition-colors"></i>
                                 <input type="date" name="created_at" id="edit-date" required 
-                                       class="w-full bg-slate-950/50 border border-white/10 rounded-2xl pl-12 pr-5 py-4 text-sm text-white focus:outline-none focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all font-bold cursor-pointer" 
+                                       class="w-full bg-slate-950/50 border border-white/10 rounded-2xl pl-12 pr-10 py-4 text-sm text-white focus:outline-none focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all font-bold cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-50 [&::-webkit-calendar-picker-indicator]:hover:opacity-100 [&::-webkit-calendar-picker-indicator]:transition-opacity" 
                                        onclick="this.showPicker()">
                             </div>
                         </div>
