@@ -232,7 +232,7 @@ if (!isset($can_delete)) {
     </div>
     
     <div class="overflow-x-auto min-h-[300px]">
-        <table class="w-full text-left border-collapse glass-table whitespace-nowrap" id="pullout-history-table">
+        <table class="w-full md:min-w-max text-left border-collapse glass-table whitespace-nowrap" id="pullout-history-table">
             <thead>
                 <tr>
                     <th class="px-5 py-3 w-10 text-center">

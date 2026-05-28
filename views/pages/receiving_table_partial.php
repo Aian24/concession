@@ -325,7 +325,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 
     <!-- Table -->
     <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse" id="receiving-history-table">
+        <table class="w-full md:min-w-max text-left border-collapse" id="receiving-history-table">
             <thead>
                 <tr>
                     <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 w-10 text-center">
