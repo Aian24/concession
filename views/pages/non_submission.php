@@ -8,14 +8,32 @@ if (!$is_admin) {
 require_once 'includes/db.php';
 $db = db_connect();
 
-// Filtering logic
-$limit  = isset($_GET['limit']) ? max(1, intval($_GET['limit'])) : 50;
-$page   = isset($_GET['p']) ? max(1, intval($_GET['p'])) : 1;
+// ── Search & Pagination Logic ──────────────────────────────
+$is_filter_request = isset($_GET['ajax']) || isset($_GET['search']) || isset($_GET['start_date']) || isset($_GET['end_date']) || isset($_GET['store_filter']);
+
+if ($is_filter_request) {
+    $limit        = isset($_GET['limit']) ? max(1, intval($_GET['limit'])) : 50;
+    $page         = isset($_GET['p']) ? max(1, intval($_GET['p'])) : 1;
+    $search       = $_GET['search'] ?? '';
+    $start_date   = !empty($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-01');
+    $end_date     = !empty($_GET['end_date']) ? $_GET['end_date'] : date('Y-m-d');
+    $store_filter = $_GET['store_filter'] ?? '';
+    
+    $_SESSION['ns_limit']        = $limit;
+    $_SESSION['ns_page']         = $page;
+    $_SESSION['ns_search']       = $search;
+    $_SESSION['ns_start_date']   = $start_date;
+    $_SESSION['ns_end_date']     = $end_date;
+    $_SESSION['ns_store_filter'] = $store_filter;
+} else {
+    $limit        = $_SESSION['ns_limit'] ?? 50;
+    $page         = $_SESSION['ns_page'] ?? 1;
+    $search       = $_SESSION['ns_search'] ?? '';
+    $start_date   = !empty($_SESSION['ns_start_date']) ? $_SESSION['ns_start_date'] : date('Y-m-01');
+    $end_date     = !empty($_SESSION['ns_end_date']) ? $_SESSION['ns_end_date'] : date('Y-m-d');
+    $store_filter = $_SESSION['ns_store_filter'] ?? '';
+}
 $offset = ($page - 1) * $limit;
-$search = $_GET['search'] ?? '';
-$start_date = $_GET['start_date'] ?? date('Y-m-d');
-$end_date   = $_GET['end_date'] ?? date('Y-m-d');
-$store_filter = $_GET['store_filter'] ?? '';
 
 // Generate all dates in the range
 $dates = [];

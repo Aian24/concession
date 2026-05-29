@@ -84,7 +84,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                 'return_limit', 'return_page', 'return_search', 'return_start_date', 'return_end_date', 'return_store_filter',
                 'receiving_limit', 'receiving_page', 'receiving_search', 'receiving_start_date', 'receiving_end_date', 'receiving_store_filter',
                 'receiving_partial_limit', 'receiving_partial_page', 'receiving_partial_search', 'receiving_partial_start_date', 'receiving_partial_end_date', 'receiving_partial_store_filter',
-                'pullout_status', 'pullout_limit', 'pullout_page', 'pullout_search', 'pullout_start_date', 'pullout_end_date', 'pullout_store_filter'
+                'pullout_status', 'pullout_limit', 'pullout_page', 'pullout_search', 'pullout_start_date', 'pullout_end_date', 'pullout_store_filter',
+                'ns_limit', 'ns_page', 'ns_search', 'ns_start_date', 'ns_end_date', 'ns_store_filter'
             ];
             foreach ($filters as $f) {
                 unset($_SESSION[$f]);

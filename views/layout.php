@@ -305,7 +305,7 @@
                 $nav_items['stores'] = ['icon' => 'fa-store', 'title' => 'Manage Stores'];
                 $nav_items['prism_data'] = ['icon' => 'fa-gem', 'title' => 'Manage Prism Data'];
                 $nav_items['recent_activity'] = ['icon' => 'fa-clock-rotate-left', 'title' => 'Recent Activity'];
-                $nav_items['non_submission'] = ['icon' => 'fa-file-excel', 'title' => 'Non-Subs'];
+                $nav_items['non_submission'] = ['icon' => 'fa-file-excel', 'title' => 'Non-Submission'];
             }
 
             foreach ($nav_items as $key => $item):
