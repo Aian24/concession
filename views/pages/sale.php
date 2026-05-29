@@ -314,20 +314,44 @@ if (isset($_GET['ajax'])) {
                     <?php if ($is_admin || $is_multi_store_admin): ?>
                     <div class="space-y-2">
                         <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Store</label>
-                        <div class="relative group">
-                            <i class="fas fa-store absolute left-5 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-blue-400 transition-colors"></i>
-                            <select name="store_code" id="edit-store" 
-                                   class="w-full bg-slate-950/50 border border-white/10 rounded-2xl pl-12 pr-5 py-4 text-sm text-white focus:outline-none focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all font-bold appearance-none cursor-pointer">
-                                <option value="" disabled>Select Store...</option>
+                        <div class="relative group" id="store-filter-container">
+                            <i class="fas fa-store absolute left-5 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-blue-400 transition-colors z-10"></i>
+                            
+                            <!-- Custom Trigger -->
+                            <div id="store-filter-trigger" class="w-full bg-slate-950/50 border border-white/10 rounded-2xl pl-12 pr-5 py-4 text-sm text-white flex items-center justify-between cursor-pointer focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all font-bold">
+                                <span id="selected-store-label" class="truncate opacity-80">Select Store...</span>
+                                <i class="fas fa-chevron-down text-gray-500 pointer-events-none text-[10px]"></i>
+                            </div>
+
+                            <!-- Custom Menu -->
+                            <div id="store-filter-menu" class="absolute top-[calc(100%+8px)] right-0 min-w-[280px] w-full bg-[#0f172a] border border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[100] hidden max-h-64 overflow-y-auto overflow-x-hidden backdrop-blur-xl">
+                                <div class="sticky top-0 bg-[#0f172a] p-3 border-b border-white/5 z-20">
+                                    <input type="text" id="store-search-filter" class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-3 text-[11px] text-white focus:outline-none focus:border-blue-500/50" placeholder="Search store..." autocomplete="off">
+                                </div>
                                 <?php 
                                 $stores_list = $db->query("SELECT scode, sname FROM storecode ORDER BY scode ASC")->fetch_all(MYSQLI_ASSOC);
                                 foreach ($stores_list as $st): 
                                     if ($is_multi_store_admin && !in_array($st['scode'], $_SESSION['assigned_stores'] ?? [])) continue;
+                                    $displayName = $st['scode'] . " - " . $st['sname'];
                                 ?>
-                                    <option value="<?= htmlspecialchars($st['scode']) ?>"><?= htmlspecialchars($st['scode']) ?> - <?= htmlspecialchars($st['sname']) ?></option>
+                                    <div class="store-option px-5 py-3.5 text-[12px] text-white hover:bg-white/5 cursor-pointer flex flex-col justify-center transition-all border-b border-white/5 last:border-0" 
+                                         data-value="<?= htmlspecialchars($st['scode']) ?>" 
+                                         data-label="<?= htmlspecialchars($displayName) ?>">
+                                        <span class="font-bold truncate"><?= htmlspecialchars($st['scode']) ?></span>
+                                        <span class="text-[10px] text-gray-500 truncate uppercase tracking-tighter mt-0.5"><?= htmlspecialchars($st['sname']) ?></span>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+
+                            <!-- Hidden select for form logic -->
+                            <select name="store_code" id="edit-store" class="hidden">
+                                <option value="" disabled selected>Select Store...</option>
+                                <?php foreach ($stores_list as $st): 
+                                    if ($is_multi_store_admin && !in_array($st['scode'], $_SESSION['assigned_stores'] ?? [])) continue;
+                                ?>
+                                    <option value="<?= htmlspecialchars($st['scode']) ?>"><?= htmlspecialchars($st['scode']) ?></option>
                                 <?php endforeach; ?>
                             </select>
-                            <i class="fas fa-chevron-down absolute right-5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none text-[10px]"></i>
                         </div>
                     </div>
                     <?php endif; ?>
@@ -598,6 +622,19 @@ if (isset($_GET['ajax'])) {
         
         if (storeCode && document.getElementById('edit-store')) {
             document.getElementById('edit-store').value = storeCode;
+            const container = document.getElementById('edit-store').closest('#store-filter-container');
+            if (container) {
+                const labelEl = container.querySelector('#selected-store-label');
+                const menu = container.querySelector('#store-filter-menu');
+                if (labelEl && menu) {
+                    const opt = menu.querySelector(`.store-option[data-value="${storeCode}"]`);
+                    if (opt) {
+                        labelEl.textContent = opt.getAttribute('data-label');
+                    } else {
+                        labelEl.textContent = storeCode;
+                    }
+                }
+            }
         }
 
         const modal = document.getElementById('edit-modal');
