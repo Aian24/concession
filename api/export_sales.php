@@ -149,6 +149,9 @@ if ($type === 'csv') {
 
 foreach ($data_rows as $row) {
     if ($type === 'txt') {
+        if ((float)$row['amount_sold'] == 0 && (int)$row['quantity'] == 0) {
+            continue;
+        }
         $line = [
             $row['item_no'],
             number_format($row['amount_sold'], 2, '.', ''),
