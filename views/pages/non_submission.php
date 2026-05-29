@@ -107,6 +107,15 @@ foreach ($stores as $st) {
     }
 }
 
+// Order by missing_date ASC, then scode ASC
+usort($all_missing_entries, function($a, $b) {
+    $dateCmp = strcmp($a['missing_date'], $b['missing_date']);
+    if ($dateCmp === 0) {
+        return strcmp($a['scode'], $b['scode']);
+    }
+    return $dateCmp; // ASC
+});
+
 $total_rows = count($all_missing_entries);
 $total_pages = max(1, ceil($total_rows / $limit));
 $missing_stores = array_slice($all_missing_entries, $offset, $limit);

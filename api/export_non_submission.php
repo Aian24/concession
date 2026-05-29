@@ -81,6 +81,15 @@ foreach ($stores as $st) {
     }
 }
 
+// Order by missing_date ASC, then scode ASC
+usort($missing_data, function($a, $b) {
+    $dateCmp = strcmp($a['missing_date'], $b['missing_date']);
+    if ($dateCmp === 0) {
+        return strcmp($a['scode'], $b['scode']);
+    }
+    return $dateCmp; // ASC
+});
+
 $filename = $_GET['filename'] ?? 'non_submission_report_' . date('Y-m-d');
 $filename = preg_replace('/[^a-zA-Z0-9_-]/', '_', $filename); // Sanitize filename
 
