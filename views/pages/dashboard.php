@@ -110,16 +110,16 @@ $receiving_count = (int) ($receiving_data['total_count'] ?? 0);
 
 // 4. Total Stores
 if ($is_store_admin) {
-    $store_count_res = $db->query("SELECT COUNT(*) as total FROM storecode WHERE scode = '$session_store_code'");
+    $store_count_res = $db->query("SELECT COUNT(*) as total FROM storecode WHERE scode = '$session_store_code' AND scode != 'HO'");
 } elseif ($is_multi_store_admin) {
-    $store_count_res = $db->query("SELECT COUNT(*) as total FROM user_store_assignments WHERE user_id = " . intval($_SESSION['user_id'] ?? 0));
+    $store_count_res = $db->query("SELECT COUNT(*) as total FROM user_store_assignments WHERE user_id = " . intval($_SESSION['user_id'] ?? 0) . " AND store_code != 'HO'");
 } else {
-    $store_count_res = $db->query("SELECT COUNT(*) as total FROM storecode");
+    $store_count_res = $db->query("SELECT COUNT(*) as total FROM storecode WHERE scode != 'HO'");
 }
 $total_stores = $store_count_res ? (int)$store_count_res->fetch_assoc()['total'] : 0;
 
 // 4.1 Active Stores (with transactions in selected range)
-$active_stores_res = $db->query("SELECT COUNT(DISTINCT store_code) as active FROM sales WHERE DATE(created_at) BETWEEN '$start_date' AND '$end_date' $store_clause");
+$active_stores_res = $db->query("SELECT COUNT(DISTINCT store_code) as active FROM sales WHERE DATE(created_at) BETWEEN '$start_date' AND '$end_date' $store_clause AND store_code != 'HO'");
 $active_stores_count = $active_stores_res ? (int)$active_stores_res->fetch_assoc()['active'] : 0;
 
 // Chart Data Generation
