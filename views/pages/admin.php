@@ -23,43 +23,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_user'])) {
     $multi_stores = $_POST['multi_stores'] ?? [];
 
     if ($uname) {
-        if ($uid > 0) {
-            // UPDATE existing
-            if ($password !== '') {
-                $hashed = password_hash($password, PASSWORD_BCRYPT);
-                $stmt = $db->prepare("UPDATE users SET username=?, password=?, role=?, store_code=? WHERE id=?");
-                $stmt->bind_param("ssssi", $uname, $hashed, $role, $store_code, $uid);
+        try {
+            if ($uid > 0) {
+                // UPDATE existing
+                if ($password !== '') {
+                    $hashed = password_hash($password, PASSWORD_BCRYPT);
+                    $stmt = $db->prepare("UPDATE users SET username=?, password=?, role=?, store_code=? WHERE id=?");
+                    $stmt->bind_param("ssssi", $uname, $hashed, $role, $store_code, $uid);
+                } else {
+                    $stmt = $db->prepare("UPDATE users SET username=?, role=?, store_code=? WHERE id=?");
+                    $stmt->bind_param("sssi", $uname, $role, $store_code, $uid);
+                }
+                $stmt->execute();
+                $stmt->close();
+                $_SESSION['toast'] = "User updated successfully.";
             } else {
-                $stmt = $db->prepare("UPDATE users SET username=?, role=?, store_code=? WHERE id=?");
-                $stmt->bind_param("sssi", $uname, $role, $store_code, $uid);
+                // CREATE new
+                $hashed = password_hash($password !== '' ? $password : '123456', PASSWORD_BCRYPT);
+                $stmt = $db->prepare("INSERT INTO users (username, password, role, store_code) VALUES (?, ?, ?, ?)");
+                $stmt->bind_param("ssss", $uname, $hashed, $role, $store_code);
+                $stmt->execute();
+                $uid = $stmt->insert_id;
+                $stmt->close();
+                $_SESSION['toast'] = "User created successfully.";
             }
-            $stmt->execute();
-            $stmt->close();
-            $_SESSION['toast'] = "User updated successfully.";
-        } else {
-            // CREATE new
-            $hashed = password_hash($password !== '' ? $password : '123456', PASSWORD_BCRYPT);
-            $stmt = $db->prepare("INSERT INTO users (username, password, role, store_code) VALUES (?, ?, ?, ?)");
-            $stmt->bind_param("ssss", $uname, $hashed, $role, $store_code);
-            $stmt->execute();
-            $uid = $stmt->insert_id;
-            $stmt->close();
-            $_SESSION['toast'] = "User created successfully.";
-        }
-        
-        // Handle multi_store_admin and user assignments
-        $db->query("DELETE FROM user_store_assignments WHERE user_id = " . intval($uid));
-        if (in_array($role, ['multi_store_admin', 'user']) && !empty($multi_stores)) {
-            $insert_stmt = $db->prepare("INSERT IGNORE INTO user_store_assignments (user_id, store_code) VALUES (?, ?)");
-            foreach ($multi_stores as $m_code) {
-                $insert_stmt->bind_param("is", $uid, $m_code);
-                $insert_stmt->execute();
-            }
-            $insert_stmt->close();
             
-            // Set primary store code to the first selected to maintain backward compatibility
-            $first_store = $db->real_escape_string($multi_stores[0]);
-            $db->query("UPDATE users SET store_code = '{$first_store}' WHERE id = " . intval($uid));
+            // Handle multi_store_admin and user assignments
+            $db->query("DELETE FROM user_store_assignments WHERE user_id = " . intval($uid));
+            if (in_array($role, ['multi_store_admin', 'user']) && !empty($multi_stores)) {
+                $insert_stmt = $db->prepare("INSERT IGNORE INTO user_store_assignments (user_id, store_code) VALUES (?, ?)");
+                foreach ($multi_stores as $m_code) {
+                    $insert_stmt->bind_param("is", $uid, $m_code);
+                    $insert_stmt->execute();
+                }
+                $insert_stmt->close();
+                
+                // Set primary store code to the first selected to maintain backward compatibility
+                $first_store = $db->real_escape_string($multi_stores[0]);
+                $db->query("UPDATE users SET store_code = '{$first_store}' WHERE id = " . intval($uid));
+            }
+        } catch (mysqli_sql_exception $e) {
+            if ($e->getCode() == 1062) {
+                $_SESSION['toast_error'] = "Username '{$uname}' already exists!";
+            } else {
+                $_SESSION['toast_error'] = "Database error: " . $e->getMessage();
+            }
+            unset($_SESSION['toast']);
         }
 
         echo "<script>window.location.href='admin';</script>";
@@ -184,6 +193,11 @@ if (isset($_GET['edit'])) {
     <?php if ($toast): ?>
         <div class="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-4 py-2 rounded-xl text-sm font-semibold animate-bounce-short">
             <i class="fas fa-check-circle mr-2"></i><?= $toast ?>
+        </div>
+    <?php endif; ?>
+    <?php if ($toast_error = $_SESSION['toast_error'] ?? ''): unset($_SESSION['toast_error']); ?>
+        <div class="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-2 rounded-xl text-sm font-semibold animate-bounce-short">
+            <i class="fas fa-exclamation-circle mr-2"></i><?= htmlspecialchars($toast_error) ?>
         </div>
     <?php endif; ?>
 </div>
