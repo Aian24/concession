@@ -305,6 +305,7 @@
                 $nav_items['stores'] = ['icon' => 'fa-store', 'title' => 'Manage Stores'];
                 $nav_items['prism_data'] = ['icon' => 'fa-gem', 'title' => 'Manage Prism Data'];
                 $nav_items['recent_activity'] = ['icon' => 'fa-clock-rotate-left', 'title' => 'Recent Activity'];
+                $nav_items['non_submission'] = ['icon' => 'fa-file-excel', 'title' => 'Non-Subs'];
             }
 
             foreach ($nav_items as $key => $item):
@@ -349,6 +350,7 @@
                     'ros_supplies' => 'Manage store supplies and replenishment',
                     'history'    => 'Track your transactions recorded today',
                     'stores'     => 'Manage store codes and store names',
+                    'non_submission' => 'Track stores with missing sales submissions',
                 ];
                 $current_title = $nav_items[$action]['title'] ?? str_replace('_', ' ', $action);
                 $current_sub   = $module_subs[$action] ?? '';
