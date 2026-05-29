@@ -1,6 +1,6 @@
 <?php if (!isset($missing_stores)) exit; ?>
 
-<div class="overflow-x-auto relative">
+<div class="overflow-x-auto min-h-[300px]">
     <table class="w-full text-left border-collapse">
         <thead>
             <tr class="bg-slate-900/50 text-[10px] uppercase tracking-widest text-gray-500 border-y border-white/10">

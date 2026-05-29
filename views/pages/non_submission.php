@@ -125,7 +125,7 @@ $stores_stmt->close();
 
 <div class="pb-12 animate-fade-in">
     <div class="glass-panel border border-white/5 shadow-xl overflow-hidden mt-6">
-        <div class="p-5 border-b border-white/5 bg-slate-800/30 space-y-4">
+        <div class="p-5 border-b border-white/5 bg-slate-800/30 space-y-4 relative z-20">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div class="flex items-center gap-2.5">
                     <i class="fas fa-file-excel text-red-400 text-sm"></i>
