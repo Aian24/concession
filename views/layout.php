@@ -91,8 +91,8 @@
                     font-family: var(--font-family) !important;
                 }
                 html { font-size: var(--font-size-base) !important; }
-                /* Exclude Panel itself from font overrides */
-                #theme-panel, #theme-panel * { font-family: 'Outfit', sans-serif !important; }
+                /* Exclude Panel itself from font overrides, but NOT FontAwesome icons */
+                #theme-panel, #theme-panel *:not(.fas):not(.far):not(.fab):not(.fa):not(i[class*="fa-"]) { font-family: 'Outfit', sans-serif !important; }
                 
                 /* Exclude Button gradients from being overwritten by div text-white rule */
                 button[class*="bg-gradient"], a[class*="bg-gradient"], 
@@ -1468,8 +1468,8 @@
                 font-family: var(--font-family) !important;
             }
             html { font-size: var(--font-size-base) !important; }
-            /* Exclude Panel itself from font overrides */
-            #theme-panel, #theme-panel * { font-family: 'Outfit', sans-serif !important; }
+            /* Exclude Panel itself from font overrides, but NOT FontAwesome icons */
+            #theme-panel, #theme-panel *:not(.fas):not(.far):not(.fab):not(.fa):not(i[class*="fa-"]) { font-family: 'Outfit', sans-serif !important; }
             
             /* Exclude Button gradients from being overwritten by div text-white rule */
             button[class*="bg-gradient"], a[class*="bg-gradient"], 

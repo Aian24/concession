@@ -116,7 +116,7 @@ if (isset($_GET['ajax'])) {
 <div class="pb-12 animate-fade-in">
     <?php if ($can_submit): ?>
     <!-- New Sale Form -->
-    <div class="glass-panel border border-white/5 shadow-xl mb-10 min-h-[70vh] flex flex-col">
+    <div class="glass-panel border border-white/5 shadow-xl mb-10 min-h-[70vh] flex flex-col overflow-hidden">
         <div class="px-6 py-4 border-b border-white/10 bg-slate-800/40 flex items-center justify-between relative overflow-hidden">
             <div class="flex items-center gap-4">
                 <div class="w-10 h-10 rounded-xl bg-green-500/10 border border-green-500/20 flex items-center justify-center">

@@ -124,7 +124,7 @@ $all_stores_stmt->close();
     </script>
     <?php if ($can_submit): ?>
     <!-- New Receiving Form -->
-    <div class="glass-panel border border-white/5 shadow-xl mb-10 min-h-[70vh] flex flex-col">
+    <div class="glass-panel border border-white/5 shadow-xl mb-10 min-h-[70vh] flex flex-col overflow-hidden">
         <div class="px-5 py-2.5 border-b border-white/5 bg-slate-800/25 flex items-center justify-between">
             <div class="flex items-center gap-2">
                 <i class="fas fa-truck-loading text-cyan-400 text-xs"></i>
