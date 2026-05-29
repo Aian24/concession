@@ -204,3 +204,22 @@ window.confirmGlobalExportFilename = function() {
         currentGlobalExportCallback(filename);
     }
 };
+
+// ── Auto Logout on Inactivity ────────────────────────────────
+let inactivityTimer;
+const INACTIVITY_LIMIT_MS = 30 * 60 * 1000; // 30 minutes
+
+function resetInactivityTimer() {
+    clearTimeout(inactivityTimer);
+    inactivityTimer = setTimeout(() => {
+        window.location.href = '?logout=1';
+    }, INACTIVITY_LIMIT_MS);
+}
+
+// Attach event listeners to reset the timer on user interaction
+['mousemove', 'mousedown', 'keypress', 'touchmove', 'scroll'].forEach(event => {
+    document.addEventListener(event, resetInactivityTimer, { passive: true });
+});
+
+// Initialize the timer on load
+resetInactivityTimer();
