@@ -620,11 +620,14 @@ if (isset($_GET['ajax'])) {
     let filterTimer;
     function refreshTable(page = 1) {
         const container = document.getElementById('history-container');
-        const search    = document.querySelector('[name="search"]')?.value || '';
+        const searchInputEl = document.querySelector('[name="search"]');
+        const search    = searchInputEl?.value || '';
         const limit     = document.querySelector('[name="limit"]')?.value || 10;
         const start     = document.querySelector('[name="start_date"]')?.value || '';
         const end       = document.querySelector('[name="end_date"]')?.value || '';
         const store     = document.querySelector('[name="store_filter"]')?.value || '';
+        
+        const isSearchFocused = document.activeElement === searchInputEl;
         
         if (container.querySelector('table')) container.querySelector('table').style.opacity = '0.5';
 
@@ -632,6 +635,15 @@ if (isset($_GET['ajax'])) {
         fetch(url).then(res => res.text()).then(html => {
             container.innerHTML = html;
             initTableEvents();
+            if (isSearchFocused) {
+                const newSearchInput = document.querySelector('[name="search"]');
+                if (newSearchInput) {
+                    newSearchInput.focus();
+                    const val = newSearchInput.value;
+                    newSearchInput.value = '';
+                    newSearchInput.value = val;
+                }
+            }
         });
     }
 
