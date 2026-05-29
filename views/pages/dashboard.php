@@ -412,7 +412,7 @@ if (!function_exists('time_elapsed_string')) {
             <div class="col-span-1 text-center">Rank</div>
             <div class="col-span-5">Store</div>
             <div class="col-span-3 text-right">Quantity</div>
-            <div class="col-span-3 text-right">Revenue</div>
+            <div class="col-span-3 text-right">Amount</div>
         </div>
         <div class="p-2 max-h-[60vh] overflow-y-auto scrollbar-thin scrollbar-thumb-[#3b82f6]/30">
             <div class="space-y-2 p-2">
