@@ -1737,11 +1737,18 @@
         fetch('api/load_theme.php')
         .then(r => r.json())
         .then(res => {
-            if (res.success && res.theme) {
-                Object.entries(res.theme).forEach(([prop, val]) => {
-                    document.documentElement.style.setProperty(prop, val);
-                });
-                saveThemeToLocal(); // Sync to localStorage
+            if (res.success) {
+                if (res.theme) {
+                    Object.entries(res.theme).forEach(([prop, val]) => {
+                        document.documentElement.style.setProperty(prop, val);
+                    });
+                } else {
+                    const preset = THEME_PRESETS['default'];
+                    Object.entries(preset).forEach(([prop, val]) => {
+                        document.documentElement.style.setProperty(prop, val);
+                    });
+                }
+                saveThemeToLocal();
                 syncInputsFromVars();
             }
         })
