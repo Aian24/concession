@@ -177,7 +177,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 }
 </style>
 
-<div id="receiving-history-section" class="glass-panel border border-white/5 shadow-xl animate-fade-in">
+<div id="receiving-history-section" class="glass-panel border border-white/5 shadow-xl overflow-hidden animate-fade-in">
     <div class="px-5 py-4 border-b border-white/5 bg-slate-800/25 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div class="flex items-center gap-3">
             <div class="w-8 h-8 rounded-lg bg-cyan-500/10 flex items-center justify-center border border-cyan-500/20">
@@ -313,12 +313,18 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
             <?php endif; ?>
 
             <div class="relative">
-                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-[9px] font-bold uppercase tracking-wider">From Date</span>
-                <input type="date" name="start_date" value="<?= $start_date ?>" onclick="this.showPicker()" class="w-full bg-slate-900/50 border border-white/5 rounded-lg pl-20 pr-4 py-2 text-xs text-white focus:outline-none focus:border-cyan-500/30 transition-all cursor-pointer">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-[9px] font-bold uppercase tracking-wider z-10">From Date</span>
+                <input type="date" name="start_date" value="<?= $start_date ?>" onclick="this.showPicker()" placeholder="mm/dd/yyyy" class="w-full bg-slate-900/50 border border-white/5 rounded-lg pl-20 pr-8 py-2 text-xs text-white focus:outline-none focus:border-cyan-500/30 transition-all cursor-pointer">
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <i class="fas fa-calendar-alt text-gray-500 text-[10px]"></i>
+                </div>
             </div>
             <div class="relative">
-                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-[9px] font-bold uppercase tracking-wider">To Date</span>
-                <input type="date" name="end_date" value="<?= $end_date ?>" onclick="this.showPicker()" class="w-full bg-slate-900/50 border border-white/5 rounded-lg pl-16 pr-4 py-2 text-xs text-white focus:outline-none focus:border-cyan-500/30 transition-all cursor-pointer">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-[9px] font-bold uppercase tracking-wider z-10">To Date</span>
+                <input type="date" name="end_date" value="<?= $end_date ?>" onclick="this.showPicker()" placeholder="mm/dd/yyyy" class="w-full bg-slate-900/50 border border-white/5 rounded-lg pl-16 pr-8 py-2 text-xs text-white focus:outline-none focus:border-cyan-500/30 transition-all cursor-pointer">
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <i class="fas fa-calendar-alt text-gray-500 text-[10px]"></i>
+                </div>
             </div>
         </div>
     </div>

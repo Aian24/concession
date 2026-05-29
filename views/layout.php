@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Concession System</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&family=Poppins:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/app.css">
     <link rel="icon" type="image/png" href="images/concessiontab.png">
     <!-- FontAwesome -->
@@ -16,8 +16,96 @@
     <script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2/dist/quagga.min.js"></script>
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Flatpickr Datepicker -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+    (function() {
+        // Load theme from localStorage early to prevent white flashes
+        const saved = localStorage.getItem('concession_theme');
+        if (saved) {
+            try {
+                const theme = JSON.parse(saved);
+                Object.entries(theme).forEach(([prop, val]) => {
+                    document.documentElement.style.setProperty(prop, val);
+                });
+            } catch(e) {}
+        }
+        
+        // Inject theme CSS overrides early to prevent flashing of default Tailwind colors
+        if (!document.getElementById('theme-css-overrides')) {
+            const style = document.createElement('style');
+            style.id = 'theme-css-overrides';
+            style.innerHTML = `
+                /* Backgrounds */
+                body, .bg-slate-900, div[class*="bg-slate-900"] { background-color: var(--bg-primary) !important; }
+                .sidebar-glass, #sidebar, aside, [class*="bg-slate-950"] { background-color: var(--bg-sidebar) !important; }
+                .glass-panel, [class*="bg-slate-800"], div[class*="bg-slate-800"] { background-color: var(--bg-secondary) !important; }
+                
+                /* Text Colors */
+                body, h1, h2, h3, h4, h5, h6, p, span, a, div, li, td, th, label, .text-white, .text-slate-100 { color: var(--text-primary) !important; }
+                .text-gray-400, .text-slate-400, .text-gray-500, .text-slate-500, label { color: var(--text-secondary) !important; }
+                
+                /* Nav Links */
+                #sidebar nav a span, #sidebar nav a { color: var(--text-secondary) !important; }
+                #sidebar nav a:hover span, #sidebar nav a:hover { color: var(--text-primary) !important; }
+                
+                /* Tables */
+                table thead tr, table thead th, .glass-table th { background-color: var(--bg-secondary) !important; color: var(--text-muted) !important; border-color: var(--border-color) !important; }
+                table tbody tr { border-color: var(--border-color) !important; }
+                
+                /* Inputs */
+                input:not([type="color"]):not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]), select, textarea, #store-filter-trigger {
+                    background-color: var(--bg-input) !important;
+                    color: var(--text-primary) !important;
+                    border-color: transparent !important;
+                }
+                input:focus, select:focus, textarea:focus, #store-filter-trigger:focus { border-color: var(--accent-primary) !important; box-shadow: 0 0 0 1px var(--accent-primary) !important; }
+                
+                /* Custom Menus */
+                #store-filter-menu, .flatpickr-calendar {
+                    background: var(--bg-secondary) !important;
+                    border: 1px solid var(--border-color) !important;
+                    backdrop-filter: blur(20px) !important;
+                    -webkit-backdrop-filter: blur(20px) !important;
+                }
+                #store-filter-menu .sticky { background: transparent !important; }
+                .store-option:hover { background: var(--bg-card) !important; }
+    
+                /* Flatpickr Modern Design overrides */
+                .flatpickr-calendar { font-family: var(--font-family) !important; box-shadow: 0 20px 50px rgba(0,0,0,0.5) !important; border-radius: 1rem !important; }
+                .flatpickr-calendar::before, .flatpickr-calendar::after { display: none !important; }
+                .flatpickr-month, .flatpickr-weekday { color: var(--text-secondary) !important; fill: var(--text-secondary) !important; }
+                .flatpickr-day { color: var(--text-primary) !important; border-radius: 0.5rem !important; }
+                .flatpickr-day:hover, .flatpickr-day:focus { background: var(--bg-card) !important; border-color: transparent !important; }
+                .flatpickr-day.selected { background: var(--accent-primary) !important; border-color: var(--accent-primary) !important; color: white !important; font-weight: bold; }
+                .flatpickr-day.flatpickr-disabled { color: var(--text-muted) !important; }
+                .flatpickr-current-month .flatpickr-monthDropdown-months, .flatpickr-current-month input.cur-year { background: transparent !important; color: var(--text-primary) !important; }
+                .flatpickr-current-month .flatpickr-monthDropdown-months option { background: var(--bg-primary) !important; color: var(--text-primary) !important; }
+                
+                /* Borders */
+                [class*="border-white/5"], [class*="border-white/10"], [class*="border-slate-"] { border-color: var(--border-color) !important; }
+                
+                /* Fonts */
+                html, body, .font-outfit, body *:not(.fas):not(.far):not(.fab):not(.fa):not(i[class*="fa-"]):not(svg):not(path) {
+                    font-family: var(--font-family) !important;
+                }
+                html { font-size: var(--font-size-base) !important; }
+                /* Exclude Panel itself from font overrides */
+                #theme-panel, #theme-panel * { font-family: 'Outfit', sans-serif !important; }
+                
+                /* Exclude Button gradients from being overwritten by div text-white rule */
+                button[class*="bg-gradient"], a[class*="bg-gradient"], 
+                .btn-primary, [class*="from-purple"], [class*="from-red"] {
+                    color: white !important;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+    })();
+    </script>
 </head>
-<body class="bg-slate-900 text-white font-outfit min-h-screen flex overflow-hidden">
+<body class="text-white font-outfit min-h-screen flex overflow-hidden" style="background-color: var(--bg-primary);">
     
 
 
@@ -235,8 +323,8 @@
     </div>
 
     <!-- Animated background glowing orbs -->
-    <div class="fixed top-[-10%] left-[-10%] w-[40rem] h-[40rem] bg-purple-600 rounded-full mix-blend-multiply filter blur-[120px] opacity-20 animate-blob pointer-events-none"></div>
-    <div class="fixed bottom-[-10%] right-[-10%] w-[40rem] h-[40rem] bg-blue-600 rounded-full mix-blend-multiply filter blur-[120px] opacity-20 animate-blob animation-delay-2000 pointer-events-none"></div>
+    <div class="fixed top-[-10%] left-[-10%] w-[40rem] h-[40rem] rounded-full mix-blend-multiply filter blur-[120px] opacity-20 animate-blob pointer-events-none" style="background-color: var(--orb-1)"></div>
+    <div class="fixed bottom-[-10%] right-[-10%] w-[40rem] h-[40rem] rounded-full mix-blend-multiply filter blur-[120px] opacity-20 animate-blob animation-delay-2000 pointer-events-none" style="background-color: var(--orb-2)"></div>
 
     <!-- Mobile Overlay -->
     <div id="sidebar-overlay" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-40 hidden lg:hidden" onclick="toggleSidebar()"></div>
@@ -1050,5 +1138,712 @@
             <p id="loader-text" class="text-purple-400 font-semibold tracking-widest animate-pulse uppercase text-sm">Processing...</p>
         </div>
     </div>
+
+    <!-- Theme Customizer Toggle Button -->
+    <button id="theme-toggle-btn" onclick="toggleThemePanel()" 
+        class="fixed bottom-6 right-6 z-[90] w-12 h-12 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white flex items-center justify-center shadow-lg shadow-purple-500/30 hover:scale-110 hover:shadow-xl hover:shadow-purple-500/40 active:scale-95 transition-all duration-300 group"
+        title="Customize Theme">
+        <i class="fas fa-palette text-lg group-hover:rotate-12 transition-transform"></i>
+    </button>
+
+    <!-- Theme Customizer Panel -->
+    <div id="theme-panel" class="fixed top-0 right-0 w-80 h-full z-[95] translate-x-full transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]">
+        <div class="absolute inset-0 bg-[#0c1322]/95 backdrop-blur-2xl border-l border-white/10 shadow-[-20px_0_60px_rgba(0,0,0,0.5)]"></div>
+        <div class="relative h-full flex flex-col overflow-hidden">
+            <!-- Header -->
+            <div class="bg-gradient-to-br from-purple-600/30 via-fuchsia-600/20 to-pink-600/30 px-6 py-5 border-b border-white/10 flex items-center justify-between shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/20">
+                        <i class="fas fa-palette text-white text-sm"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-black text-white uppercase tracking-wider">Customize</h3>
+                        <p class="text-[8px] text-purple-300/60 font-bold uppercase tracking-[0.15em]">Theme Editor</p>
+                    </div>
+                </div>
+                <button onclick="toggleThemePanel()" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-all">
+                    <i class="fas fa-times text-xs"></i>
+                </button>
+            </div>
+
+            <!-- Scrollable Content -->
+            <div class="flex-1 overflow-y-auto p-5 space-y-5">
+
+                <!-- Preset Themes -->
+                <div class="space-y-2.5">
+                    <label class="text-[9px] font-black text-gray-400 uppercase tracking-[0.15em] flex items-center gap-2">
+                        <i class="fas fa-swatchbook text-purple-400 text-[8px]"></i> Preset Themes
+                    </label>
+                    <div class="grid grid-cols-2 gap-2" id="theme-presets">
+                        <button onclick="applyPreset('default')" class="preset-btn group flex items-center gap-2 px-3 py-2.5 rounded-xl bg-white/5 border border-white/5 hover:border-purple-500/30 transition-all text-left">
+                            <div class="flex gap-0.5 shrink-0">
+                                <div class="w-3 h-3 rounded-full bg-purple-500"></div>
+                                <div class="w-3 h-3 rounded-full bg-pink-500"></div>
+                            </div>
+                            <span class="text-[10px] font-bold text-gray-300 group-hover:text-white">Default</span>
+                        </button>
+                        <button onclick="applyPreset('ocean')" class="preset-btn group flex items-center gap-2 px-3 py-2.5 rounded-xl bg-white/5 border border-white/5 hover:border-cyan-500/30 transition-all text-left">
+                            <div class="flex gap-0.5 shrink-0">
+                                <div class="w-3 h-3 rounded-full bg-cyan-500"></div>
+                                <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+                            </div>
+                            <span class="text-[10px] font-bold text-gray-300 group-hover:text-white">Ocean</span>
+                        </button>
+                        <button onclick="applyPreset('emerald')" class="preset-btn group flex items-center gap-2 px-3 py-2.5 rounded-xl bg-white/5 border border-white/5 hover:border-emerald-500/30 transition-all text-left">
+                            <div class="flex gap-0.5 shrink-0">
+                                <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
+                                <div class="w-3 h-3 rounded-full bg-teal-500"></div>
+                            </div>
+                            <span class="text-[10px] font-bold text-gray-300 group-hover:text-white">Emerald</span>
+                        </button>
+                        <button onclick="applyPreset('sunset')" class="preset-btn group flex items-center gap-2 px-3 py-2.5 rounded-xl bg-white/5 border border-white/5 hover:border-orange-500/30 transition-all text-left">
+                            <div class="flex gap-0.5 shrink-0">
+                                <div class="w-3 h-3 rounded-full bg-orange-500"></div>
+                                <div class="w-3 h-3 rounded-full bg-rose-500"></div>
+                            </div>
+                            <span class="text-[10px] font-bold text-gray-300 group-hover:text-white">Sunset</span>
+                        </button>
+                        <button onclick="applyPreset('midnight')" class="preset-btn group flex items-center gap-2 px-3 py-2.5 rounded-xl bg-white/5 border border-white/5 hover:border-indigo-500/30 transition-all text-left">
+                            <div class="flex gap-0.5 shrink-0">
+                                <div class="w-3 h-3 rounded-full bg-indigo-500"></div>
+                                <div class="w-3 h-3 rounded-full bg-violet-500"></div>
+                            </div>
+                            <span class="text-[10px] font-bold text-gray-300 group-hover:text-white">Midnight</span>
+                        </button>
+                        <button onclick="applyPreset('rose')" class="preset-btn group flex items-center gap-2 px-3 py-2.5 rounded-xl bg-white/5 border border-white/5 hover:border-rose-500/30 transition-all text-left">
+                            <div class="flex gap-0.5 shrink-0">
+                                <div class="w-3 h-3 rounded-full bg-rose-500"></div>
+                                <div class="w-3 h-3 rounded-full bg-pink-400"></div>
+                            </div>
+                            <span class="text-[10px] font-bold text-gray-300 group-hover:text-white">Rose</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="h-px bg-white/5"></div>
+
+                <!-- Font Family -->
+                <div class="space-y-2">
+                    <label class="text-[9px] font-black text-gray-400 uppercase tracking-[0.15em] flex items-center gap-2">
+                        <i class="fas fa-font text-purple-400 text-[8px]"></i> Font Family
+                    </label>
+                    <select id="theme-font" onchange="updateThemeVar('--font-family', this.value + ', sans-serif')"
+                        class="w-full bg-slate-900/80 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-purple-500/50 cursor-pointer">
+                        <option value="Outfit" selected>Outfit</option>
+                        <option value="Inter">Inter</option>
+                        <option value="Roboto">Roboto</option>
+                        <option value="Poppins">Poppins</option>
+                        <option value="Space Grotesk">Space Grotesk</option>
+                        <option value="DM Sans">DM Sans</option>
+                    </select>
+                </div>
+
+                <!-- Font Size -->
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <label class="text-[9px] font-black text-gray-400 uppercase tracking-[0.15em] flex items-center gap-2">
+                            <i class="fas fa-text-height text-purple-400 text-[8px]"></i> Font Size
+                        </label>
+                        <span id="font-size-display" class="text-[10px] font-bold text-purple-400">14px</span>
+                    </div>
+                    <input type="range" id="theme-font-size" min="11" max="18" value="14" 
+                        oninput="updateThemeVar('--font-size-base', this.value + 'px'); document.getElementById('font-size-display').textContent = this.value + 'px'"
+                        class="w-full h-1.5 rounded-full appearance-none cursor-pointer theme-range">
+                </div>
+
+                <div class="h-px bg-white/5"></div>
+
+                <!-- Accent Primary Color -->
+                <div class="space-y-2">
+                    <label class="text-[9px] font-black text-gray-400 uppercase tracking-[0.15em] flex items-center gap-2">
+                        <i class="fas fa-droplet text-purple-400 text-[8px]"></i> Accent Color
+                    </label>
+                    <div class="flex items-center gap-3">
+                        <input type="color" id="theme-accent" value="#a855f7" 
+                            onchange="updateThemeVar('--accent-primary', this.value); updateThemeVar('--text-accent', this.value); updateThemeVar('--sidebar-icon-active', this.value)"
+                            class="w-10 h-10 rounded-xl border border-white/10 cursor-pointer bg-transparent p-0.5">
+                        <input type="text" id="theme-accent-text" value="#a855f7" 
+                            onchange="const c = this.value; document.getElementById('theme-accent').value = c; updateThemeVar('--accent-primary', c); updateThemeVar('--text-accent', c); updateThemeVar('--sidebar-icon-active', c)"
+                            class="flex-1 bg-slate-900/80 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500/50 font-mono">
+                    </div>
+                </div>
+
+                <!-- Accent Secondary Color -->
+                <div class="space-y-2">
+                    <label class="text-[9px] font-black text-gray-400 uppercase tracking-[0.15em] flex items-center gap-2">
+                        <i class="fas fa-droplet text-pink-400 text-[8px]"></i> Secondary Accent
+                    </label>
+                    <div class="flex items-center gap-3">
+                        <input type="color" id="theme-accent2" value="#ec4899" 
+                            onchange="updateThemeVar('--accent-secondary', this.value)"
+                            class="w-10 h-10 rounded-xl border border-white/10 cursor-pointer bg-transparent p-0.5">
+                        <input type="text" id="theme-accent2-text" value="#ec4899" 
+                            onchange="const c = this.value; document.getElementById('theme-accent2').value = c; updateThemeVar('--accent-secondary', c)"
+                            class="flex-1 bg-slate-900/80 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500/50 font-mono">
+                    </div>
+                </div>
+
+                <div class="h-px bg-white/5"></div>
+
+                <!-- Background Color -->
+                <div class="space-y-2">
+                    <label class="text-[9px] font-black text-gray-400 uppercase tracking-[0.15em] flex items-center gap-2">
+                        <i class="fas fa-fill-drip text-blue-400 text-[8px]"></i> Background Color
+                    </label>
+                    <div class="flex items-center gap-3">
+                        <input type="color" id="theme-bg" value="#0f172a" 
+                            onchange="updateThemeVar('--bg-primary', this.value)"
+                            class="w-10 h-10 rounded-xl border border-white/10 cursor-pointer bg-transparent p-0.5">
+                        <input type="text" id="theme-bg-text" value="#0f172a" 
+                            onchange="const c = this.value; document.getElementById('theme-bg').value = c; updateThemeVar('--bg-primary', c)"
+                            class="flex-1 bg-slate-900/80 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500/50 font-mono">
+                    </div>
+                </div>
+
+                <!-- Sidebar Color -->
+                <div class="space-y-2">
+                    <label class="text-[9px] font-black text-gray-400 uppercase tracking-[0.15em] flex items-center gap-2">
+                        <i class="fas fa-bars text-indigo-400 text-[8px]"></i> Sidebar Color
+                    </label>
+                    <div class="flex items-center gap-3">
+                        <input type="color" id="theme-sidebar" value="#0f172a" 
+                            onchange="updateThemeVar('--bg-sidebar', this.value)"
+                            class="w-10 h-10 rounded-xl border border-white/10 cursor-pointer bg-transparent p-0.5">
+                        <input type="text" id="theme-sidebar-text" value="#0f172a" 
+                            onchange="const c = this.value; document.getElementById('theme-sidebar').value = c; updateThemeVar('--bg-sidebar', c)"
+                            class="flex-1 bg-slate-900/80 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500/50 font-mono">
+                    </div>
+                </div>
+
+                <!-- Card / Panel Color -->
+                <div class="space-y-2">
+                    <label class="text-[9px] font-black text-gray-400 uppercase tracking-[0.15em] flex items-center gap-2">
+                        <i class="fas fa-square text-teal-400 text-[8px]"></i> Card / Panel Color
+                    </label>
+                    <div class="flex items-center gap-3">
+                        <input type="color" id="theme-card" value="#1e293b" 
+                            onchange="updateThemeVar('--bg-secondary', this.value)"
+                            class="w-10 h-10 rounded-xl border border-white/10 cursor-pointer bg-transparent p-0.5">
+                        <input type="text" id="theme-card-text" value="#1e293b" 
+                            onchange="const c = this.value; document.getElementById('theme-card').value = c; updateThemeVar('--bg-secondary', c)"
+                            class="flex-1 bg-slate-900/80 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500/50 font-mono">
+                    </div>
+                </div>
+
+                <!-- Border Color -->
+                <div class="space-y-2">
+                    <label class="text-[9px] font-black text-gray-400 uppercase tracking-[0.15em] flex items-center gap-2">
+                        <i class="fas fa-border-all text-slate-400 text-[8px]"></i> Border Color
+                    </label>
+                    <div class="flex items-center gap-3">
+                        <input type="color" id="theme-border" value="#334155" 
+                            onchange="updateThemeVar('--border-color', this.value); updateThemeVar('--border-hover', this.value)"
+                            class="w-10 h-10 rounded-xl border border-white/10 cursor-pointer bg-transparent p-0.5">
+                        <input type="text" id="theme-border-text" value="#334155" 
+                            onchange="const c = this.value; document.getElementById('theme-border').value = c; updateThemeVar('--border-color', c); updateThemeVar('--border-hover', c)"
+                            class="flex-1 bg-slate-900/80 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500/50 font-mono">
+                    </div>
+                </div>
+
+                <!-- Input / Filter Background -->
+                <div class="space-y-2">
+                    <label class="text-[9px] font-black text-gray-400 uppercase tracking-[0.15em] flex items-center gap-2">
+                        <i class="fas fa-keyboard text-indigo-400 text-[8px]"></i> Input & Filter BG
+                    </label>
+                    <div class="flex items-center gap-3">
+                        <input type="color" id="theme-input" value="#0f172a" 
+                            onchange="updateThemeVar('--bg-input', this.value)"
+                            class="w-10 h-10 rounded-xl border border-white/10 cursor-pointer bg-transparent p-0.5">
+                        <input type="text" id="theme-input-text" value="#0f172a" 
+                            onchange="const c = this.value; document.getElementById('theme-input').value = c; updateThemeVar('--bg-input', c)"
+                            class="flex-1 bg-slate-900/80 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500/50 font-mono">
+                    </div>
+                </div>
+
+                <div class="h-px bg-white/5"></div>
+
+                <!-- Text Color -->
+                <div class="space-y-2">
+                    <label class="text-[9px] font-black text-gray-400 uppercase tracking-[0.15em] flex items-center gap-2">
+                        <i class="fas fa-a text-gray-300 text-[8px]"></i> Text Color
+                    </label>
+                    <div class="flex items-center gap-3">
+                        <input type="color" id="theme-text" value="#f8fafc" 
+                            onchange="updateThemeVar('--text-primary', this.value)"
+                            class="w-10 h-10 rounded-xl border border-white/10 cursor-pointer bg-transparent p-0.5">
+                        <input type="text" id="theme-text-text" value="#f8fafc"
+                            onchange="const c = this.value; document.getElementById('theme-text').value = c; updateThemeVar('--text-primary', c)"
+                            class="flex-1 bg-slate-900/80 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500/50 font-mono">
+                    </div>
+                </div>
+
+                <!-- Secondary Text Color -->
+                <div class="space-y-2">
+                    <label class="text-[9px] font-black text-gray-400 uppercase tracking-[0.15em] flex items-center gap-2">
+                        <i class="fas fa-a text-gray-500 text-[8px]"></i> Label / Muted Text
+                    </label>
+                    <div class="flex items-center gap-3">
+                        <input type="color" id="theme-text2" value="#94a3b8" 
+                            onchange="updateThemeVar('--text-secondary', this.value); updateThemeVar('--text-muted', this.value)"
+                            class="w-10 h-10 rounded-xl border border-white/10 cursor-pointer bg-transparent p-0.5">
+                        <input type="text" id="theme-text2-text" value="#94a3b8"
+                            onchange="const c = this.value; document.getElementById('theme-text2').value = c; updateThemeVar('--text-secondary', c); updateThemeVar('--text-muted', c)"
+                            class="flex-1 bg-slate-900/80 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500/50 font-mono">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Actions -->
+            <div class="p-5 border-t border-white/10 bg-slate-950/50 space-y-2.5 shrink-0">
+                <button onclick="saveThemeToDB()" class="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-black text-[10px] uppercase tracking-[0.2em] shadow-lg shadow-purple-500/20 hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                    <i class="fas fa-cloud-arrow-up text-xs"></i> Save Theme
+                </button>
+                <button onclick="resetTheme()" class="w-full py-2.5 rounded-xl bg-white/5 text-gray-400 font-bold text-[10px] uppercase tracking-widest hover:bg-white/10 hover:text-white transition-all border border-white/5 flex items-center justify-center gap-2">
+                    <i class="fas fa-rotate-left text-[9px]"></i> Reset to Default
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- Theme Panel Overlay -->
+    <div id="theme-panel-overlay" class="fixed inset-0 bg-black/30 backdrop-blur-sm z-[94] hidden opacity-0 transition-opacity duration-300" onclick="toggleThemePanel()"></div>
+
+    <script>
+    // ── Theme Engine ────────────────────────────────────────
+    function injectThemeOverrides() {
+        if (document.getElementById('theme-css-overrides')) return;
+        const style = document.createElement('style');
+        style.id = 'theme-css-overrides';
+        style.innerHTML = `
+            /* Backgrounds */
+            body, .bg-slate-900, div[class*="bg-slate-900"] { background-color: var(--bg-primary) !important; }
+            .sidebar-glass, #sidebar, aside, [class*="bg-slate-950"] { background-color: var(--bg-sidebar) !important; }
+            .glass-panel, [class*="bg-slate-800"], div[class*="bg-slate-800"] { background-color: var(--bg-secondary) !important; }
+            
+            /* Text Colors */
+            body, h1, h2, h3, h4, h5, h6, p, span, a, div, li, td, th, label, .text-white, .text-slate-100 { color: var(--text-primary) !important; }
+            .text-gray-400, .text-slate-400, .text-gray-500, .text-slate-500, label { color: var(--text-secondary) !important; }
+            
+            /* Nav Links */
+            #sidebar nav a span, #sidebar nav a { color: var(--text-secondary) !important; }
+            #sidebar nav a:hover span, #sidebar nav a:hover { color: var(--text-primary) !important; }
+            
+            /* Tables */
+            table thead tr, table thead th, .glass-table th { background-color: var(--bg-secondary) !important; color: var(--text-muted) !important; border-color: var(--border-color) !important; }
+            table tbody tr { border-color: var(--border-color) !important; }
+            
+            /* Inputs */
+            input:not([type="color"]):not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]), select, textarea, #store-filter-trigger {
+                background-color: var(--bg-input) !important;
+                color: var(--text-primary) !important;
+                border-color: transparent !important;
+            }
+            input:focus, select:focus, textarea:focus, #store-filter-trigger:focus { border-color: var(--accent-primary) !important; box-shadow: 0 0 0 1px var(--accent-primary) !important; }
+            
+            /* Custom Menus */
+            #store-filter-menu, .flatpickr-calendar {
+                background: var(--bg-secondary) !important;
+                border: 1px solid var(--border-color) !important;
+                backdrop-filter: blur(20px) !important;
+                -webkit-backdrop-filter: blur(20px) !important;
+            }
+            #store-filter-menu .sticky { background: transparent !important; }
+            .store-option:hover { background: var(--bg-card) !important; }
+
+            /* Flatpickr Modern Design overrides */
+            .flatpickr-calendar { font-family: var(--font-family) !important; box-shadow: 0 20px 50px rgba(0,0,0,0.5) !important; border-radius: 1rem !important; }
+            .flatpickr-calendar::before, .flatpickr-calendar::after { display: none !important; }
+            .flatpickr-month, .flatpickr-weekday { color: var(--text-secondary) !important; fill: var(--text-secondary) !important; }
+            .flatpickr-day { color: var(--text-primary) !important; border-radius: 0.5rem !important; }
+            .flatpickr-day:hover, .flatpickr-day:focus { background: var(--bg-card) !important; border-color: transparent !important; }
+            .flatpickr-day.selected { background: var(--accent-primary) !important; border-color: var(--accent-primary) !important; color: white !important; font-weight: bold; }
+            .flatpickr-day.flatpickr-disabled { color: var(--text-muted) !important; }
+            .flatpickr-current-month .flatpickr-monthDropdown-months, .flatpickr-current-month input.cur-year { background: transparent !important; color: var(--text-primary) !important; }
+            .flatpickr-current-month .flatpickr-monthDropdown-months option { background: var(--bg-primary) !important; color: var(--text-primary) !important; }
+            
+            /* Borders */
+            [class*="border-white/5"], [class*="border-white/10"], [class*="border-slate-"] { border-color: var(--border-color) !important; }
+            
+            /* Fonts */
+            html, body, .font-outfit, body *:not(.fas):not(.far):not(.fab):not(.fa):not(i[class*="fa-"]):not(svg):not(path) {
+                font-family: var(--font-family) !important;
+            }
+            html { font-size: var(--font-size-base) !important; }
+            /* Exclude Panel itself from font overrides */
+            #theme-panel, #theme-panel * { font-family: 'Outfit', sans-serif !important; }
+            
+            /* Exclude Button gradients from being overwritten by div text-white rule */
+            button[class*="bg-gradient"], a[class*="bg-gradient"], 
+            .btn-primary, [class*="from-purple"], [class*="from-red"] {
+                color: white !important;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    // Inject overrides immediately to map Tailwind to Variables
+    injectThemeOverrides();
+
+    const THEME_PRESETS = {
+        default: {
+            '--font-family': "'Outfit', sans-serif",
+            '--font-size-base': '14px',
+            '--bg-primary': '#0f172a',
+            '--bg-sidebar': '#0f172a',
+            '--bg-secondary': '#1e293b',
+            '--bg-input': '#0f172a',
+            '--border-color': '#334155',
+            '--text-primary': '#f8fafc',
+            '--text-secondary': '#94a3b8',
+            '--text-muted': '#64748b',
+            '--accent-primary': '#a855f7',
+            '--accent-secondary': '#ec4899',
+            '--text-accent': '#a855f7',
+            '--sidebar-icon-active': '#c084fc',
+            '--orb-1': '#9333ea',
+            '--orb-2': '#2563eb'
+        },
+        ocean: {
+            '--font-family': "'Inter', sans-serif",
+            '--font-size-base': '14px',
+            '--bg-primary': '#0a192f',
+            '--bg-sidebar': '#071323',
+            '--bg-secondary': '#112240',
+            '--bg-input': '#0a192f',
+            '--border-color': '#1e3a8a',
+            '--text-primary': '#ccd6f6',
+            '--text-secondary': '#8892b0',
+            '--text-muted': '#64748b',
+            '--accent-primary': '#06b6d4',
+            '--accent-secondary': '#3b82f6',
+            '--text-accent': '#06b6d4',
+            '--sidebar-icon-active': '#22d3ee',
+            '--orb-1': '#0891b2',
+            '--orb-2': '#1d4ed8'
+        },
+        emerald: {
+            '--font-family': "'DM Sans', sans-serif",
+            '--font-size-base': '14px',
+            '--bg-primary': '#0d1117',
+            '--bg-sidebar': '#090d12',
+            '--bg-secondary': '#161b22',
+            '--bg-input': '#0d1117',
+            '--border-color': '#30363d',
+            '--text-primary': '#e6edf3',
+            '--text-secondary': '#8b949e',
+            '--text-muted': '#6e7681',
+            '--accent-primary': '#10b981',
+            '--accent-secondary': '#14b8a6',
+            '--text-accent': '#10b981',
+            '--sidebar-icon-active': '#34d399',
+            '--orb-1': '#059669',
+            '--orb-2': '#0d9488'
+        },
+        sunset: {
+            '--font-family': "'Poppins', sans-serif",
+            '--font-size-base': '14px',
+            '--bg-primary': '#1a1023',
+            '--bg-sidebar': '#140b1c',
+            '--bg-secondary': '#2a1a36',
+            '--bg-input': '#1a1023',
+            '--border-color': '#4a2545',
+            '--text-primary': '#fce7f3',
+            '--text-secondary': '#d4a0b9',
+            '--text-muted': '#a07090',
+            '--accent-primary': '#f97316',
+            '--accent-secondary': '#f43f5e',
+            '--text-accent': '#f97316',
+            '--sidebar-icon-active': '#fb923c',
+            '--orb-1': '#ea580c',
+            '--orb-2': '#e11d48'
+        },
+        midnight: {
+            '--font-family': "'Space Grotesk', sans-serif",
+            '--font-size-base': '14px',
+            '--bg-primary': '#020617',
+            '--bg-sidebar': '#010410',
+            '--bg-secondary': '#0f172a',
+            '--bg-input': '#020617',
+            '--border-color': '#1e293b',
+            '--text-primary': '#e2e8f0',
+            '--text-secondary': '#94a3b8',
+            '--text-muted': '#64748b',
+            '--accent-primary': '#6366f1',
+            '--accent-secondary': '#8b5cf6',
+            '--text-accent': '#6366f1',
+            '--sidebar-icon-active': '#818cf8',
+            '--orb-1': '#4f46e5',
+            '--orb-2': '#7c3aed'
+        },
+        rose: {
+            '--font-family': "'Outfit', sans-serif",
+            '--font-size-base': '14px',
+            '--bg-primary': '#1c0a14',
+            '--bg-sidebar': '#16070f',
+            '--bg-secondary': '#2d1020',
+            '--bg-input': '#1c0a14',
+            '--border-color': '#501e38',
+            '--text-primary': '#fdf2f8',
+            '--text-secondary': '#e8b4cf',
+            '--text-muted': '#c48ba8',
+            '--accent-primary': '#f43f5e',
+            '--accent-secondary': '#ec4899',
+            '--text-accent': '#f43f5e',
+            '--sidebar-icon-active': '#fb7185',
+            '--orb-1': '#e11d48',
+            '--orb-2': '#db2777'
+        }
+    };
+
+    function updateThemeVar(prop, value) {
+        document.documentElement.style.setProperty(prop, value);
+        syncInputsFromVars();
+        saveThemeToLocal();
+    }
+
+    function syncInputsFromVars() {
+        const cs = getComputedStyle(document.documentElement);
+        const get = (v) => cs.getPropertyValue(v).trim();
+        
+        const accent = get('--accent-primary');
+        const accent2 = get('--accent-secondary');
+        const bg = get('--bg-primary');
+        const sidebar = get('--bg-sidebar');
+        const card = get('--bg-secondary');
+        const inputBg = get('--bg-input');
+        const border = get('--border-color');
+        const text = get('--text-primary');
+        const text2 = get('--text-secondary');
+        const font = get('--font-family').split(',')[0].replace(/'/g,'').trim();
+        const size = parseInt(get('--font-size-base'));
+
+        const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+        
+        setVal('theme-accent', accent);
+        setVal('theme-accent-text', accent);
+        setVal('theme-accent2', accent2);
+        setVal('theme-accent2-text', accent2);
+        setVal('theme-bg', bg);
+        setVal('theme-bg-text', bg);
+        setVal('theme-sidebar', sidebar);
+        setVal('theme-sidebar-text', sidebar);
+        setVal('theme-card', card);
+        setVal('theme-card-text', card);
+        
+        let solidInput = inputBg;
+        if (solidInput.startsWith('rgba')) solidInput = '#0f172a';
+        setVal('theme-input', solidInput.substring(0, 7));
+        setVal('theme-input-text', inputBg);
+        
+        // Strip alpha if present (e.g. rgba or #rgba) for the color picker input which only takes #rrggbb
+        let solidBorder = border;
+        if (solidBorder.startsWith('rgba')) {
+            solidBorder = '#334155'; // Fallback for color picker if reading rgba
+        }
+        setVal('theme-border', solidBorder.substring(0, 7)); // Ensure only 6 hex chars
+        setVal('theme-border-text', border);
+        
+        setVal('theme-text', text);
+        setVal('theme-text-text', text);
+        setVal('theme-text2', text2);
+        setVal('theme-text2-text', text2);
+        setVal('theme-font-size', size);
+        
+        const sizeDisplay = document.getElementById('font-size-display');
+        if (sizeDisplay) sizeDisplay.textContent = size + 'px';
+
+        const fontSelect = document.getElementById('theme-font');
+        if (fontSelect) {
+            for (let opt of fontSelect.options) {
+                if (opt.value === font) { opt.selected = true; break; }
+            }
+        }
+    }
+
+    function applyPreset(name) {
+        const preset = THEME_PRESETS[name];
+        if (!preset) return;
+        Object.entries(preset).forEach(([prop, val]) => {
+            document.documentElement.style.setProperty(prop, val);
+        });
+        syncInputsFromVars();
+        saveThemeToLocal();
+    }
+
+    function resetTheme() {
+        applyPreset('default');
+        localStorage.removeItem('concession_theme');
+        fetch('api/save_theme.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ theme: THEME_PRESETS.default })
+        });
+        if (typeof showStatusModal === 'function') {
+            showStatusModal(true, 'Theme has been reset to default!', 'Theme Reset');
+        }
+    }
+
+    function getCurrentTheme() {
+        const cs = getComputedStyle(document.documentElement);
+        const vars = [
+            '--font-family', '--font-size-base', '--bg-primary', '--bg-sidebar', '--bg-secondary', '--bg-input',
+            '--border-color', '--text-primary', '--text-secondary', '--text-muted',
+            '--accent-primary', '--accent-secondary', '--text-accent',
+            '--sidebar-icon-active', '--orb-1', '--orb-2'
+        ];
+        const theme = {};
+        vars.forEach(v => { theme[v] = cs.getPropertyValue(v).trim(); });
+        return theme;
+    }
+
+    function saveThemeToLocal() {
+        const theme = getCurrentTheme();
+        localStorage.setItem('concession_theme', JSON.stringify(theme));
+    }
+
+    function loadThemeFromLocal() {
+        const saved = localStorage.getItem('concession_theme');
+        if (saved) {
+            try {
+                const theme = JSON.parse(saved);
+                Object.entries(theme).forEach(([prop, val]) => {
+                    document.documentElement.style.setProperty(prop, val);
+                });
+            } catch(e) {}
+        }
+    }
+
+    function saveThemeToDB() {
+        const theme = getCurrentTheme();
+        fetch('api/save_theme.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ theme })
+        })
+        .then(r => r.json())
+        .then(res => {
+            if (typeof showStatusModal === 'function') {
+                showStatusModal(res.success, res.message, res.success ? 'Theme Saved' : 'Save Failed');
+            }
+        })
+        .catch(() => {
+            if (typeof showStatusModal === 'function') {
+                showStatusModal(false, 'Could not save theme. Network error.', 'Save Failed');
+            }
+        });
+    }
+
+    function loadThemeFromDB() {
+        fetch('api/load_theme.php')
+        .then(r => r.json())
+        .then(res => {
+            if (res.success && res.theme) {
+                Object.entries(res.theme).forEach(([prop, val]) => {
+                    document.documentElement.style.setProperty(prop, val);
+                });
+                saveThemeToLocal(); // Sync to localStorage
+                syncInputsFromVars();
+            }
+        })
+        .catch(() => {});
+    }
+
+    function toggleThemePanel() {
+        const panel = document.getElementById('theme-panel');
+        const overlay = document.getElementById('theme-panel-overlay');
+        const isOpen = !panel.classList.contains('translate-x-full');
+        
+        if (isOpen) {
+            panel.classList.add('translate-x-full');
+            overlay.classList.add('opacity-0');
+            setTimeout(() => overlay.classList.add('hidden'), 300);
+        } else {
+            syncInputsFromVars();
+            overlay.classList.remove('hidden');
+            panel.classList.remove('translate-x-full');
+            setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+        }
+    }
+
+    // Load theme immediately (localStorage = instant, DB = async fallback)
+    loadThemeFromLocal();
+    document.addEventListener('DOMContentLoaded', () => {
+        syncInputsFromVars();
+        // Load from DB if no local theme exists (first visit on new device)
+        if (!localStorage.getItem('concession_theme')) {
+            loadThemeFromDB();
+        }
+    });
+    </script>
+
+    <style>
+    /* Theme range slider styling */
+    .theme-range {
+        background: linear-gradient(to right, var(--accent-primary), var(--accent-secondary));
+        -webkit-appearance: none;
+        border-radius: 9999px;
+    }
+    .theme-range::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: white;
+        box-shadow: 0 0 8px rgba(168, 85, 247, 0.5);
+        cursor: pointer;
+    }
+    .theme-range::-moz-range-thumb {
+        width: 16px;
+        height: 16px;
+        border: none;
+        border-radius: 50%;
+        background: white;
+        box-shadow: 0 0 8px rgba(168, 85, 247, 0.5);
+        cursor: pointer;
+    }
+    /* Color input styling */
+    input[type="color"] {
+        -webkit-appearance: none;
+        border: none;
+        padding: 0;
+    }
+    input[type="color"]::-webkit-color-swatch-wrapper {
+        padding: 2px;
+    }
+    input[type="color"]::-webkit-color-swatch {
+        border: none;
+        border-radius: 8px;
+    }
+    </style>
+    <script>
+    // Setup Flatpickr
+    window.initFlatpickr = function() {
+        const dateInputs = document.querySelectorAll('input[type="date"]');
+        if (typeof flatpickr !== 'undefined' && dateInputs.length > 0) {
+            flatpickr(dateInputs, {
+                dateFormat: "Y-m-d",
+                disableMobile: true,
+                onChange: function(selectedDates, dateStr, instance) {
+                    // Only auto-submit if it's a filter form and doesn't have a required submit button
+                    // Note: Since new forms shouldn't auto submit, we skip auto submit if it's a date input for new entries
+                    if (instance.element.form && instance.element.closest('.filter-form')) {
+                        instance.element.form.submit();
+                    } else if (instance.element.id === 'start_date' || instance.element.id === 'end_date') {
+                        // Support existing table filter bindings
+                        if (typeof handleSearch === 'function') handleSearch();
+                    }
+                }
+            });
+            // Convert input type text so browser default icon doesn't show
+            dateInputs.forEach(input => {
+                input.type = 'text';
+            });
+        }
+    };
+
+    document.addEventListener("DOMContentLoaded", function() {
+        window.initFlatpickr();
+    });
+    </script>
 </body>
 </html>
+

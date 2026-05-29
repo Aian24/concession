@@ -3,44 +3,85 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-    background-color: #0f172a;
-    color: #f8fafc;
+/* ── Theme Variables ──────────────────────────────────────── */
+:root {
+    /* Background Colors */
+    --bg-primary: #0f172a;
+    --bg-secondary: rgba(30, 41, 59, 0.6);
+    --bg-sidebar: rgba(15, 23, 42, 0.85);
+    --bg-header: rgba(15, 23, 42, 0.5);
+    --bg-card: rgba(255, 255, 255, 0.05);
+    --bg-input: rgba(15, 23, 42, 0.6);
+
+    /* Text Colors */
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --text-accent: #a855f7;
+
+    /* Accent Colors */
+    --accent-primary: #a855f7;
+    --accent-secondary: #ec4899;
+    --accent-gradient: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+
+    /* Border */
+    --border-color: rgba(255, 255, 255, 0.05);
+    --border-hover: rgba(255, 255, 255, 0.1);
+
+    /* Typography */
+    --font-family: 'Outfit', sans-serif;
+    --font-size-base: 14px;
+
+    /* Sidebar Active */
+    --sidebar-active-bg: linear-gradient(to right, rgba(168,85,247,0.3), rgba(236,72,153,0.3));
+    --sidebar-active-bar: linear-gradient(to bottom, #c084fc, #ec4899);
+    --sidebar-icon-active: #c084fc;
+
+    /* Glow Orbs */
+    --orb-1: #9333ea;
+    --orb-2: #2563eb;
+}
+
+html, body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: var(--font-family);
+    font-size: var(--font-size-base);
 }
 .font-outfit {
-    font-family: 'Outfit', sans-serif;
+    font-family: var(--font-family);
 }
 
 /* Glassmorphism */
 .glass-panel {
-    background: rgba(30, 41, 59, 0.6);
+    background: var(--bg-secondary);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
     border-radius: 1.5rem;
 }
 
 /* Sidebar Specific */
 .sidebar-glass {
-    background: rgba(15, 23, 42, 0.85);
+    background: var(--bg-sidebar);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
-    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    border-right: 1px solid var(--border-color);
 }
 
 /* Inputs */
 .input-modern {
-    background: rgba(15, 23, 42, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: white;
+    background: var(--bg-input);
+    border: 1px solid var(--border-hover);
+    color: var(--text-primary);
     border-radius: 0.75rem;
     padding: 0.75rem 1rem;
     outline: none;
     transition: all 0.3s ease;
 }
 .input-modern:focus {
-    border-color: #a855f7;
+    border-color: var(--accent-primary);
     box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.2);
 }
 
@@ -52,7 +93,7 @@ input[type="date"].input-modern::-webkit-calendar-picker-indicator {
 
 /* Primary Button */
 .btn-primary {
-    background: linear-gradient(135deg, #8b5cf6, #ec4899);
+    background: var(--accent-gradient);
     color: white;
     transition: all 0.3s ease;
 }
@@ -61,8 +102,8 @@ input[type="date"].input-modern::-webkit-calendar-picker-indicator {
 }
 
 .btn-secondary {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--bg-card);
+    border: 1px solid var(--border-hover);
     transition: all 0.3s ease;
 }
 .btn-secondary:hover {
@@ -120,15 +161,16 @@ input[type="date"].input-modern::-webkit-calendar-picker-indicator {
 
 /* Table styling */
 .glass-table th {
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--bg-card);
     backdrop-filter: blur(10px);
+    color: var(--text-muted);
 }
 .glass-table tr {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid var(--border-color);
     transition: background 0.2s;
 }
 .glass-table tbody tr:hover {
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--bg-card);
 }
 
 /* Custom scrollbar */
@@ -200,4 +242,3 @@ input[type="date"].input-modern::-webkit-calendar-picker-indicator {
         box-shadow: inset 0px 0px 0px 40px #10b981;
     }
 }
-

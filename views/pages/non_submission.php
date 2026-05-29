@@ -225,14 +225,24 @@ $stores_stmt->close();
 
                 <div class="space-y-1">
                     <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">From Date</label>
-                    <input type="date" name="start_date" value="<?= htmlspecialchars($start_date) ?>" onclick="this.showPicker()"
-                           class="w-full bg-slate-900/80 border border-white/10 rounded-lg px-3 py-1.5 h-8 text-xs text-white focus:outline-none focus:border-purple-500/50 cursor-pointer">
+                    <div class="relative">
+                        <input type="date" name="start_date" value="<?= htmlspecialchars($start_date) ?>" onclick="this.showPicker()" placeholder="mm/dd/yyyy"
+                               class="w-full bg-slate-900/80 border border-white/10 rounded-lg pl-3 pr-8 py-1.5 h-8 text-xs text-white focus:outline-none focus:border-purple-500/50 cursor-pointer">
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                            <i class="fas fa-calendar-alt text-gray-500 text-[10px]"></i>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="space-y-1">
                     <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">To Date</label>
-                    <input type="date" name="end_date" value="<?= htmlspecialchars($end_date) ?>" onclick="this.showPicker()"
-                           class="w-full bg-slate-900/80 border border-white/10 rounded-lg px-3 py-1.5 h-8 text-xs text-white focus:outline-none focus:border-purple-500/50 cursor-pointer">
+                    <div class="relative">
+                        <input type="date" name="end_date" value="<?= htmlspecialchars($end_date) ?>" onclick="this.showPicker()" placeholder="mm/dd/yyyy"
+                               class="w-full bg-slate-900/80 border border-white/10 rounded-lg pl-3 pr-8 py-1.5 h-8 text-xs text-white focus:outline-none focus:border-purple-500/50 cursor-pointer">
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                            <i class="fas fa-calendar-alt text-gray-500 text-[10px]"></i>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

@@ -713,6 +713,7 @@ if (isset($_GET['ajax'])) {
     }
 
     function initTableEvents() {
+        if (typeof window.initFlatpickr === 'function') window.initFlatpickr();
         const searchInput    = document.querySelector('[name="search"]');
         const limitSelect    = document.querySelector('[name="limit"]');
         const startInput     = document.querySelector('[name="start_date"]');

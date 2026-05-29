@@ -399,10 +399,10 @@ if (!function_exists('time_elapsed_string')) {
 <!-- Top Sellers Modal -->
 <div id="top-sellers-modal" class="fixed inset-0 z-[105] hidden">
     <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeTopSellersModal()"></div>
-    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100%-2rem)] max-w-2xl bg-[#0f172a] border border-[#3b82f6]/20 rounded-2xl shadow-[0_20px_50px_rgba(59,130,246,0.2)] overflow-hidden">
-        <div class="p-5 border-b border-white/5 flex justify-between items-center bg-[#3b82f6]/5">
-            <h3 class="text-sm font-black text-[#3b82f6] uppercase tracking-widest flex items-center gap-2">
-                <i class="fas fa-trophy"></i> Top Selling Stores
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100%-2rem)] max-w-2xl glass-panel overflow-hidden">
+        <div class="p-5 border-b border-white/5 flex justify-between items-center bg-white/5">
+            <h3 class="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
+                <i class="fas fa-trophy text-amber-400"></i> Top Selling Stores
             </h3>
             <button onclick="closeTopSellersModal()" class="text-gray-400 hover:text-white transition-colors">
                 <i class="fas fa-times"></i>
@@ -414,13 +414,13 @@ if (!function_exists('time_elapsed_string')) {
             <div class="col-span-3 text-right">Quantity</div>
             <div class="col-span-3 text-right">Amount</div>
         </div>
-        <div class="p-2 max-h-[60vh] overflow-y-auto scrollbar-thin scrollbar-thumb-[#3b82f6]/30">
+        <div class="p-2 max-h-[60vh] overflow-y-auto scrollbar-thin scrollbar-thumb-white/10">
             <div class="space-y-2 p-2">
                 <?php if (empty($top_stores_ranking)): ?>
                     <div class="text-xs text-gray-500 italic text-center py-4">No data available</div>
                 <?php else: ?>
                     <?php $rank = 1; foreach($top_stores_ranking as $st): ?>
-                    <div class="grid grid-cols-12 gap-4 items-center text-[11px] bg-[#3b82f6]/5 px-4 py-3 rounded-xl border border-[#3b82f6]/10 hover:bg-[#3b82f6]/10 transition-colors group">
+                    <div class="grid grid-cols-12 gap-4 items-center text-[11px] bg-white/5 px-4 py-3 rounded-xl border border-white/10 hover:bg-white/10 transition-colors group">
                         <div class="col-span-1 flex justify-center items-center">
                             <?php if ($rank == 1): ?>
                                 <i class="fas fa-crown text-yellow-400 text-lg drop-shadow-[0_0_8px_rgba(250,204,21,0.5)]" title="1st Place"></i>
