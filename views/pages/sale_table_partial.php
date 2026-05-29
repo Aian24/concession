@@ -185,7 +185,7 @@ if ($is_single_day && ($is_admin || $is_multi_store_admin) && empty($store_filte
             <div class="flex flex-col lg:flex-row lg:items-center gap-4">
                 <div class="flex items-center gap-2.5">
                     <i class="fas fa-history text-green-400 text-sm"></i>
-                    <h3 class="text-sm font-bold text-white tracking-wide uppercase">Submitted Sales</h3>
+                    <h3 class="text-sm font-bold text-white tracking-wide uppercase whitespace-nowrap">Submitted Sales</h3>
                 </div>
                 
                 <!-- Grand Totals Badges -->

@@ -271,7 +271,7 @@ if (!function_exists('time_elapsed_string')) {
 <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8">
     <!-- Stats Cards -->
     <?php if ($is_admin): ?>
-    <div onclick="document.getElementById('top-sellers-modal').classList.remove('hidden')" class="glass-panel p-4 sm:p-5 xl:p-6 border border-white/5 relative overflow-hidden group hover:border-[#3b82f6]/30 transition-all duration-500 cursor-pointer z-50">
+    <div onclick="openTopSellersModal()" class="glass-panel p-4 sm:p-5 xl:p-6 border border-white/5 relative overflow-hidden group hover:border-[#3b82f6]/30 transition-all duration-500 cursor-pointer z-50">
         <div class="absolute -right-4 -top-4 w-24 h-24 bg-[#3b82f6]/10 rounded-full blur-2xl group-hover:bg-[#3b82f6]/20 transition-all"></div>
         <div class="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
             <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-[#3b82f6]/10 flex items-center justify-center text-[#3b82f6] border border-[#3b82f6]/20 shadow-lg shadow-[#3b82f6]/5">
@@ -397,14 +397,14 @@ if (!function_exists('time_elapsed_string')) {
 
 <?php if ($is_admin): ?>
 <!-- Top Sellers Modal -->
-<div id="top-sellers-modal" class="fixed inset-0 z-[100] hidden">
-    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="document.getElementById('top-sellers-modal').classList.add('hidden')"></div>
-    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl bg-[#0f172a] border border-[#3b82f6]/20 rounded-2xl shadow-[0_20px_50px_rgba(59,130,246,0.2)] overflow-hidden">
+<div id="top-sellers-modal" class="fixed inset-0 z-[105] hidden">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeTopSellersModal()"></div>
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100%-2rem)] max-w-2xl bg-[#0f172a] border border-[#3b82f6]/20 rounded-2xl shadow-[0_20px_50px_rgba(59,130,246,0.2)] overflow-hidden">
         <div class="p-5 border-b border-white/5 flex justify-between items-center bg-[#3b82f6]/5">
             <h3 class="text-sm font-black text-[#3b82f6] uppercase tracking-widest flex items-center gap-2">
                 <i class="fas fa-trophy"></i> Top Selling Stores
             </h3>
-            <button onclick="document.getElementById('top-sellers-modal').classList.add('hidden')" class="text-gray-400 hover:text-white transition-colors">
+            <button onclick="closeTopSellersModal()" class="text-gray-400 hover:text-white transition-colors">
                 <i class="fas fa-times"></i>
             </button>
         </div>
@@ -455,6 +455,21 @@ if (!function_exists('time_elapsed_string')) {
 <?php endif; ?>
 
 <script>
+function openTopSellersModal() {
+    const modal = document.getElementById('top-sellers-modal');
+    if (modal) {
+        document.body.appendChild(modal);
+        modal.classList.remove('hidden');
+    }
+}
+
+function closeTopSellersModal() {
+    const modal = document.getElementById('top-sellers-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const ctx = document.getElementById('monthlyActivityChart').getContext('2d');
     
