@@ -392,6 +392,7 @@
                 $nav_items['admin'] = ['icon' => 'fa-users-cog', 'title' => 'Manage Users'];
                 $nav_items['stores'] = ['icon' => 'fa-store', 'title' => 'Manage Stores'];
                 $nav_items['prism_data'] = ['icon' => 'fa-gem', 'title' => 'Manage Prism Data'];
+                $nav_items['boutique_data'] = ['icon' => 'fa-store', 'title' => 'Manage Boutique Data'];
                 $nav_items['recent_activity'] = ['icon' => 'fa-clock-rotate-left', 'title' => 'Recent Activity'];
                 $nav_items['non_submission'] = ['icon' => 'fa-file-excel', 'title' => 'Non-Submission'];
             }
@@ -1464,7 +1465,7 @@
             [class*="border-white/5"], [class*="border-white/10"], [class*="border-slate-"] { border-color: var(--border-color) !important; }
             
             /* Fonts */
-            html, body, .font-outfit, body *:not(.fas):not(.far):not(.fab):not(.fa):not(i[class*="fa-"]):not(svg):not(path) {
+            html, body, .font-outfit, body *:not(.fas):not(.far):not(.fab):not(.fa):not(i[class*="fa-"]):not(svg):not(path):not(input[type="date"]) {
                 font-family: var(--font-family) !important;
             }
             html { font-size: var(--font-size-base) !important; }

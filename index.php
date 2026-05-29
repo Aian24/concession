@@ -157,7 +157,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$allowed_pages = ['dashboard', 'monitoring', 'sale', 'return', 'receiving', 'ros_supplies', 'submitted', 'admin', 'history', 'pullout', 'stores', 'recent_activity', 'prism_data', 'non_submission'];
+$allowed_pages = ['dashboard', 'monitoring', 'sale', 'return', 'receiving', 'ros_supplies', 'submitted', 'admin', 'history', 'pullout', 'stores', 'recent_activity', 'prism_data', 'boutique_data', 'non_submission'];
 
 if (!in_array($action, $allowed_pages)) {
     $is_admin = (($_SESSION['role'] ?? 'user') === 'admin' || ($_SESSION['user'] ?? '') === 'admin');

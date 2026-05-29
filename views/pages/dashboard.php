@@ -82,7 +82,7 @@ $total_sales = (float) ($sales_data['total_sales'] ?? 0.00);
 $total_sales_qty = (int) ($sales_data['total_qty'] ?? 0);
 $total_sales_count = (int) ($sales_data['total_count'] ?? 0);
 
-// 1.1 Top Sellers (Admin Only)
+// 1.1 Top Sellers (Admin Only) - Concession
 $top_store_name = 'N/A';
 $top_stores_ranking = [];
 if ($is_admin) {
@@ -92,6 +92,24 @@ if ($is_admin) {
         if (!empty($top_stores_ranking)) {
             $top = $top_stores_ranking[0];
             $top_store_name = $top['store_code'] . ($top['sname'] ? " (" . $top['sname'] . ")" : "");
+        }
+    }
+}
+
+// 1.2 Top Sellers (Admin Only) - Boutique
+$top_boutique_name = 'N/A';
+$top_boutique_ranking = [];
+if ($is_admin) {
+    // Avoid crashing if table doesn't exist yet
+    $check_table = $db->query("SHOW TABLES LIKE 'boutique'");
+    if ($check_table && $check_table->num_rows > 0) {
+        $top_boutique_res = $db->query("SELECT store_code, store_name as sname, SUM(amount) as total_sales, SUM(qty_sold) as total_qty FROM boutique WHERE date BETWEEN '$start_date' AND '$end_date' GROUP BY store_code, store_name ORDER BY total_sales DESC");
+        if ($top_boutique_res) {
+            $top_boutique_ranking = $top_boutique_res->fetch_all(MYSQLI_ASSOC);
+            if (!empty($top_boutique_ranking)) {
+                $top = $top_boutique_ranking[0];
+                $top_boutique_name = $top['store_code'] . ($top['sname'] ? " (" . $top['sname'] . ")" : "");
+            }
         }
     }
 }
@@ -277,11 +295,24 @@ if (!function_exists('time_elapsed_string')) {
             <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-[#3b82f6]/10 flex items-center justify-center text-[#3b82f6] border border-[#3b82f6]/20 shadow-lg shadow-[#3b82f6]/5">
                 <i class="fas fa-trophy text-lg sm:text-xl"></i>
             </div>
-            <h3 class="text-[10px] sm:text-xs font-black text-gray-500 uppercase tracking-widest sm:tracking-[0.2em] truncate" title="Top Sellers">Top Sellers</h3>
+            <h3 class="text-[10px] sm:text-xs font-black text-gray-500 uppercase tracking-widest sm:tracking-[0.2em] truncate" title="Top Sellers Concession">Top Sellers Concession</h3>
         </div>
         <p class="text-lg sm:text-xl min-[1400px]:text-lg xl:text-xl 2xl:text-2xl font-bold text-white mb-1 truncate" title="<?= htmlspecialchars($top_store_name) ?>"><?= htmlspecialchars($top_store_name) ?></p>
         <div class="flex items-center gap-2">
             <span class="text-[10px] font-bold text-[#3b82f6] bg-[#3b82f6]/10 px-2 py-0.5 rounded-full uppercase truncate">Click for Details</span>
+        </div>
+    </div>
+    <div onclick="openTopBoutiqueModal()" class="glass-panel p-4 sm:p-5 xl:p-6 border border-white/5 relative overflow-hidden group hover:border-yellow-500/30 transition-all duration-500 cursor-pointer z-50">
+        <div class="absolute -right-4 -top-4 w-24 h-24 bg-yellow-500/10 rounded-full blur-2xl group-hover:bg-yellow-500/20 transition-all"></div>
+        <div class="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-yellow-500/10 flex items-center justify-center text-yellow-400 border border-yellow-500/20 shadow-lg shadow-yellow-500/5">
+                <i class="fas fa-crown text-lg sm:text-xl"></i>
+            </div>
+            <h3 class="text-[10px] sm:text-xs font-black text-gray-500 uppercase tracking-widest sm:tracking-[0.2em] truncate" title="Top Sellers Boutique">Top Sellers Boutique</h3>
+        </div>
+        <p class="text-lg sm:text-xl min-[1400px]:text-lg xl:text-xl 2xl:text-2xl font-bold text-white mb-1 truncate" title="<?= htmlspecialchars($top_boutique_name) ?>"><?= htmlspecialchars($top_boutique_name) ?></p>
+        <div class="flex items-center gap-2">
+            <span class="text-[10px] font-bold text-yellow-400 bg-yellow-500/10 px-2 py-0.5 rounded-full uppercase truncate">Click for Details</span>
         </div>
     </div>
     <?php endif; ?>
@@ -402,7 +433,7 @@ if (!function_exists('time_elapsed_string')) {
     <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100%-2rem)] max-w-2xl glass-panel overflow-hidden">
         <div class="p-5 border-b border-white/5 flex justify-between items-center bg-white/5">
             <h3 class="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
-                <i class="fas fa-trophy text-amber-400"></i> Top Selling Stores
+                <i class="fas fa-trophy text-[#3b82f6]"></i> Top Selling Stores (Concession)
             </h3>
             <button onclick="closeTopSellersModal()" class="text-gray-400 hover:text-white transition-colors">
                 <i class="fas fa-times"></i>
@@ -430,6 +461,63 @@ if (!function_exists('time_elapsed_string')) {
                                 <i class="fas fa-award text-amber-600 text-base" title="3rd Place"></i>
                             <?php else: ?>
                                 <span class="font-black text-[#3b82f6] group-hover:scale-110 transition-transform"><?= $rank ?></span>
+                            <?php endif; ?>
+                        </div>
+                        <div class="col-span-5 flex flex-col min-w-0">
+                            <span class="font-bold text-white text-xs truncate"><?= htmlspecialchars($st['store_code']) ?></span>
+                            <?php if ($st['sname']): ?>
+                                <span class="text-[10px] text-gray-400 font-normal truncate"><?= htmlspecialchars($st['sname']) ?></span>
+                            <?php endif; ?>
+                        </div>
+                        <div class="col-span-3 text-right flex items-center justify-end gap-2">
+                            <span class="text-gray-400 text-[10px] uppercase">Qty</span>
+                            <span class="font-black text-gray-200 text-xs"><?= number_format($st['total_qty']) ?></span>
+                        </div>
+                        <div class="col-span-3 text-right">
+                            <span class="font-black text-emerald-400 text-sm">₱<?= number_format($st['total_sales'], 0) ?></span>
+                        </div>
+                    </div>
+                    <?php $rank++; endforeach; ?>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Top Boutique Modal -->
+<div id="top-boutique-modal" class="fixed inset-0 z-[105] hidden">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeTopBoutiqueModal()"></div>
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100%-2rem)] max-w-2xl glass-panel overflow-hidden">
+        <div class="p-5 border-b border-white/5 flex justify-between items-center bg-white/5">
+            <h3 class="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
+                <i class="fas fa-crown text-yellow-400"></i> Top Selling Stores (Boutique)
+            </h3>
+            <button onclick="closeTopBoutiqueModal()" class="text-gray-400 hover:text-white transition-colors">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="p-4 border-b border-white/5 grid grid-cols-12 gap-4 text-xs font-bold text-gray-500 uppercase tracking-wider px-6">
+            <div class="col-span-1 text-center">Rank</div>
+            <div class="col-span-5">Store</div>
+            <div class="col-span-3 text-right">Quantity</div>
+            <div class="col-span-3 text-right">Amount</div>
+        </div>
+        <div class="p-2 max-h-[60vh] overflow-y-auto scrollbar-thin scrollbar-thumb-white/10">
+            <div class="space-y-2 p-2">
+                <?php if (empty($top_boutique_ranking)): ?>
+                    <div class="text-xs text-gray-500 italic text-center py-4">No data available</div>
+                <?php else: ?>
+                    <?php $rank = 1; foreach($top_boutique_ranking as $st): ?>
+                    <div class="grid grid-cols-12 gap-4 items-center text-[11px] bg-white/5 px-4 py-3 rounded-xl border border-white/10 hover:bg-white/10 transition-colors group">
+                        <div class="col-span-1 flex justify-center items-center">
+                            <?php if ($rank == 1): ?>
+                                <i class="fas fa-crown text-yellow-400 text-lg drop-shadow-[0_0_8px_rgba(250,204,21,0.5)]" title="1st Place"></i>
+                            <?php elseif ($rank == 2): ?>
+                                <i class="fas fa-medal text-gray-300 text-base" title="2nd Place"></i>
+                            <?php elseif ($rank == 3): ?>
+                                <i class="fas fa-award text-amber-600 text-base" title="3rd Place"></i>
+                            <?php else: ?>
+                                <span class="font-black text-yellow-500 group-hover:scale-110 transition-transform"><?= $rank ?></span>
                             <?php endif; ?>
                         </div>
                         <div class="col-span-5 flex flex-col min-w-0">
@@ -606,5 +694,21 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+
+    window.openTopBoutiqueModal = function() {
+        const m = document.getElementById('top-boutique-modal');
+        if(m) {
+            document.body.appendChild(m);
+            m.classList.remove('hidden');
+            m.classList.add('flex');
+        }
+    }
+    window.closeTopBoutiqueModal = function() {
+        const m = document.getElementById('top-boutique-modal');
+        if(m) {
+            m.classList.add('hidden');
+            m.classList.remove('flex');
+        }
+    }
 });
 </script>
