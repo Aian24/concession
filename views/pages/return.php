@@ -158,6 +158,7 @@ if (isset($_GET['ajax'])) {
                                             class="absolute inset-0 w-full h-full opacity-[0.01] cursor-pointer z-10" 
                                             value="<?= date('Y-m-d') ?>"
                                             onchange="updateBackdateText(this.value)"
+                                            onfocus="document.querySelector('input[name=\'page_date_type\'][value=\'backdate\']').checked = true; handleDateTypeChange('backdate');"
                                             onclick="document.querySelector('input[name=\'page_date_type\'][value=\'backdate\']').checked = true; handleDateTypeChange('backdate'); try{this.showPicker();}catch(e){}">
                                  </div>
                             </label>
@@ -186,6 +187,12 @@ if (isset($_GET['ajax'])) {
                     document.getElementById('backdate-text').innerText = formatted;
                     sessionStorage.setItem('page_custom_date', val);
                     sessionStorage.setItem('page_date_type', 'backdate');
+                    
+                    const radio = document.querySelector('input[name="page_date_type"][value="backdate"]');
+                    if (radio && !radio.checked) {
+                        radio.checked = true;
+                        handleDateTypeChange('backdate');
+                    }
                 }
 
                 (function() {
@@ -650,6 +657,7 @@ if (isset($_GET['ajax'])) {
     let filterTimer;
     function refreshTable(page = 1) {
         const container = document.getElementById('history-container');
+        if (!container) return;
         const searchInputEl = document.querySelector('[name="search"]');
         const search    = searchInputEl?.value || '';
         const limit     = document.querySelector('[name="limit"]')?.value || 10;

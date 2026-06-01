@@ -167,6 +167,7 @@ if (isset($_GET['ajax'])) {
 (function() {
     function refreshTable(page = 1) {
         const container = document.getElementById('stores-table-container');
+        if (!container) return;
         const search = document.querySelector('[name="search"]')?.value || '';
         const limit  = document.querySelector('[name="limit"]')?.value || 10;
         
