@@ -77,8 +77,14 @@ if ($is_full_admin || $is_admin_view) {
 
 // Filter toggles for Data Source
 if (isset($_GET['action']) && $_GET['action'] == 'dashboard') {
-    $show_concession = isset($_GET['source_concession']) && $_GET['source_concession'] == '1';
-    $show_boutique = isset($_GET['source_boutique']) && $_GET['source_boutique'] == '1';
+    $has_source = isset($_GET['source_concession']) || isset($_GET['source_boutique']);
+    if (!$has_source) {
+        $show_concession = true;
+        $show_boutique = true;
+    } else {
+        $show_concession = isset($_GET['source_concession']) && $_GET['source_concession'] == '1';
+        $show_boutique = isset($_GET['source_boutique']) && $_GET['source_boutique'] == '1';
+    }
 } else {
     $show_concession = true;
     $show_boutique = true;
