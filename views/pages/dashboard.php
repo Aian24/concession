@@ -345,7 +345,7 @@ if (!function_exists('time_elapsed_string')) {
 </style>
 
 <script>
-let currentQuickYear = <?= isset($_GET['start_date']) ? date('Y', strtotime($_GET['start_date'])) : date('Y') ?>;
+let currentQuickYear = parseInt('<?= isset($_GET["start_date"]) ? date("Y", strtotime($_GET["start_date"])) : date("Y") ?>', 10);
 
 function changeQuickYear(btn, val) {
     currentQuickYear = parseInt(val);
