@@ -340,6 +340,22 @@ let currentQuickYear = parseInt(document.getElementById('quick-year-select').val
 
 function changeQuickYearDropdown(val) {
     currentQuickYear = parseInt(val);
+    
+    const form = document.getElementById('dashboard-filter-form');
+    const sDate = form.querySelector('[name="start_date"]')?.value;
+    let monthNum = '01';
+    if (sDate) {
+        const s = new Date(sDate);
+        monthNum = String(s.getMonth() + 1).padStart(2, '0');
+    } else {
+        monthNum = String(new Date().getMonth() + 1).padStart(2, '0');
+    }
+    
+    const btns = document.querySelectorAll('.month-btn');
+    let targetBtn = btns[parseInt(monthNum) - 1];
+    if (targetBtn) {
+        selectQuickMonth(targetBtn, monthNum);
+    }
 }
 
 function scrollQuickMonths(direction) {
