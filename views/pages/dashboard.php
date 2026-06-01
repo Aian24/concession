@@ -75,12 +75,40 @@ if ($is_full_admin || $is_admin_view) {
     }, $assigned_data);
 }
 
-// 1. Total Sales
-$sales_res = $db->query("SELECT SUM(line_total) as total_sales, SUM(quantity) as total_qty, COUNT(id) as total_count FROM sales WHERE DATE(created_at) BETWEEN '$start_date' AND '$end_date' $store_clause");
-$sales_data = $sales_res ? $sales_res->fetch_assoc() : ['total_sales' => 0, 'total_qty' => 0, 'total_count' => 0];
-$total_sales = (float) ($sales_data['total_sales'] ?? 0.00);
-$total_sales_qty = (int) ($sales_data['total_qty'] ?? 0);
-$total_sales_count = (int) ($sales_data['total_count'] ?? 0);
+// Filter toggles for Data Source
+if (isset($_GET['action']) && $_GET['action'] == 'dashboard') {
+    $show_concession = isset($_GET['source_concession']) && $_GET['source_concession'] == '1';
+    $show_boutique = isset($_GET['source_boutique']) && $_GET['source_boutique'] == '1';
+} else {
+    $show_concession = true;
+    $show_boutique = true;
+}
+
+// 1. Total Sales & Quantity
+$total_sales = 0.00;
+$total_sales_qty = 0;
+$total_sales_count = 0;
+
+if ($show_concession) {
+    $sales_res = $db->query("SELECT SUM(line_total) as total_sales, SUM(quantity) as total_qty, COUNT(id) as total_count FROM sales WHERE DATE(created_at) BETWEEN '$start_date' AND '$end_date' $store_clause");
+    $sales_data = $sales_res ? $sales_res->fetch_assoc() : [];
+    $total_sales += (float) ($sales_data['total_sales'] ?? 0.00);
+    $total_sales_qty += (int) ($sales_data['total_qty'] ?? 0);
+    $total_sales_count += (int) ($sales_data['total_count'] ?? 0);
+}
+
+if ($show_boutique) {
+    $check_table = $db->query("SHOW TABLES LIKE 'boutique'");
+    if ($check_table && $check_table->num_rows > 0) {
+        $boutique_res = $db->query("SELECT SUM(amount) as total_sales, SUM(qty_sold) as total_qty, COUNT(id) as total_count FROM boutique WHERE date BETWEEN '$start_date' AND '$end_date' $store_clause");
+        if ($boutique_res) {
+            $boutique_data = $boutique_res->fetch_assoc();
+            $total_sales += (float) ($boutique_data['total_sales'] ?? 0.00);
+            $total_sales_qty += (int) ($boutique_data['total_qty'] ?? 0);
+            $total_sales_count += (int) ($boutique_data['total_count'] ?? 0);
+        }
+    }
+}
 
 // 1.1 Top Sellers (Admin Only) - Concession
 $top_store_name = 'N/A';
@@ -158,12 +186,29 @@ foreach ($period as $date) {
     $chart_qty_values[$d] = 0;
 }
 
-$chart_res = $db->query("SELECT DATE(created_at) as d, SUM(line_total) as total, SUM(quantity) as qty FROM sales WHERE (DATE(created_at) BETWEEN '$start_date' AND '$end_date') $store_clause GROUP BY DATE(created_at)");
-if ($chart_res) {
-    while($row = $chart_res->fetch_assoc()) {
-        if (isset($chart_sales_values[$row['d']])) {
-            $chart_sales_values[$row['d']] = (float)$row['total'];
-            $chart_qty_values[$row['d']] = (int)$row['qty'];
+if ($show_concession) {
+    $chart_res = $db->query("SELECT DATE(created_at) as d, SUM(line_total) as total, SUM(quantity) as qty FROM sales WHERE (DATE(created_at) BETWEEN '$start_date' AND '$end_date') $store_clause GROUP BY DATE(created_at)");
+    if ($chart_res) {
+        while($row = $chart_res->fetch_assoc()) {
+            if (isset($chart_sales_values[$row['d']])) {
+                $chart_sales_values[$row['d']] += (float)$row['total'];
+                $chart_qty_values[$row['d']] += (int)$row['qty'];
+            }
+        }
+    }
+}
+
+if ($show_boutique) {
+    $check_table = $db->query("SHOW TABLES LIKE 'boutique'");
+    if ($check_table && $check_table->num_rows > 0) {
+        $chart_res2 = $db->query("SELECT date as d, SUM(amount) as total, SUM(qty_sold) as qty FROM boutique WHERE (date BETWEEN '$start_date' AND '$end_date') $store_clause GROUP BY date");
+        if ($chart_res2) {
+            while($row = $chart_res2->fetch_assoc()) {
+                if (isset($chart_sales_values[$row['d']])) {
+                    $chart_sales_values[$row['d']] += (float)$row['total'];
+                    $chart_qty_values[$row['d']] += (int)$row['qty'];
+                }
+            }
         }
     }
 }
@@ -218,9 +263,9 @@ if (!function_exists('time_elapsed_string')) {
             </div>
             
             <!-- Compact Quick Year & Month Filter (Horizontal Badges) -->
-            <div class="flex flex-col sm:flex-row items-end gap-3">
+            <div class="flex flex-row items-end gap-3 w-full sm:w-auto">
                 <!-- Year Carousel Badge -->
-                <div class="space-y-1 group">
+                <div class="space-y-1 group w-1/2 sm:w-auto">
                     <label class="text-[9px] font-bold text-gray-500 uppercase ml-1 group-hover:text-purple-400 transition-colors">Quick Year</label>
                     <div class="shrink-0 flex items-center bg-slate-900/80 border border-white/10 rounded-xl shadow-inner h-9 relative z-20 overflow-hidden w-full sm:w-[220px]">
                         <button type="button" onclick="scrollQuickYears(-1)" class="absolute left-0 z-10 h-full px-2 bg-gradient-to-r from-slate-900 via-slate-900/90 to-transparent flex items-center justify-start text-gray-400 hover:text-white transition-all"><i class="fas fa-chevron-left text-[9px]"></i></button>
@@ -242,7 +287,7 @@ if (!function_exists('time_elapsed_string')) {
                 </div>
 
                 <!-- Month Carousel Badge -->
-                <div class="space-y-1 group">
+                <div class="space-y-1 group w-1/2 sm:w-auto">
                     <label class="text-[9px] font-bold text-gray-500 uppercase ml-1 group-hover:text-purple-400 transition-colors">Quick Month</label>
                     <div class="shrink-0 flex items-center bg-slate-900/80 border border-white/10 rounded-xl shadow-inner h-9 relative z-20 overflow-hidden w-full sm:w-[280px]">
                         <button type="button" onclick="scrollQuickMonths(-1)" class="absolute left-0 z-10 h-full px-2 bg-gradient-to-r from-slate-900 via-slate-900/90 to-transparent flex items-center justify-start text-gray-400 hover:text-white transition-all"><i class="fas fa-chevron-left text-[9px]"></i></button>
@@ -265,22 +310,69 @@ if (!function_exists('time_elapsed_string')) {
             </div>
         </div>
         
-        <form id="dashboard-filter-form" class="grid grid-cols-2 sm:grid-cols-3 gap-4 w-full xl:w-auto xl:flex-1 max-w-3xl mt-4 xl:mt-0" method="GET">
+        <form id="dashboard-filter-form" class="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full xl:w-auto xl:flex-1 mt-4 xl:mt-0" method="GET">
             <input type="hidden" name="action" value="dashboard">
-            <div class="space-y-1 group">
+            
+            <!-- Source Filters -->
+            <div class="space-y-1 group relative col-span-2 sm:col-span-1">
+                <label class="text-[9px] font-bold text-gray-500 uppercase ml-1 group-hover:text-blue-400 transition-colors">Data Source</label>
+                <div class="relative" id="source-filter-container">
+                    <i class="fas fa-database absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-600 group-hover:text-blue-400 transition-colors pointer-events-none z-10"></i>
+                    
+                    <?php
+                    $source_label = "Concession & Boutique";
+                    if ($show_concession && !$show_boutique) $source_label = "Concession Only";
+                    if (!$show_concession && $show_boutique) $source_label = "Boutique Only";
+                    if (!$show_concession && !$show_boutique) $source_label = "None Selected";
+                    ?>
+                    
+                    <!-- Custom Trigger -->
+                    <div id="source-filter-trigger" class="w-full bg-slate-900/80 border border-white/10 rounded-xl pl-9 pr-4 py-2 h-9 text-xs text-white flex items-center justify-between cursor-pointer focus:border-blue-500/50 transition-all hover:bg-white/5">
+                        <span id="selected-source-label" class="truncate font-bold opacity-80 uppercase tracking-tight"><?= $source_label ?></span>
+                        <i class="fas fa-chevron-down text-[9px] text-gray-500 ml-2"></i>
+                    </div>
+
+                    <!-- Custom Menu -->
+                    <div id="source-filter-menu" class="absolute top-[calc(100%+4px)] left-0 min-w-[240px] w-full bg-[#0f172a] border border-white/10 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[100] hidden max-h-64 overflow-y-auto overflow-x-hidden backdrop-blur-xl">
+                        <div class="sticky top-0 bg-[#0f172a] p-2 border-b border-white/5 z-20">
+                            <input type="text" id="source-search-filter" class="w-full bg-slate-900 border border-white/10 rounded-lg px-3 py-1.5 text-[10px] text-white focus:outline-none focus:border-blue-500/50" placeholder="Search source..." autocomplete="off">
+                        </div>
+                        
+                        <!-- Concession Option -->
+                        <label class="source-option px-3 py-2.5 text-[11px] text-white hover:bg-white/5 cursor-pointer flex items-center gap-3 transition-all border-b border-white/5 <?= $show_concession ? 'bg-blue-500/10' : '' ?>">
+                            <input type="checkbox" name="source_concession" value="1" class="rounded border-white/20 bg-slate-900 text-blue-500 focus:ring-offset-slate-900 w-3.5 h-3.5" <?= $show_concession ? 'checked' : '' ?> onchange="this.form.submit()">
+                            <div class="flex flex-col min-w-0 flex-1">
+                                <span class="font-bold truncate">Concession</span>
+                                <span class="text-[9px] text-gray-500 truncate uppercase tracking-tighter">Main Sales</span>
+                            </div>
+                        </label>
+
+                        <!-- Boutique Option -->
+                        <label class="source-option px-3 py-2.5 text-[11px] text-white hover:bg-white/5 cursor-pointer flex items-center gap-3 transition-all <?= $show_boutique ? 'bg-amber-500/10' : '' ?>">
+                            <input type="checkbox" name="source_boutique" value="1" class="rounded border-white/20 bg-slate-900 text-amber-500 focus:ring-offset-slate-900 w-3.5 h-3.5" <?= $show_boutique ? 'checked' : '' ?> onchange="this.form.submit()">
+                            <div class="flex flex-col min-w-0 flex-1">
+                                <span class="font-bold truncate">Boutique</span>
+                                <span class="text-[9px] text-gray-500 truncate uppercase tracking-tighter">Boutique Sales</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-1 group col-span-2 sm:col-span-1">
                 <label class="text-[9px] font-bold text-gray-500 uppercase ml-1 group-hover:text-purple-400 transition-colors">Start Date</label>
                 <div class="relative">
                     <i class="fas fa-calendar-day absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-600 group-hover:text-purple-400 transition-colors pointer-events-none"></i>
                     <input type="date" name="start_date" value="<?= $start_date ?>" onchange="this.form.submit()" onclick="this.showPicker()"
-                           class="w-full bg-slate-900/80 border border-white/10 rounded-xl pl-9 pr-4 py-2 text-xs text-white focus:outline-none focus:border-purple-500/50 cursor-pointer transition-all">
+                           class="w-full bg-slate-900/80 border border-white/10 rounded-xl pl-8 pr-3 py-2 h-9 text-xs text-white focus:outline-none focus:border-purple-500/50 cursor-pointer transition-all">
                 </div>
             </div>
-            <div class="space-y-1 group">
+            <div class="space-y-1 group col-span-2 sm:col-span-1">
                 <label class="text-[9px] font-bold text-gray-500 uppercase ml-1 group-hover:text-pink-400 transition-colors">End Date</label>
                 <div class="relative">
                     <i class="fas fa-calendar-check absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-600 group-hover:text-pink-400 transition-colors pointer-events-none"></i>
                     <input type="date" name="end_date" value="<?= $end_date ?>" onchange="this.form.submit()" onclick="this.showPicker()"
-                           class="w-full bg-slate-900/80 border border-white/10 rounded-xl pl-9 pr-4 py-2 text-xs text-white focus:outline-none focus:border-pink-500/50 cursor-pointer transition-all">
+                           class="w-full bg-slate-900/80 border border-white/10 rounded-xl pl-8 pr-3 py-2 h-9 text-xs text-white focus:outline-none focus:border-pink-500/50 cursor-pointer transition-all">
                 </div>
             </div>
             <?php if ($is_admin): ?>
@@ -468,6 +560,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 behavior: 'smooth'
             });
         }, 300);
+    }
+    
+    // Data Source Dropdown Logic
+    document.addEventListener('click', function(e) {
+        const trigger = e.target.closest('#source-filter-trigger');
+        const menu = document.getElementById('source-filter-menu');
+        
+        if (trigger) {
+            menu.classList.toggle('hidden');
+        } else if (menu && !e.target.closest('#source-filter-container')) {
+            menu.classList.add('hidden');
+        }
+    });
+
+    const sourceSearch = document.getElementById('source-search-filter');
+    if (sourceSearch) {
+        sourceSearch.addEventListener('input', function(e) {
+            const val = e.target.value.toLowerCase();
+            document.querySelectorAll('.source-option').forEach(opt => {
+                const text = opt.innerText.toLowerCase();
+                if (text.includes(val)) {
+                    opt.classList.remove('hidden');
+                    opt.classList.add('flex');
+                } else {
+                    opt.classList.add('hidden');
+                    opt.classList.remove('flex');
+                }
+            });
+        });
     }
 });
 </script>
