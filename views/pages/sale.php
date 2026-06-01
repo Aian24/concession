@@ -713,6 +713,67 @@ if (isset($_GET['ajax'])) {
         });
     });
 
+    window.tableCurrentQuickYear = new Date().getFullYear();
+
+    window.changeTableQuickYear = function(btn, val) {
+        window.tableCurrentQuickYear = parseInt(val);
+        
+        document.querySelectorAll('.table-year-btn').forEach(b => {
+            b.classList.remove('!bg-purple-500/20', '!text-purple-400', 'shadow-sm', '!border-purple-500/50');
+            b.classList.add('text-gray-500', 'border-transparent');
+        });
+        btn.classList.remove('text-gray-500', 'border-transparent');
+        btn.classList.add('!bg-purple-500/20', '!text-purple-400', 'shadow-sm', '!border-purple-500/50');
+
+        const sDateInput = document.querySelector('[name="start_date"]');
+        let monthNum = '01';
+        if (sDateInput && sDateInput.value) {
+            const s = new Date(sDateInput.value);
+            monthNum = String(s.getMonth() + 1).padStart(2, '0');
+        } else {
+            monthNum = String(new Date().getMonth() + 1).padStart(2, '0');
+        }
+        
+        const btns = document.querySelectorAll('.table-month-btn');
+        let targetBtn = Array.from(btns).find(b => b.getAttribute('data-month') === monthNum);
+        if (targetBtn) {
+            selectTableQuickMonth(targetBtn, monthNum);
+        }
+    };
+
+    window.scrollTableQuickYears = function(direction) {
+        const container = document.getElementById('table-years-container');
+        if (container) container.scrollBy({ left: direction * container.clientWidth, behavior: 'smooth' });
+    };
+
+    window.scrollTableQuickMonths = function(direction) {
+        const container = document.getElementById('table-months-container');
+        if (container) container.scrollBy({ left: direction * container.clientWidth, behavior: 'smooth' });
+    };
+
+    window.selectTableQuickMonth = function(btn, monthNum) {
+        const year = window.tableCurrentQuickYear || new Date().getFullYear();
+        const startDate = `${year}-${monthNum}-01`;
+        const endDateObj = new Date(year, parseInt(monthNum), 0); 
+        const endDate = `${year}-${monthNum}-${String(endDateObj.getDate()).padStart(2, '0')}`;
+        
+        const startInput = document.querySelector('[name="start_date"]');
+        const endInput = document.querySelector('[name="end_date"]');
+        if (startInput) startInput.value = startDate;
+        if (endInput) endInput.value = endDate;
+        
+        document.querySelectorAll('.table-month-btn').forEach(b => {
+            b.classList.remove('!bg-purple-500/20', '!text-purple-400', 'shadow-sm', '!border-purple-500/50');
+            b.classList.add('text-gray-500', 'border-transparent');
+        });
+        btn.classList.remove('text-gray-500', 'border-transparent');
+        btn.classList.add('!bg-purple-500/20', '!text-purple-400', 'shadow-sm', '!border-purple-500/50');
+        
+        if (typeof refreshTable === 'function') {
+            refreshTable(1);
+        }
+    };
+
     let filterTimer;
     function refreshTable(page = 1) {
         const container = document.getElementById('submitted-sales-container');
@@ -777,6 +838,37 @@ if (isset($_GET['ajax'])) {
         });
 
         updateBulkDeleteVisibility();
+        
+        // Auto-scroll quick filters
+        setTimeout(() => {
+            const startInput = document.querySelector('[name="start_date"]');
+            if (startInput && startInput.value) {
+                const s = new Date(startInput.value);
+                const yearStr = s.getFullYear().toString();
+                const monthStr = String(s.getMonth() + 1).padStart(2, '0');
+                
+                window.tableCurrentQuickYear = s.getFullYear();
+
+                const activeMonthBtn = Array.from(document.querySelectorAll('.table-month-btn')).find(b => b.getAttribute('data-month') === monthStr);
+                if (activeMonthBtn) {
+                    const mContainer = document.getElementById('table-months-container');
+                    if (mContainer) mContainer.scrollTo({ left: activeMonthBtn.offsetLeft - mContainer.clientWidth/2 + activeMonthBtn.clientWidth/2, behavior: 'smooth' });
+                }
+
+                const activeYearBtn = Array.from(document.querySelectorAll('.table-year-btn')).find(b => b.getAttribute('data-year') === yearStr);
+                if (activeYearBtn) {
+                    const yContainer = document.getElementById('table-years-container');
+                    if (yContainer) yContainer.scrollTo({ left: activeYearBtn.offsetLeft - yContainer.clientWidth/2 + activeYearBtn.clientWidth/2, behavior: 'smooth' });
+                }
+            } else {
+                const yearStr = window.tableCurrentQuickYear.toString();
+                const activeYearBtn = Array.from(document.querySelectorAll('.table-year-btn')).find(b => b.getAttribute('data-year') === yearStr);
+                if (activeYearBtn) {
+                    const yContainer = document.getElementById('table-years-container');
+                    if (yContainer) yContainer.scrollTo({ left: activeYearBtn.offsetLeft - yContainer.clientWidth/2 + activeYearBtn.clientWidth/2, behavior: 'smooth' });
+                }
+            }
+        }, 100);
     }
 
     window.updateSummary = function() {

@@ -217,41 +217,50 @@ if (!function_exists('time_elapsed_string')) {
                 </div>
             </div>
             
-            <!-- Compact Quick Month Filter -->
-            <div class="flex items-center gap-2 bg-[#0f172a] border border-white/10 rounded-lg p-1 shadow-inner w-full sm:w-max relative z-20">
-                <!-- Year Dropdown -->
-                <div class="relative group/year">
-                    <select id="quick-year-select" onchange="changeQuickYearDropdown(this.value)" class="appearance-none bg-slate-800/80 border border-white/5 rounded pl-2 pr-6 py-1 text-[10px] font-bold text-white focus:outline-none focus:border-purple-500/50 cursor-pointer hover:bg-slate-700 transition-colors shadow-sm">
-                        <?php 
-                        $currYr = date('Y');
-                        $selectedYr = isset($_GET['start_date']) ? date('Y', strtotime($_GET['start_date'])) : $currYr;
-                        for($y = $currYr - 5; $y <= $currYr + 1; $y++) {
-                            echo "<option value=\"$y\" " . ($y == $selectedYr ? "selected" : "") . ">$y</option>";
-                        }
-                        ?>
-                    </select>
-                    <i class="fas fa-chevron-down absolute right-2 top-1/2 -translate-y-1/2 text-[8px] text-gray-400 pointer-events-none group-hover/year:text-white transition-colors"></i>
-                </div>
-                
-                <div class="w-[1px] h-3 bg-white/10"></div>
-                
-                <!-- Month Carousel -->
-                <div class="flex items-center relative flex-1 sm:flex-none sm:w-[240px] overflow-hidden group/months">
-                    <button type="button" onclick="scrollQuickMonths(-1)" class="absolute left-0 z-10 h-full px-1.5 bg-gradient-to-r from-[#0f172a] via-[#0f172a]/90 to-transparent flex items-center justify-start text-gray-400 hover:text-white transition-all"><i class="fas fa-chevron-left text-[8px]"></i></button>
-                    
-                    <div id="months-container" class="flex items-center gap-1 overflow-x-auto hide-scrollbar scroll-smooth w-full px-4">
-                        <?php 
-                        $months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                        foreach($months as $idx => $m): 
-                            $m_num = str_pad($idx + 1, 2, '0', STR_PAD_LEFT);
-                        ?>
-                        <button type="button" onclick="selectQuickMonth(this, '<?= $m_num ?>')" class="flex-shrink-0 w-[calc(16.666%-3.33px)] py-1 rounded text-[9px] font-bold uppercase tracking-wider text-gray-500 hover:text-purple-400 hover:bg-white/5 transition-all month-btn text-center select-none border border-transparent">
-                            <?= $m ?>
-                        </button>
-                        <?php endforeach; ?>
+            <!-- Compact Quick Year & Month Filter (Horizontal Badges) -->
+            <div class="flex flex-col sm:flex-row items-end gap-3">
+                <!-- Year Carousel Badge -->
+                <div class="space-y-1 group">
+                    <label class="text-[9px] font-bold text-gray-500 uppercase ml-1 group-hover:text-purple-400 transition-colors">Quick Year</label>
+                    <div class="shrink-0 flex items-center bg-slate-900/80 border border-white/10 rounded-xl shadow-inner h-9 relative z-20 overflow-hidden w-full sm:w-[220px]">
+                        <button type="button" onclick="scrollQuickYears(-1)" class="absolute left-0 z-10 h-full px-2 bg-gradient-to-r from-slate-900 via-slate-900/90 to-transparent flex items-center justify-start text-gray-400 hover:text-white transition-all"><i class="fas fa-chevron-left text-[9px]"></i></button>
+                        
+                        <div id="years-container" class="flex items-center gap-1 overflow-x-auto hide-scrollbar scroll-smooth w-full px-5">
+                            <?php 
+                            $currYr = date('Y');
+                            $selectedYr = isset($_GET['start_date']) ? date('Y', strtotime($_GET['start_date'])) : $currYr;
+                            for($y = $currYr - 4; $y <= $currYr + 2; $y++):
+                            ?>
+                            <button type="button" data-year="<?= $y ?>" onclick="changeQuickYear(this, '<?= $y ?>')" class="flex-shrink-0 w-[45px] py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all year-btn text-center select-none border <?= $y == $selectedYr ? '!bg-purple-500/20 !text-purple-400 shadow-sm !border-purple-500/50' : 'text-gray-500 border-transparent hover:text-purple-400 hover:bg-white/5' ?>">
+                                <?= $y ?>
+                            </button>
+                            <?php endfor; ?>
+                        </div>
+                        
+                        <button type="button" onclick="scrollQuickYears(1)" class="absolute right-0 z-10 h-full px-2 bg-gradient-to-l from-slate-900 via-slate-900/90 to-transparent flex items-center justify-end text-gray-400 hover:text-white transition-all"><i class="fas fa-chevron-right text-[9px]"></i></button>
                     </div>
-                    
-                    <button type="button" onclick="scrollQuickMonths(1)" class="absolute right-0 z-10 h-full px-1.5 bg-gradient-to-l from-[#0f172a] via-[#0f172a]/90 to-transparent flex items-center justify-end text-gray-400 hover:text-white transition-all"><i class="fas fa-chevron-right text-[8px]"></i></button>
+                </div>
+
+                <!-- Month Carousel Badge -->
+                <div class="space-y-1 group">
+                    <label class="text-[9px] font-bold text-gray-500 uppercase ml-1 group-hover:text-purple-400 transition-colors">Quick Month</label>
+                    <div class="shrink-0 flex items-center bg-slate-900/80 border border-white/10 rounded-xl shadow-inner h-9 relative z-20 overflow-hidden w-full sm:w-[280px]">
+                        <button type="button" onclick="scrollQuickMonths(-1)" class="absolute left-0 z-10 h-full px-2 bg-gradient-to-r from-slate-900 via-slate-900/90 to-transparent flex items-center justify-start text-gray-400 hover:text-white transition-all"><i class="fas fa-chevron-left text-[9px]"></i></button>
+                        
+                        <div id="months-container" class="flex items-center gap-1 overflow-x-auto hide-scrollbar scroll-smooth w-full px-5">
+                            <?php 
+                            $months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                            foreach($months as $idx => $m): 
+                                $m_num = str_pad($idx + 1, 2, '0', STR_PAD_LEFT);
+                            ?>
+                            <button type="button" onclick="selectQuickMonth(this, '<?= $m_num ?>')" class="flex-shrink-0 w-[42px] py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider text-gray-500 hover:text-purple-400 hover:bg-white/5 transition-all month-btn text-center select-none border border-transparent">
+                                <?= $m ?>
+                            </button>
+                            <?php endforeach; ?>
+                        </div>
+                        
+                        <button type="button" onclick="scrollQuickMonths(1)" class="absolute right-0 z-10 h-full px-2 bg-gradient-to-l from-slate-900 via-slate-900/90 to-transparent flex items-center justify-end text-gray-400 hover:text-white transition-all"><i class="fas fa-chevron-right text-[9px]"></i></button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -336,11 +345,18 @@ if (!function_exists('time_elapsed_string')) {
 </style>
 
 <script>
-let currentQuickYear = parseInt(document.getElementById('quick-year-select').value);
+let currentQuickYear = <?= isset($_GET['start_date']) ? date('Y', strtotime($_GET['start_date'])) : date('Y') ?>;
 
-function changeQuickYearDropdown(val) {
+function changeQuickYear(btn, val) {
     currentQuickYear = parseInt(val);
     
+    document.querySelectorAll('.year-btn').forEach(b => {
+        b.classList.remove('!bg-purple-500/20', '!text-purple-400', 'shadow-sm', '!border-purple-500/50');
+        b.classList.add('text-gray-500', 'border-transparent');
+    });
+    btn.classList.remove('text-gray-500', 'border-transparent');
+    btn.classList.add('!bg-purple-500/20', '!text-purple-400', 'shadow-sm', '!border-purple-500/50');
+
     const form = document.getElementById('dashboard-filter-form');
     const sDate = form.querySelector('[name="start_date"]')?.value;
     let monthNum = '01';
@@ -356,6 +372,12 @@ function changeQuickYearDropdown(val) {
     if (targetBtn) {
         selectQuickMonth(targetBtn, monthNum);
     }
+}
+
+function scrollQuickYears(direction) {
+    const container = document.getElementById('years-container');
+    const scrollAmount = container.clientWidth;
+    container.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
 }
 
 function scrollQuickMonths(direction) {
@@ -400,8 +422,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // If exact month is selected
         if (s.getDate() === 1 && e.getDate() === eLastDay && s.getMonth() === e.getMonth() && s.getFullYear() === e.getFullYear()) {
             currentQuickYear = s.getFullYear();
-            const select = document.getElementById('quick-year-select');
-            if (select) select.value = currentQuickYear;
             targetMonthIdx = s.getMonth();
             exactMatchFound = true;
         } else if (s.getFullYear() === currentQuickYear) {
@@ -410,25 +430,41 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
-    // Auto-scroll and highlight
+    // Auto-scroll and highlight for Month
     const btns = document.querySelectorAll('.month-btn');
     if (btns[targetMonthIdx]) {
         if (exactMatchFound) {
-            // Apply strong active colors if specifically filtered
             btns[targetMonthIdx].classList.remove('text-gray-500', 'border-transparent');
             btns[targetMonthIdx].classList.add('!bg-purple-500/20', '!text-purple-400', 'shadow-sm', '!border-purple-500/50');
         } else {
-            // Just subtly highlight current month if no strict filter
             btns[targetMonthIdx].classList.remove('text-gray-500');
             btns[targetMonthIdx].classList.add('!text-white', '!font-black');
         }
         
-        // Scroll container to center the month
         setTimeout(() => {
             const container = document.getElementById('months-container');
             const btn = btns[targetMonthIdx];
             container.scrollTo({
                 left: btn.offsetLeft - container.clientWidth/2 + btn.clientWidth/2,
+                behavior: 'smooth'
+            });
+        }, 300);
+    }
+    
+    // Auto-scroll for Year
+    const yearBtns = document.querySelectorAll('.year-btn');
+    let targetYearBtn = null;
+    yearBtns.forEach(btn => {
+        if (parseInt(btn.getAttribute('data-year')) === currentQuickYear) {
+            targetYearBtn = btn;
+        }
+    });
+    
+    if (targetYearBtn) {
+        setTimeout(() => {
+            const container = document.getElementById('years-container');
+            container.scrollTo({
+                left: targetYearBtn.offsetLeft - container.clientWidth/2 + targetYearBtn.clientWidth/2,
                 behavior: 'smooth'
             });
         }, 300);
