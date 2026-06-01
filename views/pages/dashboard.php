@@ -61,33 +61,56 @@ if ($is_store_admin) {
     $store_clause = " AND store_code = '$session_store_code'";
 }
 
-// Fetch stores for filter dropdown
-$stores_list = [];
-if ($is_full_admin || $is_admin_view) {
-    $stores_res = $db->query("SELECT scode, sname FROM storecode ORDER BY sname ASC");
-    if ($stores_res) {
-        $stores_list = $stores_res->fetch_all(MYSQLI_ASSOC);
-    }
-} elseif ($is_multi_store_admin) {
-    $assigned_data = $_SESSION['assigned_stores_data'] ?? [];
-    $stores_list = array_map(function($s) {
-        return ['scode' => $s['store_code'], 'sname' => $s['sname']];
-    }, $assigned_data);
-}
-
 // Filter toggles for Data Source
 if (isset($_GET['action']) && $_GET['action'] == 'dashboard') {
     $has_source = isset($_GET['source_concession']) || isset($_GET['source_boutique']);
     if (!$has_source) {
         $show_concession = true;
-        $show_boutique = true;
+        $show_boutique = false;
     } else {
         $show_concession = isset($_GET['source_concession']) && $_GET['source_concession'] == '1';
         $show_boutique = isset($_GET['source_boutique']) && $_GET['source_boutique'] == '1';
     }
 } else {
     $show_concession = true;
-    $show_boutique = true;
+    $show_boutique = false;
+}
+
+// Fetch stores for filter dropdown
+$stores_list = [];
+if ($is_full_admin || $is_admin_view) {
+    $temp_stores = [];
+    
+    if ($show_concession) {
+        $res = $db->query("SELECT scode, sname FROM storecode");
+        if ($res) {
+            while ($r = $res->fetch_assoc()) {
+                $temp_stores[$r['scode']] = $r;
+            }
+        }
+    }
+    
+    if ($show_boutique) {
+        $check_table = $db->query("SHOW TABLES LIKE 'boutique'");
+        if ($check_table && $check_table->num_rows > 0) {
+            $res = $db->query("SELECT DISTINCT store_code as scode, store_name as sname FROM boutique");
+            if ($res) {
+                while ($r = $res->fetch_assoc()) {
+                    $temp_stores[$r['scode']] = $r;
+                }
+            }
+        }
+    }
+    
+    $stores_list = array_values($temp_stores);
+    usort($stores_list, function($a, $b) { 
+        return strcmp($a['sname'] ?? '', $b['sname'] ?? ''); 
+    });
+} elseif ($is_multi_store_admin) {
+    $assigned_data = $_SESSION['assigned_stores_data'] ?? [];
+    $stores_list = array_map(function($s) {
+        return ['scode' => $s['store_code'], 'sname' => $s['sname']];
+    }, $assigned_data);
 }
 
 // 1. Total Sales & Quantity
@@ -161,18 +184,38 @@ $total_received_qty = (int) ($receiving_data['total_received'] ?? 0);
 $receiving_count = (int) ($receiving_data['total_count'] ?? 0);
 
 // 4. Total Stores
-if ($is_store_admin) {
-    $store_count_res = $db->query("SELECT COUNT(*) as total FROM storecode WHERE scode = '$session_store_code' AND scode != 'HO'");
-} elseif ($is_multi_store_admin) {
-    $store_count_res = $db->query("SELECT COUNT(*) as total FROM user_store_assignments WHERE user_id = " . intval($_SESSION['user_id'] ?? 0) . " AND store_code != 'HO'");
+if ($is_admin) {
+    // Exclude HO if present in stores_list
+    $total_stores = 0;
+    foreach ($stores_list as $sl) {
+        if ($sl['scode'] !== 'HO') $total_stores++;
+    }
 } else {
-    $store_count_res = $db->query("SELECT COUNT(*) as total FROM storecode WHERE scode != 'HO'");
+    $total_stores = 1;
 }
-$total_stores = $store_count_res ? (int)$store_count_res->fetch_assoc()['total'] : 0;
 
 // 4.1 Active Stores (with transactions in selected range)
-$active_stores_res = $db->query("SELECT COUNT(DISTINCT store_code) as active FROM sales WHERE DATE(created_at) BETWEEN '$start_date' AND '$end_date' $store_clause AND store_code != 'HO'");
-$active_stores_count = $active_stores_res ? (int)$active_stores_res->fetch_assoc()['active'] : 0;
+$active_stores_array = [];
+if ($show_concession) {
+    $active_stores_res = $db->query("SELECT DISTINCT store_code FROM sales WHERE DATE(created_at) BETWEEN '$start_date' AND '$end_date' $store_clause AND store_code != 'HO'");
+    if ($active_stores_res) {
+        while ($r = $active_stores_res->fetch_assoc()) {
+            $active_stores_array[$r['store_code']] = true;
+        }
+    }
+}
+if ($show_boutique) {
+    $check_table = $db->query("SHOW TABLES LIKE 'boutique'");
+    if ($check_table && $check_table->num_rows > 0) {
+        $active_stores_res = $db->query("SELECT DISTINCT store_code FROM boutique WHERE date BETWEEN '$start_date' AND '$end_date' $store_clause AND store_code != 'HO'");
+        if ($active_stores_res) {
+            while ($r = $active_stores_res->fetch_assoc()) {
+                $active_stores_array[$r['store_code']] = true;
+            }
+        }
+    }
+}
+$active_stores_count = count($active_stores_array);
 
 // Chart Data Generation
 $chart_labels = [];
