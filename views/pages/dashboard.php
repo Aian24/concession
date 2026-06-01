@@ -944,15 +944,24 @@ function openTopSellersModal() {
     if (modal) {
         document.body.appendChild(modal);
         modal.classList.remove('hidden');
+        history.pushState({ modal: 'top-sellers' }, '', location.href);
     }
 }
 
-function closeTopSellersModal() {
+function closeTopSellersModal(fromPopState = false) {
     const modal = document.getElementById('top-sellers-modal');
-    if (modal) {
+    if (modal && !modal.classList.contains('hidden')) {
         modal.classList.add('hidden');
+        if (fromPopState !== true && history.state && history.state.modal === 'top-sellers') {
+            history.back();
+        }
     }
 }
+
+window.addEventListener('popstate', function(event) {
+    if (typeof closeTopSellersModal === 'function') closeTopSellersModal(true);
+    if (typeof closeTopBoutiqueModal === 'function') closeTopBoutiqueModal(true);
+});
 
 document.addEventListener('DOMContentLoaded', function() {
     const ctx = document.getElementById('monthlyActivityChart').getContext('2d');
@@ -1097,13 +1106,17 @@ document.addEventListener('DOMContentLoaded', function() {
             document.body.appendChild(m);
             m.classList.remove('hidden');
             m.classList.add('flex');
+            history.pushState({ modal: 'top-boutique' }, '', location.href);
         }
     }
-    window.closeTopBoutiqueModal = function() {
+    window.closeTopBoutiqueModal = function(fromPopState = false) {
         const m = document.getElementById('top-boutique-modal');
-        if(m) {
+        if(m && !m.classList.contains('hidden')) {
             m.classList.add('hidden');
             m.classList.remove('flex');
+            if (fromPopState !== true && history.state && history.state.modal === 'top-boutique') {
+                history.back();
+            }
         }
     }
 });
