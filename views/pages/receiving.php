@@ -152,18 +152,18 @@ $all_stores_stmt->close();
                             <!-- Current Date Option -->
                             <label class="relative cursor-pointer group">
                                 <input type="radio" name="page_date_type" value="current" checked class="peer sr-only" onchange="handleDateTypeChange(this.value)">
-                                <div class="py-1.5 px-3 flex items-center justify-center gap-2 rounded-lg bg-slate-900 border border-white/5 peer-checked:border-cyan-500/50 peer-checked:bg-cyan-500/10 transition-all">
-                                    <i class="fas fa-clock text-[9px] text-gray-500 peer-checked:text-cyan-400"></i>
-                                    <span class="text-[9px] font-bold text-gray-500 peer-checked:text-cyan-400 uppercase tracking-tighter">Current</span>
+                                <div class="py-1.5 px-3 flex items-center justify-center gap-2 rounded-lg border transition-all bg-slate-900 border-white/5 text-gray-500 peer-checked:!border-cyan-500/50 peer-checked:!bg-cyan-500/10 peer-checked:!text-cyan-400">
+                                    <i class="fas fa-clock text-[9px]"></i>
+                                    <span class="text-[9px] font-bold uppercase tracking-tighter">Current</span>
                                 </div>
                             </label>
 
                             <!-- Backdate Option -->
                             <label class="relative cursor-pointer group">
                                 <input type="radio" name="page_date_type" value="backdate" class="peer sr-only" onchange="handleDateTypeChange(this.value)">
-                                <div id="backdate-btn-content" class="py-1.5 px-3 flex items-center justify-center gap-2 rounded-lg bg-slate-900 border border-white/5 peer-checked:border-cyan-500/50 peer-checked:bg-cyan-500/10 transition-all overflow-hidden relative">
-                                     <i class="fas fa-history text-[9px] text-gray-500 peer-checked:text-cyan-400"></i>
-                                     <span id="backdate-text" class="text-[9px] font-bold text-gray-500 peer-checked:text-cyan-400 uppercase tracking-tighter">Backdate</span>
+                                <div id="backdate-btn-content" class="py-1.5 px-3 flex items-center justify-center gap-2 rounded-lg border transition-all overflow-hidden relative bg-slate-900 border-white/5 text-gray-500 peer-checked:!border-cyan-500/50 peer-checked:!bg-cyan-500/10 peer-checked:!text-cyan-400">
+                                     <i class="fas fa-history text-[9px]"></i>
+                                     <span id="backdate-text" class="text-[9px] font-bold uppercase tracking-tighter">Backdate</span>
                                      <input type="date" id="page_custom_date" 
                                             max="<?= date('Y-m-d') ?>" 
                                             class="absolute inset-0 w-full h-full opacity-[0.01] cursor-pointer z-10" 
@@ -182,7 +182,11 @@ $all_stores_stmt->close();
                     const backdateText = document.getElementById('backdate-text');
                     if (val !== 'backdate') {
                         backdateText.innerText = 'Backdate';
+                    } else {
+                        const customDate = document.getElementById('page_custom_date').value;
+                        if (customDate) updateBackdateText(customDate);
                     }
+                    sessionStorage.setItem('page_date_type', val);
                 }
 
                 function updateBackdateText(val) {
@@ -191,7 +195,33 @@ $all_stores_stmt->close();
                     const date = new Date(year, month - 1, day);
                     const formatted = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
                     document.getElementById('backdate-text').innerText = formatted;
+                    sessionStorage.setItem('page_custom_date', val);
+                    sessionStorage.setItem('page_date_type', 'backdate');
                 }
+
+                (function() {
+                    const savedType = sessionStorage.getItem('page_date_type');
+                    const savedDate = sessionStorage.getItem('page_custom_date');
+                    
+                    if (savedDate) {
+                        const dateInput = document.getElementById('page_custom_date');
+                        if (dateInput) dateInput.value = savedDate;
+                    }
+                    
+                    if (savedType === 'backdate') {
+                        const backdateRadio = document.querySelector('input[name="page_date_type"][value="backdate"]');
+                        if (backdateRadio) {
+                            backdateRadio.checked = true;
+                            setTimeout(() => handleDateTypeChange('backdate'), 0);
+                        }
+                    } else if (savedType === 'current') {
+                        const currentRadio = document.querySelector('input[name="page_date_type"][value="current"]');
+                        if (currentRadio) {
+                            currentRadio.checked = true;
+                            setTimeout(() => handleDateTypeChange('current'), 0);
+                        }
+                    }
+                })();
             </script>
 
             <div>

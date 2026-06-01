@@ -202,89 +202,223 @@ if (!function_exists('time_elapsed_string')) {
 </style>
 
 <!-- Date Range Filter -->
-<div class="glass-panel p-5 border border-white/5 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-50">
-    <div class="flex items-center gap-4">
-        <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600/20 to-pink-600/20 flex items-center justify-center text-white border border-white/10 shadow-xl">
-            <i class="fas fa-calendar-alt"></i>
-        </div>
-        <div>
-            <h3 class="text-sm font-black text-white uppercase tracking-widest">Date Range Analytics</h3>
-            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-tighter">Live filtering applied to graphs and stats</p>
-        </div>
-    </div>
-    
-    <form id="dashboard-filter-form" class="grid grid-cols-2 sm:grid-cols-3 gap-4 flex-1 max-w-3xl" method="GET">
-        <input type="hidden" name="action" value="dashboard">
-        <div class="space-y-1 group">
-            <label class="text-[9px] font-bold text-gray-500 uppercase ml-1 group-hover:text-purple-400 transition-colors">Start Date</label>
-            <div class="relative">
-                <i class="fas fa-calendar-day absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-600 group-hover:text-purple-400 transition-colors pointer-events-none"></i>
-                <input type="date" name="start_date" value="<?= $start_date ?>" onchange="this.form.submit()" onclick="this.showPicker()"
-                       class="w-full bg-slate-900/80 border border-white/10 rounded-xl pl-9 pr-4 py-2 text-xs text-white focus:outline-none focus:border-purple-500/50 cursor-pointer transition-all">
+<div class="glass-panel p-5 border border-white/5 mb-8 relative z-50">
+    <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+        
+        <!-- Left Section: Title & Quick Filters -->
+        <div class="flex flex-col sm:flex-row sm:items-center gap-6 w-full xl:w-auto">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600/20 to-pink-600/20 flex items-center justify-center text-white border border-white/10 shadow-xl flex-shrink-0">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <div class="flex flex-col">
+                    <h3 class="text-sm font-black text-white uppercase tracking-widest leading-none mb-1">Date Range Analytics</h3>
+                    <p class="text-[10px] text-gray-500 font-bold uppercase tracking-tighter">Live filtering applied to graphs and stats</p>
+                </div>
             </div>
-        </div>
-        <div class="space-y-1 group">
-            <label class="text-[9px] font-bold text-gray-500 uppercase ml-1 group-hover:text-pink-400 transition-colors">End Date</label>
-            <div class="relative">
-                <i class="fas fa-calendar-check absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-600 group-hover:text-pink-400 transition-colors pointer-events-none"></i>
-                <input type="date" name="end_date" value="<?= $end_date ?>" onchange="this.form.submit()" onclick="this.showPicker()"
-                       class="w-full bg-slate-900/80 border border-white/10 rounded-xl pl-9 pr-4 py-2 text-xs text-white focus:outline-none focus:border-pink-500/50 cursor-pointer transition-all">
-            </div>
-        </div>
-        <?php if ($is_admin): ?>
-        <div class="space-y-1 group relative col-span-2 sm:col-span-1">
-            <label class="text-[9px] font-bold text-gray-500 uppercase ml-1 group-hover:text-amber-400 transition-colors">Store Filter</label>
-            <div class="relative" id="store-filter-container">
-                <i class="fas fa-store absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-600 group-hover:text-amber-400 transition-colors pointer-events-none z-10"></i>
+            
+            <!-- Compact Quick Month Filter -->
+            <div class="flex items-center gap-2 bg-[#0f172a] border border-white/10 rounded-lg p-1 shadow-inner w-full sm:w-max relative z-20">
+                <!-- Year Dropdown -->
+                <div class="relative group/year">
+                    <select id="quick-year-select" onchange="changeQuickYearDropdown(this.value)" class="appearance-none bg-slate-800/80 border border-white/5 rounded pl-2 pr-6 py-1 text-[10px] font-bold text-white focus:outline-none focus:border-purple-500/50 cursor-pointer hover:bg-slate-700 transition-colors shadow-sm">
+                        <?php 
+                        $currYr = date('Y');
+                        $selectedYr = isset($_GET['start_date']) ? date('Y', strtotime($_GET['start_date'])) : $currYr;
+                        for($y = $currYr - 5; $y <= $currYr + 1; $y++) {
+                            echo "<option value=\"$y\" " . ($y == $selectedYr ? "selected" : "") . ">$y</option>";
+                        }
+                        ?>
+                    </select>
+                    <i class="fas fa-chevron-down absolute right-2 top-1/2 -translate-y-1/2 text-[8px] text-gray-400 pointer-events-none group-hover/year:text-white transition-colors"></i>
+                </div>
                 
-                <?php
-                $current_store_label = "All Stores";
-                if ($filter_store_code) {
-                    foreach ($stores_list as $sl) {
-                        if ($sl['scode'] === $filter_store_code) {
-                            $current_store_label = $sl['scode'] . " - " . $sl['sname'];
-                            break;
+                <div class="w-[1px] h-3 bg-white/10"></div>
+                
+                <!-- Month Carousel -->
+                <div class="flex items-center relative flex-1 sm:flex-none sm:w-[240px] overflow-hidden group/months">
+                    <button type="button" onclick="scrollQuickMonths(-1)" class="absolute left-0 z-10 h-full px-1.5 bg-gradient-to-r from-[#0f172a] via-[#0f172a]/90 to-transparent flex items-center justify-start text-gray-400 hover:text-white transition-all"><i class="fas fa-chevron-left text-[8px]"></i></button>
+                    
+                    <div id="months-container" class="flex items-center gap-1 overflow-x-auto hide-scrollbar scroll-smooth w-full px-4">
+                        <?php 
+                        $months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                        foreach($months as $idx => $m): 
+                            $m_num = str_pad($idx + 1, 2, '0', STR_PAD_LEFT);
+                        ?>
+                        <button type="button" onclick="selectQuickMonth(this, '<?= $m_num ?>')" class="flex-shrink-0 w-[calc(16.666%-3.33px)] py-1 rounded text-[9px] font-bold uppercase tracking-wider text-gray-500 hover:text-purple-400 hover:bg-white/5 transition-all month-btn text-center select-none border border-transparent">
+                            <?= $m ?>
+                        </button>
+                        <?php endforeach; ?>
+                    </div>
+                    
+                    <button type="button" onclick="scrollQuickMonths(1)" class="absolute right-0 z-10 h-full px-1.5 bg-gradient-to-l from-[#0f172a] via-[#0f172a]/90 to-transparent flex items-center justify-end text-gray-400 hover:text-white transition-all"><i class="fas fa-chevron-right text-[8px]"></i></button>
+                </div>
+            </div>
+        </div>
+        
+        <form id="dashboard-filter-form" class="grid grid-cols-2 sm:grid-cols-3 gap-4 w-full xl:w-auto xl:flex-1 max-w-3xl mt-4 xl:mt-0" method="GET">
+            <input type="hidden" name="action" value="dashboard">
+            <div class="space-y-1 group">
+                <label class="text-[9px] font-bold text-gray-500 uppercase ml-1 group-hover:text-purple-400 transition-colors">Start Date</label>
+                <div class="relative">
+                    <i class="fas fa-calendar-day absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-600 group-hover:text-purple-400 transition-colors pointer-events-none"></i>
+                    <input type="date" name="start_date" value="<?= $start_date ?>" onchange="this.form.submit()" onclick="this.showPicker()"
+                           class="w-full bg-slate-900/80 border border-white/10 rounded-xl pl-9 pr-4 py-2 text-xs text-white focus:outline-none focus:border-purple-500/50 cursor-pointer transition-all">
+                </div>
+            </div>
+            <div class="space-y-1 group">
+                <label class="text-[9px] font-bold text-gray-500 uppercase ml-1 group-hover:text-pink-400 transition-colors">End Date</label>
+                <div class="relative">
+                    <i class="fas fa-calendar-check absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-600 group-hover:text-pink-400 transition-colors pointer-events-none"></i>
+                    <input type="date" name="end_date" value="<?= $end_date ?>" onchange="this.form.submit()" onclick="this.showPicker()"
+                           class="w-full bg-slate-900/80 border border-white/10 rounded-xl pl-9 pr-4 py-2 text-xs text-white focus:outline-none focus:border-pink-500/50 cursor-pointer transition-all">
+                </div>
+            </div>
+            <?php if ($is_admin): ?>
+            <div class="space-y-1 group relative col-span-2 sm:col-span-1">
+                <label class="text-[9px] font-bold text-gray-500 uppercase ml-1 group-hover:text-amber-400 transition-colors">Store Filter</label>
+                <div class="relative" id="store-filter-container">
+                    <i class="fas fa-store absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-600 group-hover:text-amber-400 transition-colors pointer-events-none z-10"></i>
+                    
+                    <?php
+                    $current_store_label = "All Stores";
+                    if ($filter_store_code) {
+                        foreach ($stores_list as $sl) {
+                            if ($sl['scode'] === $filter_store_code) {
+                                $current_store_label = $sl['scode'] . " - " . $sl['sname'];
+                                break;
+                            }
                         }
                     }
-                }
-                ?>
-                
-                <!-- Custom Trigger -->
-                <div id="store-filter-trigger" class="w-full bg-slate-900/80 border border-white/10 rounded-xl pl-9 pr-4 py-2 h-9 text-xs text-white flex items-center justify-between cursor-pointer focus:border-amber-500/50 transition-all hover:bg-white/5">
-                    <span id="selected-store-label" class="truncate font-bold opacity-80 uppercase tracking-tight"><?= htmlspecialchars($current_store_label) ?></span>
-                    <i class="fas fa-chevron-down text-[9px] text-gray-500 ml-2"></i>
-                </div>
-
-                <!-- Custom Menu -->
-                <div id="store-filter-menu" class="absolute top-[calc(100%+4px)] right-0 min-w-[280px] w-full bg-[#0f172a] border border-white/10 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[100] hidden max-h-64 overflow-y-auto overflow-x-hidden backdrop-blur-xl">
-                    <div class="sticky top-0 bg-[#0f172a] p-2 border-b border-white/5 z-20">
-                        <input type="text" id="store-search-filter" class="w-full bg-slate-900 border border-white/10 rounded-lg px-3 py-1.5 text-[10px] text-white focus:outline-none focus:border-amber-500/50" placeholder="Search store..." autocomplete="off">
-                    </div>
-                    <div class="store-option px-3 py-2.5 text-[11px] text-white hover:bg-white/5 cursor-pointer flex justify-between items-center transition-all border-b border-white/5 last:border-0 <?= $filter_store_code === '' ? 'bg-amber-500/10' : '' ?>" data-value="">
-                        <span class="font-bold">All Stores</span>
-                    </div>
-                    <?php foreach($stores_list as $st): 
-                        $sel = ($filter_store_code == $st['scode']);
-                        $displayName = $st['scode'] . " - " . $st['sname'];
                     ?>
-                        <div class="store-option px-3 py-2.5 text-[11px] text-white hover:bg-white/5 cursor-pointer flex justify-between items-center transition-all border-b border-white/5 last:border-0 <?= $sel ? 'bg-amber-500/10' : '' ?>" 
-                             data-value="<?= htmlspecialchars($st['scode']) ?>" 
-                             data-label="<?= htmlspecialchars($displayName) ?>">
-                            <div class="flex flex-col min-w-0 flex-1">
-                                <span class="font-bold truncate"><?= htmlspecialchars($st['scode']) ?></span>
-                                <span class="text-[9px] text-gray-500 truncate uppercase tracking-tighter"><?= htmlspecialchars($st['sname']) ?></span>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
+                    
+                    <!-- Custom Trigger -->
+                    <div id="store-filter-trigger" class="w-full bg-slate-900/80 border border-white/10 rounded-xl pl-9 pr-4 py-2 h-9 text-xs text-white flex items-center justify-between cursor-pointer focus:border-amber-500/50 transition-all hover:bg-white/5">
+                        <span id="selected-store-label" class="truncate font-bold opacity-80 uppercase tracking-tight"><?= htmlspecialchars($current_store_label) ?></span>
+                        <i class="fas fa-chevron-down text-[9px] text-gray-500 ml-2"></i>
+                    </div>
 
-                <!-- Hidden input for form submission -->
-                <input type="hidden" name="store_code" id="store-filter-value" value="<?= htmlspecialchars($filter_store_code) ?>">
+                    <!-- Custom Menu -->
+                    <div id="store-filter-menu" class="absolute top-[calc(100%+4px)] right-0 min-w-[280px] w-full bg-[#0f172a] border border-white/10 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[100] hidden max-h-64 overflow-y-auto overflow-x-hidden backdrop-blur-xl">
+                        <div class="sticky top-0 bg-[#0f172a] p-2 border-b border-white/5 z-20">
+                            <input type="text" id="store-search-filter" class="w-full bg-slate-900 border border-white/10 rounded-lg px-3 py-1.5 text-[10px] text-white focus:outline-none focus:border-amber-500/50" placeholder="Search store..." autocomplete="off">
+                        </div>
+                        <div class="store-option px-3 py-2.5 text-[11px] text-white hover:bg-white/5 cursor-pointer flex justify-between items-center transition-all border-b border-white/5 last:border-0 <?= $filter_store_code === '' ? 'bg-amber-500/10' : '' ?>" data-value="">
+                            <span class="font-bold">All Stores</span>
+                        </div>
+                        <?php foreach($stores_list as $st): 
+                            $sel = ($filter_store_code == $st['scode']);
+                            $displayName = $st['scode'] . " - " . $st['sname'];
+                        ?>
+                            <div class="store-option px-3 py-2.5 text-[11px] text-white hover:bg-white/5 cursor-pointer flex justify-between items-center transition-all border-b border-white/5 last:border-0 <?= $sel ? 'bg-amber-500/10' : '' ?>" 
+                                 data-value="<?= htmlspecialchars($st['scode']) ?>" 
+                                 data-label="<?= htmlspecialchars($displayName) ?>">
+                                <div class="flex flex-col min-w-0 flex-1">
+                                    <span class="font-bold truncate"><?= htmlspecialchars($st['scode']) ?></span>
+                                    <span class="text-[9px] text-gray-500 truncate uppercase tracking-tighter"><?= htmlspecialchars($st['sname']) ?></span>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+
+                    <!-- Hidden input for form submission -->
+                    <input type="hidden" name="store_code" id="store-filter-value" value="<?= htmlspecialchars($filter_store_code) ?>">
+                </div>
             </div>
-        </div>
-        <?php endif; ?>
-    </form>
+            <?php endif; ?>
+        </form>
+    </div>
 </div>
+
+<style>
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+</style>
+
+<script>
+let currentQuickYear = parseInt(document.getElementById('quick-year-select').value);
+
+function changeQuickYearDropdown(val) {
+    currentQuickYear = parseInt(val);
+}
+
+function scrollQuickMonths(direction) {
+    const container = document.getElementById('months-container');
+    const scrollAmount = container.clientWidth;
+    container.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
+}
+
+function selectQuickMonth(btn, monthNum) {
+    const year = currentQuickYear;
+    const startDate = `${year}-${monthNum}-01`;
+    const endDateObj = new Date(year, parseInt(monthNum), 0); 
+    const endDate = `${year}-${monthNum}-${String(endDateObj.getDate()).padStart(2, '0')}`;
+    
+    const form = document.getElementById('dashboard-filter-form');
+    form.querySelector('[name="start_date"]').value = startDate;
+    form.querySelector('[name="end_date"]').value = endDate;
+    
+    document.querySelectorAll('.month-btn').forEach(b => {
+        b.classList.remove('!bg-purple-500/20', '!text-purple-400', 'shadow-sm', '!border-purple-500/50');
+        b.classList.add('text-gray-500', 'border-transparent');
+    });
+    btn.classList.remove('text-gray-500', 'border-transparent');
+    btn.classList.add('!bg-purple-500/20', '!text-purple-400', 'shadow-sm', '!border-purple-500/50');
+    
+    form.submit();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('dashboard-filter-form');
+    const sDate = form.querySelector('[name="start_date"]')?.value;
+    const eDate = form.querySelector('[name="end_date"]')?.value;
+    
+    let targetMonthIdx = new Date().getMonth(); // Default to current month
+    let exactMatchFound = false;
+    
+    if (sDate && eDate) {
+        const s = new Date(sDate);
+        const e = new Date(eDate);
+        const eLastDay = new Date(e.getFullYear(), e.getMonth() + 1, 0).getDate();
+        
+        // If exact month is selected
+        if (s.getDate() === 1 && e.getDate() === eLastDay && s.getMonth() === e.getMonth() && s.getFullYear() === e.getFullYear()) {
+            currentQuickYear = s.getFullYear();
+            const select = document.getElementById('quick-year-select');
+            if (select) select.value = currentQuickYear;
+            targetMonthIdx = s.getMonth();
+            exactMatchFound = true;
+        } else if (s.getFullYear() === currentQuickYear) {
+            targetMonthIdx = s.getMonth();
+            exactMatchFound = true;
+        }
+    }
+    
+    // Auto-scroll and highlight
+    const btns = document.querySelectorAll('.month-btn');
+    if (btns[targetMonthIdx]) {
+        if (exactMatchFound) {
+            // Apply strong active colors if specifically filtered
+            btns[targetMonthIdx].classList.remove('text-gray-500', 'border-transparent');
+            btns[targetMonthIdx].classList.add('!bg-purple-500/20', '!text-purple-400', 'shadow-sm', '!border-purple-500/50');
+        } else {
+            // Just subtly highlight current month if no strict filter
+            btns[targetMonthIdx].classList.remove('text-gray-500');
+            btns[targetMonthIdx].classList.add('!text-white', '!font-black');
+        }
+        
+        // Scroll container to center the month
+        setTimeout(() => {
+            const container = document.getElementById('months-container');
+            const btn = btns[targetMonthIdx];
+            container.scrollTo({
+                left: btn.offsetLeft - container.clientWidth/2 + btn.clientWidth/2,
+                behavior: 'smooth'
+            });
+        }, 300);
+    }
+});
+</script>
 
 <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8">
     <!-- Stats Cards -->
@@ -431,13 +565,33 @@ if (!function_exists('time_elapsed_string')) {
 <div id="top-sellers-modal" class="fixed inset-0 z-[105] hidden">
     <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeTopSellersModal()"></div>
     <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100%-2rem)] max-w-2xl glass-panel overflow-hidden">
-        <div class="p-5 border-b border-white/5 flex justify-between items-center bg-white/5">
+        <?php 
+        $tot_c_qty = !empty($top_stores_ranking) ? array_sum(array_column($top_stores_ranking, 'total_qty')) : 0;
+        $tot_c_amt = !empty($top_stores_ranking) ? array_sum(array_column($top_stores_ranking, 'total_sales')) : 0;
+        ?>
+        <div class="p-5 border-b border-white/5 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white/5 gap-4">
             <h3 class="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
                 <i class="fas fa-trophy text-[#3b82f6]"></i> Top Selling Stores (Concession)
             </h3>
-            <button onclick="closeTopSellersModal()" class="text-gray-400 hover:text-white transition-colors">
-                <i class="fas fa-times"></i>
-            </button>
+            <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                <div class="flex flex-1 sm:flex-none items-center gap-2 bg-gradient-to-r from-blue-500/10 to-transparent border border-blue-500/20 px-3 py-1.5 rounded-lg shadow-inner">
+                    <i class="fas fa-box text-blue-400 text-[10px]"></i>
+                    <div class="flex flex-col leading-tight">
+                        <span class="text-[8px] text-blue-400/80 font-bold uppercase tracking-wider">Total Qty</span>
+                        <span class="text-xs font-black text-blue-300"><?= number_format($tot_c_qty) ?></span>
+                    </div>
+                </div>
+                <div class="flex flex-1 sm:flex-none items-center gap-2 bg-gradient-to-r from-emerald-500/10 to-transparent border border-emerald-500/20 px-3 py-1.5 rounded-lg shadow-inner">
+                    <i class="fas fa-coins text-emerald-400 text-[10px]"></i>
+                    <div class="flex flex-col leading-tight">
+                        <span class="text-[8px] text-emerald-400/80 font-bold uppercase tracking-wider">Total Amount</span>
+                        <span class="text-xs font-black text-emerald-300">₱<?= number_format($tot_c_amt, 2) ?></span>
+                    </div>
+                </div>
+                <button onclick="closeTopSellersModal()" class="text-gray-400 hover:text-white transition-colors ml-auto sm:ml-2 bg-white/5 hover:bg-white/10 w-8 h-8 flex items-center justify-center rounded-lg">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
         </div>
         <div class="p-4 border-b border-white/5 grid grid-cols-12 gap-4 text-xs font-bold text-gray-500 uppercase tracking-wider px-6">
             <div class="col-span-1 text-center">Rank</div>
@@ -488,13 +642,33 @@ if (!function_exists('time_elapsed_string')) {
 <div id="top-boutique-modal" class="fixed inset-0 z-[105] hidden">
     <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeTopBoutiqueModal()"></div>
     <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100%-2rem)] max-w-2xl glass-panel overflow-hidden">
-        <div class="p-5 border-b border-white/5 flex justify-between items-center bg-white/5">
+        <?php 
+        $tot_b_qty = !empty($top_boutique_ranking) ? array_sum(array_column($top_boutique_ranking, 'total_qty')) : 0;
+        $tot_b_amt = !empty($top_boutique_ranking) ? array_sum(array_column($top_boutique_ranking, 'total_sales')) : 0;
+        ?>
+        <div class="p-5 border-b border-white/5 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white/5 gap-4">
             <h3 class="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
                 <i class="fas fa-crown text-yellow-400"></i> Top Selling Stores (Boutique)
             </h3>
-            <button onclick="closeTopBoutiqueModal()" class="text-gray-400 hover:text-white transition-colors">
-                <i class="fas fa-times"></i>
-            </button>
+            <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                <div class="flex flex-1 sm:flex-none items-center gap-2 bg-gradient-to-r from-yellow-500/10 to-transparent border border-yellow-500/20 px-3 py-1.5 rounded-lg shadow-inner">
+                    <i class="fas fa-box text-yellow-400 text-[10px]"></i>
+                    <div class="flex flex-col leading-tight">
+                        <span class="text-[8px] text-yellow-400/80 font-bold uppercase tracking-wider">Total Qty</span>
+                        <span class="text-xs font-black text-yellow-300"><?= number_format($tot_b_qty) ?></span>
+                    </div>
+                </div>
+                <div class="flex flex-1 sm:flex-none items-center gap-2 bg-gradient-to-r from-emerald-500/10 to-transparent border border-emerald-500/20 px-3 py-1.5 rounded-lg shadow-inner">
+                    <i class="fas fa-coins text-emerald-400 text-[10px]"></i>
+                    <div class="flex flex-col leading-tight">
+                        <span class="text-[8px] text-emerald-400/80 font-bold uppercase tracking-wider">Total Amount</span>
+                        <span class="text-xs font-black text-emerald-300">₱<?= number_format($tot_b_amt, 2) ?></span>
+                    </div>
+                </div>
+                <button onclick="closeTopBoutiqueModal()" class="text-gray-400 hover:text-white transition-colors ml-auto sm:ml-2 bg-white/5 hover:bg-white/10 w-8 h-8 flex items-center justify-center rounded-lg">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
         </div>
         <div class="p-4 border-b border-white/5 grid grid-cols-12 gap-4 text-xs font-bold text-gray-500 uppercase tracking-wider px-6">
             <div class="col-span-1 text-center">Rank</div>

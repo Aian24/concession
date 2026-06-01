@@ -81,13 +81,15 @@ foreach ($stores as $st) {
     }
 }
 
-// Order by missing_date ASC, then scode ASC
+// Order by sname ASC, then missing_date ASC for exports
 usort($missing_data, function($a, $b) {
-    $dateCmp = strcmp($a['missing_date'], $b['missing_date']);
-    if ($dateCmp === 0) {
-        return strcmp($a['scode'], $b['scode']);
+    // Sort by name first
+    $nameCmp = strcmp(strtolower($a['sname']), strtolower($b['sname']));
+    if ($nameCmp === 0) {
+        // Then by date
+        return strcmp($a['missing_date'], $b['missing_date']);
     }
-    return $dateCmp; // ASC
+    return $nameCmp; // ASC
 });
 
 $filename = $_GET['filename'] ?? 'non_submission_report_' . date('Y-m-d');
@@ -110,25 +112,30 @@ if ($format === 'txt') {
     }
     exit;
 } elseif ($format === 'xls') {
-    header('Content-Type: application/vnd.ms-excel');
-    header('Content-Disposition: attachment; filename="' . $filename . '.xls"');
+    require_once '../includes/SimpleXLSXGen.php';
     
-    echo "<table border='1'>";
-    echo "<tr><th>Store Code</th><th>Store Name</th><th>Missing Date</th></tr>";
+    $excel_data = [];
+    $excel_data[] = ['Store Code', 'Store Name', 'Missing Date'];
+    
     foreach ($missing_data as $row) {
-        echo "<tr>";
-        echo "<td>" . htmlspecialchars($row['scode']) . "</td>";
-        echo "<td>" . htmlspecialchars($row['sname']) . "</td>";
-        echo "<td>" . htmlspecialchars($row['missing_date']) . "</td>";
-        echo "</tr>";
+        $excel_data[] = [
+            $row['scode'],
+            $row['sname'],
+            $row['missing_date']
+        ];
     }
-    echo "</table>";
+    
+    $xlsx = Shuchkin\SimpleXLSXGen::fromArray($excel_data);
+    $xlsx->downloadAs("{$filename}.xlsx");
     exit;
 }
 
 // Format = CSV
-header('Content-Type: text/csv');
+header('Content-Type: text/csv; charset=UTF-8');
 header('Content-Disposition: attachment; filename="' . $filename . '.csv"');
+
+// UTF-8 BOM for CSV to prevent encoding issues
+echo "\xEF\xBB\xBF";
 
 $output = fopen('php://output', 'w');
 fputcsv($output, ['Store Code', 'Store Name', 'Missing Date']);
