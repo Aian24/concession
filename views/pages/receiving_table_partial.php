@@ -347,6 +347,9 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
                     <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 text-center">Destination (To)</th>
                     <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 text-center">Username</th>
                     <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 text-center">Date Received</th>
+                    <?php if ($is_full_admin): ?>
+                        <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 text-center">Timestamp</th>
+                    <?php endif; ?>
                     <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 text-center">Status</th>
                     <?php if ($can_edit): ?>
                         <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 text-center min-w-[100px]">Actions</th>
@@ -356,7 +359,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
             <tbody id="receiving-tbody" class="divide-y divide-white/5">
                 <?php if (empty($received_items)): ?>
                     <tr>
-                        <td colspan="<?= $is_admin ? 10 : 8 ?>" class="px-5 py-12 text-center text-gray-500">
+                        <td colspan="<?= ($is_admin ? 10 : 8) + ($is_full_admin ? 1 : 0) ?>" class="px-5 py-12 text-center text-gray-500">
                             <div class="flex flex-col items-center gap-2 opacity-20">
                                 <i class="fas fa-inbox text-4xl text-gray-500"></i>
                                 <span class="text-xs font-bold uppercase tracking-[0.2em] text-gray-400">No records found</span>
@@ -409,10 +412,17 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
                         <td class="px-5 py-3.5 text-center" data-label="Date Received" data-date="<?= date('Y-m-d', strtotime($r['created_at'])) ?>">
                             <div class="flex flex-col md:flex-row md:items-center justify-center gap-0.5 md:gap-1">
                                 <span class="text-gray-300 text-[11px] font-medium whitespace-nowrap"><?= date('M d, Y', strtotime($r['created_at'])) ?></span>
-                                <span class="hidden md:inline text-gray-500 font-bold">•</span>
-                                <span class="text-gray-400 text-[9px] md:text-[11px] font-bold whitespace-nowrap"><?= date('h:i A', strtotime($r['created_at'])) ?></span>
                             </div>
                         </td>
+                        <?php if ($is_full_admin): ?>
+                        <td class="px-5 py-3.5 text-center" data-label="Timestamp">
+                            <?php if ($r['system_timestamp']): ?>
+                                <span class="text-gray-400 text-[11px] font-medium whitespace-nowrap"><?= date('M d, Y h:i A', strtotime($r['system_timestamp'])) ?></span>
+                            <?php else: ?>
+                                <span class="text-gray-500/50 text-[10px] uppercase font-bold tracking-widest italic">N/A</span>
+                            <?php endif; ?>
+                        </td>
+                        <?php endif; ?>
                         <td class="px-5 py-3.5 text-center" data-label="Status">
                             <?php if ($r['is_exported']): ?>
                                 <div class="w-6 h-6 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mx-auto" title="Already Exported">

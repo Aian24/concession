@@ -456,6 +456,9 @@ if ($is_single_day && ($is_admin || $is_multi_store_admin) && empty($store_filte
                     <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Line Total</th>
                     <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Submitted By</th>
                     <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Date</th>
+                    <?php if ($is_full_admin): ?>
+                        <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Timestamp</th>
+                    <?php endif; ?>
                     <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Status</th>
                     <?php if ($can_edit): ?>
                         <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center min-w-[100px]">Actions</th>
@@ -465,7 +468,7 @@ if ($is_single_day && ($is_admin || $is_multi_store_admin) && empty($store_filte
             <tbody id="submitted-tbody" class="text-sm">
                 <?php if (empty($submitted_sales)): ?>
                 <tr>
-                    <td colspan="<?= $is_admin ? 10 : 8 ?>" class="px-5 py-12 text-center text-gray-500">
+                    <td colspan="<?= ($is_admin ? 10 : 8) + ($is_full_admin ? 1 : 0) ?>" class="px-5 py-12 text-center text-gray-500">
                         <div class="flex flex-col items-center gap-2 opacity-20">
                             <i class="fas fa-inbox text-4xl text-gray-500"></i>
                             <span class="text-xs font-bold uppercase tracking-[0.2em] text-gray-400">No records found</span>
@@ -509,10 +512,17 @@ if ($is_single_day && ($is_admin || $is_multi_store_admin) && empty($store_filte
                         <td class="px-5 py-3.5 text-center" data-label="Date" data-date="<?= date('Y-m-d', strtotime($s['created_at'])) ?>">
                             <div class="flex flex-col md:flex-row md:items-center justify-center gap-0.5 md:gap-1">
                                 <span class="text-gray-300 text-[11px] font-medium whitespace-nowrap"><?= date('M d, Y', strtotime($s['created_at'])) ?></span>
-                                <span class="hidden md:inline text-gray-500 font-bold">•</span>
-                                <span class="text-gray-400 text-[9px] md:text-[11px] font-bold whitespace-nowrap"><?= date('h:i A', strtotime($s['created_at'])) ?></span>
                             </div>
                         </td>
+                        <?php if ($is_full_admin): ?>
+                        <td class="px-5 py-3.5 text-center" data-label="Timestamp">
+                            <?php if ($s['system_timestamp']): ?>
+                                <span class="text-gray-400 text-[11px] font-medium whitespace-nowrap"><?= date('M d, Y h:i A', strtotime($s['system_timestamp'])) ?></span>
+                            <?php else: ?>
+                                <span class="text-gray-500/50 text-[10px] uppercase font-bold tracking-widest italic">N/A</span>
+                            <?php endif; ?>
+                        </td>
+                        <?php endif; ?>
                         <td class="px-5 py-3.5 text-center" data-label="Status">
                             <?php if ($s['is_exported']): ?>
                                 <div class="w-6 h-6 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center text-green-400 mx-auto" title="Already Exported">

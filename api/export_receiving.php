@@ -79,7 +79,7 @@ $result = $stmt->get_result();
 
 // Setup file headers
 $filename = "receiving_export_" . date('Ymd_His');
-$headers  = ['Date', 'Time', 'Store', 'OS #', 'From (Store)', 'To (Store)', 'Qty', 'Username'];
+$headers  = ['Date', 'Store', 'OS #', 'From (Store)', 'To (Store)', 'Qty', 'Username'];
 
 // Mark records as exported
 if ($result->num_rows > 0) {
@@ -107,7 +107,6 @@ if ($type === 'xls') {
     foreach ($data_rows as $row) {
         $excel_data[] = [
             date('M d, Y', strtotime($row['created_at'])),
-            date('h:i A', strtotime($row['created_at'])),
             $row['sname'] ? "{$row['sname']} ({$row['store_code']})" : $row['store_code'],
             $row['os_no'],
             $row['from_store'],
@@ -154,7 +153,6 @@ foreach ($data_rows as $row) {
     } else {
         $line = [
             date('M d, Y', strtotime($row['created_at'])),
-            date('h:i A', strtotime($row['created_at'])),
             $row['sname'] ? "{$row['sname']} ({$row['store_code']})" : $row['store_code'],
             $row['os_no'],
             $row['from_store'],

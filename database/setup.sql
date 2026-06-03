@@ -34,6 +34,7 @@ CREATE TABLE IF NOT EXISTS sales (
     quantity    INT             NOT NULL DEFAULT 0,
     line_total  DECIMAL(10,2)   NOT NULL DEFAULT 0.00,  -- amount_sold * quantity
     created_at  TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
+    system_timestamp TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
 
     INDEX idx_username   (username),
     INDEX idx_store_code (store_code),

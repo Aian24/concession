@@ -87,7 +87,7 @@ $result = $stmt->get_result();
 $filename = $_GET['filename'] ?? ("submitted_sales_" . date('Ymd_His'));
 // Sanitize filename: allow alphanumeric, underscore, and dash
 $filename = preg_replace('/[^a-zA-Z0-9_\-]/', '_', $filename);
-$headers  = ['Date', 'Time', 'Store', 'Item #', 'Amount Sold', 'Quantity', 'Username'];
+$headers  = ['Date', 'Store', 'Item #', 'Amount Sold', 'Quantity', 'Username'];
 
 // Mark records as exported
 if ($result->num_rows > 0) {
@@ -118,7 +118,6 @@ if ($type === 'xls') {
     foreach ($data_rows as $row) {
         $excel_data[] = [
             date('M d, Y', strtotime($row['created_at'])),
-            date('h:i A', strtotime($row['created_at'])),
             $row['sname'] ? "{$row['sname']} ({$row['store_code']})" : $row['store_code'],
             $row['item_no'],
             (float)$row['amount_sold'],
@@ -164,7 +163,6 @@ foreach ($data_rows as $row) {
     } else {
         $line = [
             date('M d, Y', strtotime($row['created_at'])),
-            date('h:i A', strtotime($row['created_at'])),
             $row['sname'] ? "{$row['sname']} ({$row['store_code']})" : $row['store_code'],
             $row['item_no'],
             number_format($row['amount_sold'], 2, '.', ''),

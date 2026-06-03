@@ -79,7 +79,7 @@ $result = $stmt->get_result();
 
 // Setup file headers
 $filename = "returns_export_" . date('Ymd_His');
-$headers  = ['Date', 'Time', 'Store', 'Returned Item', 'Return Amt', 'Reason', 'Exchange Name', 'Exchange Item #', 'Exchange Amt', 'Username'];
+$headers  = ['Date', 'Store', 'Returned Item', 'Return Amt', 'Reason', 'Exchange Name', 'Exchange Item #', 'Exchange Amt', 'Username'];
 
 // Mark records as exported
 if ($result->num_rows > 0) {
@@ -107,7 +107,6 @@ if ($type === 'xls') {
     foreach ($data_rows as $row) {
         $excel_data[] = [
             date('M d, Y', strtotime($row['created_at'])),
-            date('h:i A', strtotime($row['created_at'])),
             $row['sname'] ? "{$row['sname']} ({$row['store_code']})" : $row['store_code'],
             $row['return_item'] ?: 'Exchange Only',
             $row['return_amount'] ? (float)$row['return_amount'] : 0.00,
@@ -155,7 +154,6 @@ foreach ($data_rows as $row) {
     } else {
         $line = [
             date('M d, Y', strtotime($row['created_at'])),
-            date('h:i A', strtotime($row['created_at'])),
             $row['sname'] ? "{$row['sname']} ({$row['store_code']})" : $row['store_code'],
             $row['return_item'] ?: 'Exchange Only',
             $row['return_amount'] ? number_format($row['return_amount'], 2) : '0.00',
