@@ -151,8 +151,8 @@ if ($is_admin) {
         if (!empty($top_stores_ranking)) {
             $top = $top_stores_ranking[0];
             $top_store_name = $top['store_code'] . ($top['sname'] ? " (" . $top['sname'] . ")" : "");
-            $top_store_qty = $top['total_qty'];
-            $top_store_amount = $top['total_sales'];
+            $top_store_qty = array_sum(array_column($top_stores_ranking, 'total_qty'));
+            $top_store_amount = array_sum(array_column($top_stores_ranking, 'total_sales'));
         }
     }
 }
@@ -172,8 +172,8 @@ if ($is_admin) {
             if (!empty($top_boutique_ranking)) {
                 $top = $top_boutique_ranking[0];
                 $top_boutique_name = $top['store_code'] . ($top['sname'] ? " (" . $top['sname'] . ")" : "");
-                $top_boutique_qty = $top['total_qty'];
-                $top_boutique_amount = $top['total_sales'];
+                $top_boutique_qty = array_sum(array_column($top_boutique_ranking, 'total_qty'));
+                $top_boutique_amount = array_sum(array_column($top_boutique_ranking, 'total_sales'));
             }
         }
     }
