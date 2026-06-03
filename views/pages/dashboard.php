@@ -528,10 +528,20 @@ document.addEventListener('DOMContentLoaded', () => {
         if (selectedYears.size > 1)  document.getElementById('yr-multi-hint').textContent = `(${selectedYears.size} selected)`;
         if (selectedMonths.size > 1) document.getElementById('mo-multi-hint').textContent = `(${selectedMonths.size} selected)`;
         setTimeout(() => {
-            const c = document.getElementById('months-container');
+            // Center the selected year
+            const yc = document.getElementById('years-container');
+            const yBtn = document.querySelector(`.year-btn[data-year="${s.getFullYear()}"]`);
+            if (yBtn && yc) {
+                yc.scrollTo({ left: yBtn.offsetLeft - yc.clientWidth/2 + yBtn.clientWidth/2, behavior: 'smooth' });
+            }
+            
+            // Center the selected month
+            const mc = document.getElementById('months-container');
             const pad = v => String(v).padStart(2,'0');
-            const btn = document.querySelector(`.month-btn[data-month="${pad(s.getMonth()+1)}"]`);
-            if (btn) c.scrollTo({ left: btn.offsetLeft - c.clientWidth/2 + btn.clientWidth/2, behavior: 'smooth' });
+            const mBtn = document.querySelector(`.month-btn[data-month="${pad(s.getMonth()+1)}"]`);
+            if (mBtn && mc) {
+                mc.scrollTo({ left: mBtn.offsetLeft - mc.clientWidth/2 + mBtn.clientWidth/2, behavior: 'smooth' });
+            }
         }, 300);
     }
     // Store filter dropdown
