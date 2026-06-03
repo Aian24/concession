@@ -119,7 +119,7 @@ $total_sales_qty = 0;
 $total_sales_count = 0;
 
 if ($show_concession) {
-    $sales_res = $db->query("SELECT SUM(line_total) as total_sales, SUM(quantity) as total_qty, COUNT(id) as total_count FROM sales WHERE DATE(created_at) BETWEEN '$start_date' AND '$end_date' $store_clause");
+    $sales_res = $db->query("SELECT SUM(line_total) as total_sales, SUM(quantity) as total_qty, COUNT(id) as total_count FROM sales WHERE created_at BETWEEN '$start_date 00:00:00' AND '$end_date 23:59:59' $store_clause");
     $sales_data = $sales_res ? $sales_res->fetch_assoc() : [];
     $total_sales += (float) ($sales_data['total_sales'] ?? 0.00);
     $total_sales_qty += (int) ($sales_data['total_qty'] ?? 0);
@@ -143,7 +143,7 @@ if ($show_boutique) {
 $top_store_name = 'N/A';
 $top_stores_ranking = [];
 if ($is_admin) {
-    $top_store_res = $db->query("SELECT s.store_code, sc.sname, SUM(s.line_total) as total_sales, SUM(s.quantity) as total_qty FROM sales s LEFT JOIN storecode sc ON s.store_code = sc.scode COLLATE utf8mb4_unicode_ci WHERE DATE(s.created_at) BETWEEN '$start_date' AND '$end_date' $store_clause GROUP BY s.store_code, sc.sname ORDER BY total_sales DESC");
+    $top_store_res = $db->query("SELECT s.store_code, sc.sname, SUM(s.line_total) as total_sales, SUM(s.quantity) as total_qty FROM sales s LEFT JOIN storecode sc ON s.store_code = sc.scode COLLATE utf8mb4_unicode_ci WHERE s.created_at BETWEEN '$start_date 00:00:00' AND '$end_date 23:59:59' $store_clause GROUP BY s.store_code, sc.sname ORDER BY total_sales DESC");
     if ($top_store_res) {
         $top_stores_ranking = $top_store_res->fetch_all(MYSQLI_ASSOC);
         if (!empty($top_stores_ranking)) {
@@ -172,13 +172,13 @@ if ($is_admin) {
 }
 
 // 2. Total Returns
-$returns_res = $db->query("SELECT SUM(return_amount) as total_returns, COUNT(id) as total_count FROM returns WHERE DATE(created_at) BETWEEN '$start_date' AND '$end_date' $store_clause");
+$returns_res = $db->query("SELECT SUM(return_amount) as total_returns, COUNT(id) as total_count FROM returns WHERE created_at BETWEEN '$start_date 00:00:00' AND '$end_date 23:59:59' $store_clause");
 $returns_data = $returns_res ? $returns_res->fetch_assoc() : ['total_returns' => 0, 'total_count' => 0];
 $total_returns = (float) ($returns_data['total_returns'] ?? 0.00);
 $total_returns_count = (int) ($returns_data['total_count'] ?? 0);
 
 // 3. Total Receiving
-$receiving_res = $db->query("SELECT SUM(quantity) as total_received, COUNT(id) as total_count FROM receiving WHERE DATE(created_at) BETWEEN '$start_date' AND '$end_date' $store_clause");
+$receiving_res = $db->query("SELECT SUM(quantity) as total_received, COUNT(id) as total_count FROM receiving WHERE created_at BETWEEN '$start_date 00:00:00' AND '$end_date 23:59:59' $store_clause");
 $receiving_data = $receiving_res ? $receiving_res->fetch_assoc() : ['total_received' => 0, 'total_count' => 0];
 $total_received_qty = (int) ($receiving_data['total_received'] ?? 0);
 $receiving_count = (int) ($receiving_data['total_count'] ?? 0);
@@ -197,7 +197,7 @@ if ($is_admin) {
 // 4.1 Active Stores (with transactions in selected range)
 $active_stores_array = [];
 if ($show_concession) {
-    $active_stores_res = $db->query("SELECT DISTINCT store_code FROM sales WHERE DATE(created_at) BETWEEN '$start_date' AND '$end_date' $store_clause AND store_code != 'HO'");
+    $active_stores_res = $db->query("SELECT DISTINCT store_code FROM sales WHERE created_at BETWEEN '$start_date 00:00:00' AND '$end_date 23:59:59' $store_clause AND store_code != 'HO'");
     if ($active_stores_res) {
         while ($r = $active_stores_res->fetch_assoc()) {
             $active_stores_array[$r['store_code']] = true;
@@ -236,7 +236,7 @@ foreach ($period as $date) {
 }
 
 if ($show_concession) {
-    $chart_res = $db->query("SELECT DATE(created_at) as d, SUM(line_total) as total, SUM(quantity) as qty FROM sales WHERE (DATE(created_at) BETWEEN '$start_date' AND '$end_date') $store_clause GROUP BY DATE(created_at)");
+    $chart_res = $db->query("SELECT DATE(created_at) as d, SUM(line_total) as total, SUM(quantity) as qty FROM sales WHERE (created_at BETWEEN '$start_date 00:00:00' AND '$end_date 23:59:59') $store_clause GROUP BY DATE(created_at)");
     if ($chart_res) {
         while($row = $chart_res->fetch_assoc()) {
             if (isset($chart_sales_values[$row['d']])) {
@@ -293,143 +293,132 @@ if (!function_exists('time_elapsed_string')) {
 
 <style>
     input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
+    .no-scrollbar::-webkit-scrollbar { display: none !important; }
+    .no-scrollbar { -ms-overflow-style: none !important; scrollbar-width: none !important; }
 </style>
 
 <!-- Date Range Filter -->
-<div class="glass-panel p-5 border border-white/5 mb-8 relative z-50">
-    <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
-        
-        <!-- Left Section: Title & Quick Filters -->
-        <div class="flex flex-col sm:flex-row sm:items-center gap-6 w-full xl:w-auto">
-            <div class="flex items-center gap-4">
-                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600/20 to-pink-600/20 flex items-center justify-center text-white border border-white/10 shadow-xl flex-shrink-0">
-                    <i class="fas fa-calendar-alt"></i>
-                </div>
-                <div class="flex flex-col">
-                    <h3 class="text-sm font-black text-white uppercase tracking-widest leading-none mb-1">Date Range Analytics</h3>
-                    <p class="text-[10px] text-gray-500 font-bold uppercase tracking-tighter">Live filtering applied to graphs and stats</p>
+<div class="glass-panel px-5 pt-4 pb-5 border border-white/5 mb-8 relative z-50">
+
+    <!-- Row 1: Title only -->
+    <div class="flex items-center gap-3 mb-4">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-purple-600/20 to-pink-600/20 flex items-center justify-center text-white border border-white/10 flex-shrink-0">
+            <i class="fas fa-calendar-alt text-sm"></i>
+        </div>
+        <div>
+            <h3 class="text-sm font-black text-white uppercase tracking-widest leading-none mb-0.5">Date Range Analytics</h3>
+            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-tighter">Live filtering applied to graphs and stats</p>
+        </div>
+    </div>
+
+    <!-- Row 2: All controls aligned full-width -->
+    <!-- Mobile: stacked rows | Desktop: single horizontal row -->
+    <div class="flex flex-col lg:flex-row lg:items-end gap-3 w-full">
+
+        <!-- Mobile row A: Data Source + Quick Year stacked on mobile -->
+        <div class="flex flex-col lg:flex-row lg:items-end gap-3 w-full lg:contents">
+
+            <!-- Data Source Pills -->
+            <div class="flex flex-col gap-1 flex-shrink-0">
+                <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Data Source</label>
+                <div class="flex items-center gap-1.5">
+                    <form method="GET" id="source-concession-form">
+                        <input type="hidden" name="action" value="dashboard">
+                        <input type="hidden" name="start_date" value="<?= $start_date ?>">
+                        <input type="hidden" name="end_date" value="<?= $end_date ?>">
+                        <input type="hidden" name="store_code" value="<?= htmlspecialchars($filter_store_code) ?>">
+                        <?php if ($show_boutique): ?><input type="hidden" name="source_boutique" value="1"><?php endif; ?>
+                        <?php if (!$show_concession): ?><input type="hidden" name="source_concession" value="1"><?php endif; ?>
+                        <button type="submit" class="h-9 px-3 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border flex items-center gap-1.5 <?= $show_concession ? 'bg-blue-500/20 text-blue-300 border-blue-500/40' : 'bg-white/5 text-gray-500 border-white/10 hover:text-blue-400 hover:bg-blue-500/10' ?>">
+                            <i class="fas fa-store text-[9px]"></i> Concession
+                        </button>
+                    </form>
+                    <form method="GET" id="source-boutique-form">
+                        <input type="hidden" name="action" value="dashboard">
+                        <input type="hidden" name="start_date" value="<?= $start_date ?>">
+                        <input type="hidden" name="end_date" value="<?= $end_date ?>">
+                        <input type="hidden" name="store_code" value="<?= htmlspecialchars($filter_store_code) ?>">
+                        <?php if ($show_concession): ?><input type="hidden" name="source_concession" value="1"><?php endif; ?>
+                        <?php if (!$show_boutique): ?><input type="hidden" name="source_boutique" value="1"><?php endif; ?>
+                        <button type="submit" class="h-9 px-3 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border flex items-center gap-1.5 <?= $show_boutique ? 'bg-amber-500/20 text-amber-300 border-amber-500/40' : 'bg-white/5 text-gray-500 border-white/10 hover:text-amber-400 hover:bg-amber-500/10' ?>">
+                            <i class="fas fa-tag text-[9px]"></i> Boutique
+                        </button>
+                    </form>
                 </div>
             </div>
-            
-            <!-- Compact Quick Year & Month Filter (Horizontal Badges) -->
-            <div class="flex flex-row items-end gap-3 w-full sm:w-auto">
-                <!-- Year Carousel Badge -->
-                <div class="space-y-1 group w-1/2 sm:w-auto">
-                    <label class="text-[9px] font-bold text-gray-500 uppercase ml-1 group-hover:text-purple-400 transition-colors">Quick Year</label>
-                    <div class="shrink-0 flex items-center bg-slate-900/80 border border-white/10 rounded-xl shadow-inner h-9 relative z-20 overflow-hidden w-full sm:w-[220px]">
-                        <button type="button" onclick="scrollQuickYears(-1)" class="absolute left-0 z-10 h-full px-2 bg-gradient-to-r from-slate-900 via-slate-900/90 to-transparent flex items-center justify-start text-gray-400 hover:text-white transition-all"><i class="fas fa-chevron-left text-[9px]"></i></button>
-                        
-                        <div id="years-container" class="flex items-center gap-1 overflow-x-auto hide-scrollbar scroll-smooth w-full px-5">
-                            <?php 
-                            $currYr = date('Y');
-                            $selectedYr = isset($_GET['start_date']) ? date('Y', strtotime($_GET['start_date'])) : $currYr;
-                            for($y = $currYr - 4; $y <= $currYr + 2; $y++):
-                            ?>
-                            <button type="button" data-year="<?= $y ?>" onclick="changeQuickYear(this, '<?= $y ?>')" class="flex-shrink-0 w-[45px] py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all year-btn text-center select-none border <?= $y == $selectedYr ? '!bg-purple-500/20 !text-purple-400 shadow-sm !border-purple-500/50' : 'text-gray-500 border-transparent hover:text-purple-400 hover:bg-white/5' ?>">
-                                <?= $y ?>
-                            </button>
-                            <?php endfor; ?>
-                        </div>
-                        
-                        <button type="button" onclick="scrollQuickYears(1)" class="absolute right-0 z-10 h-full px-2 bg-gradient-to-l from-slate-900 via-slate-900/90 to-transparent flex items-center justify-end text-gray-400 hover:text-white transition-all"><i class="fas fa-chevron-right text-[9px]"></i></button>
-                    </div>
-                </div>
 
-                <!-- Month Carousel Badge -->
-                <div class="space-y-1 group w-1/2 sm:w-auto">
-                    <label class="text-[9px] font-bold text-gray-500 uppercase ml-1 group-hover:text-purple-400 transition-colors">Quick Month</label>
-                    <div class="shrink-0 flex items-center bg-slate-900/80 border border-white/10 rounded-xl shadow-inner h-9 relative z-20 overflow-hidden w-full sm:w-[280px]">
-                        <button type="button" onclick="scrollQuickMonths(-1)" class="absolute left-0 z-10 h-full px-2 bg-gradient-to-r from-slate-900 via-slate-900/90 to-transparent flex items-center justify-start text-gray-400 hover:text-white transition-all"><i class="fas fa-chevron-left text-[9px]"></i></button>
-                        
-                        <div id="months-container" class="flex items-center gap-1 overflow-x-auto hide-scrollbar scroll-smooth w-full px-5">
-                            <?php 
-                            $months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                            foreach($months as $idx => $m): 
-                                $m_num = str_pad($idx + 1, 2, '0', STR_PAD_LEFT);
-                            ?>
-                            <button type="button" onclick="selectQuickMonth(this, '<?= $m_num ?>')" class="flex-shrink-0 w-[42px] py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider text-gray-500 hover:text-purple-400 hover:bg-white/5 transition-all month-btn text-center select-none border border-transparent">
-                                <?= $m ?>
-                            </button>
-                            <?php endforeach; ?>
-                        </div>
-                        
-                        <button type="button" onclick="scrollQuickMonths(1)" class="absolute right-0 z-10 h-full px-2 bg-gradient-to-l from-slate-900 via-slate-900/90 to-transparent flex items-center justify-end text-gray-400 hover:text-white transition-all"><i class="fas fa-chevron-right text-[9px]"></i></button>
+            <!-- Quick Year multi-select -->
+            <div class="flex flex-col gap-1 flex-1 min-w-0">
+                <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Quick Year <span class="text-purple-400/60" id="yr-multi-hint"></span></label>
+                <div class="flex items-center bg-slate-900/80 border border-white/10 rounded-xl h-9 relative w-full">
+                    <button type="button" onclick="scrollQuickYears(-1)" class="absolute left-0 z-10 h-full px-2 bg-gradient-to-r from-slate-900 via-slate-900/80 to-transparent text-gray-400 hover:text-white transition-all flex-shrink-0"><i class="fas fa-chevron-left text-[9px]"></i></button>
+                    <div id="years-container" class="no-scrollbar flex items-center gap-1 overflow-x-auto scroll-smooth w-full px-6" style="scrollbar-width:none;-ms-overflow-style:none;">
+                        <?php
+                        $currYr = date('Y');
+                        for($y = $currYr - 4; $y <= $currYr + 2; $y++):
+                        ?>
+                        <button type="button" data-year="<?= $y ?>" onclick="toggleYear(this, <?= $y ?>)" class="year-btn flex-shrink-0 w-[46px] py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all text-center select-none border text-gray-500 border-transparent hover:text-purple-400 hover:bg-white/5">
+                            <?= $y ?>
+                        </button>
+                        <?php endfor; ?>
                     </div>
+                    <button type="button" onclick="scrollQuickYears(1)" class="absolute right-0 z-10 h-full px-2 bg-gradient-to-l from-slate-900 via-slate-900/80 to-transparent text-gray-400 hover:text-white transition-all flex-shrink-0"><i class="fas fa-chevron-right text-[9px]"></i></button>
                 </div>
+            </div>
+
+        </div><!-- end mobile row A -->
+
+        <!-- Quick Month multi-select (full width on mobile, flex-[2] on desktop) -->
+        <div class="flex flex-col gap-1 flex-[2] min-w-0">
+            <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Quick Month <span class="text-purple-400/60" id="mo-multi-hint"></span></label>
+            <div class="flex items-center bg-slate-900/80 border border-white/10 rounded-xl h-9 relative w-full">
+                <button type="button" onclick="scrollQuickMonths(-1)" class="absolute left-0 z-10 h-full px-2 bg-gradient-to-r from-slate-900 via-slate-900/80 to-transparent text-gray-400 hover:text-white transition-all flex-shrink-0"><i class="fas fa-chevron-left text-[9px]"></i></button>
+                <div id="months-container" class="no-scrollbar flex items-center gap-1 overflow-x-auto scroll-smooth w-full px-6" style="scrollbar-width:none;-ms-overflow-style:none;">
+                    <?php
+                    $months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                    foreach($months as $idx => $m):
+                        $m_num = str_pad($idx + 1, 2, '0', STR_PAD_LEFT);
+                    ?>
+                    <button type="button" data-month="<?= $m_num ?>" onclick="toggleMonth(this, '<?= $m_num ?>')" class="month-btn flex-shrink-0 w-[43px] py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all text-center select-none border text-gray-500 border-transparent hover:text-purple-400 hover:bg-white/5">
+                        <?= $m ?>
+                    </button>
+                    <?php endforeach; ?>
+                </div>
+                <button type="button" onclick="scrollQuickMonths(1)" class="absolute right-0 z-10 h-full px-2 bg-gradient-to-l from-slate-900 via-slate-900/80 to-transparent text-gray-400 hover:text-white transition-all flex-shrink-0"><i class="fas fa-chevron-right text-[9px]"></i></button>
             </div>
         </div>
-        
-        <form id="dashboard-filter-form" class="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full xl:w-auto xl:flex-1 mt-4 xl:mt-0" method="GET">
-            <input type="hidden" name="action" value="dashboard">
-            
-            <!-- Source Filters -->
-            <div class="space-y-1 group relative col-span-2 sm:col-span-1">
-                <label class="text-[9px] font-bold text-gray-500 uppercase ml-1 group-hover:text-blue-400 transition-colors">Data Source</label>
-                <div class="relative" id="source-filter-container">
-                    <i class="fas fa-database absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-600 group-hover:text-blue-400 transition-colors pointer-events-none z-10"></i>
-                    
-                    <?php
-                    $source_label = "Concession & Boutique";
-                    if ($show_concession && !$show_boutique) $source_label = "Concession Only";
-                    if (!$show_concession && $show_boutique) $source_label = "Boutique Only";
-                    if (!$show_concession && !$show_boutique) $source_label = "None Selected";
-                    ?>
-                    
-                    <!-- Custom Trigger -->
-                    <div id="source-filter-trigger" class="w-full bg-slate-900/80 border border-white/10 rounded-xl pl-9 pr-4 py-2 h-9 text-xs text-white flex items-center justify-between cursor-pointer focus:border-blue-500/50 transition-all hover:bg-white/5">
-                        <span id="selected-source-label" class="truncate font-bold opacity-80 uppercase tracking-tight"><?= $source_label ?></span>
-                        <i class="fas fa-chevron-down text-[9px] text-gray-500 ml-2"></i>
-                    </div>
 
-                    <!-- Custom Menu -->
-                    <div id="source-filter-menu" class="absolute top-[calc(100%+4px)] left-0 min-w-[240px] w-full bg-[#0f172a] border border-white/10 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[100] hidden max-h-64 overflow-y-auto overflow-x-hidden backdrop-blur-xl">
-                        <div class="sticky top-0 bg-[#0f172a] p-2 border-b border-white/5 z-20">
-                            <input type="text" id="source-search-filter" class="w-full bg-slate-900 border border-white/10 rounded-lg px-3 py-1.5 text-[10px] text-white focus:outline-none focus:border-blue-500/50" placeholder="Search source..." autocomplete="off">
-                        </div>
-                        
-                        <!-- Concession Option -->
-                        <label class="source-option px-3 py-2.5 text-[11px] text-white hover:bg-white/5 cursor-pointer flex items-center gap-3 transition-all border-b border-white/5 <?= $show_concession ? 'bg-blue-500/10' : '' ?>">
-                            <input type="checkbox" name="source_concession" value="1" class="rounded border-white/20 bg-slate-900 text-blue-500 focus:ring-offset-slate-900 w-3.5 h-3.5" <?= $show_concession ? 'checked' : '' ?> onchange="this.form.submit()">
-                            <div class="flex flex-col min-w-0 flex-1">
-                                <span class="font-bold truncate">Concession</span>
-                                <span class="text-[9px] text-gray-500 truncate uppercase tracking-tighter">Main Sales</span>
-                            </div>
-                        </label>
+        <!-- Mobile row B: Start Date + End Date + Store Filter -->
+        <div class="flex items-end gap-3 w-full lg:contents">
 
-                        <!-- Boutique Option -->
-                        <label class="source-option px-3 py-2.5 text-[11px] text-white hover:bg-white/5 cursor-pointer flex items-center gap-3 transition-all <?= $show_boutique ? 'bg-amber-500/10' : '' ?>">
-                            <input type="checkbox" name="source_boutique" value="1" class="rounded border-white/20 bg-slate-900 text-amber-500 focus:ring-offset-slate-900 w-3.5 h-3.5" <?= $show_boutique ? 'checked' : '' ?> onchange="this.form.submit()">
-                            <div class="flex flex-col min-w-0 flex-1">
-                                <span class="font-bold truncate">Boutique</span>
-                                <span class="text-[9px] text-gray-500 truncate uppercase tracking-tighter">Boutique Sales</span>
-                            </div>
-                        </label>
+            <!-- Manual Date Inputs -->
+            <form id="dashboard-filter-form" method="GET" class="flex gap-3 items-end flex-1 lg:flex-none">
+                <input type="hidden" name="action" value="dashboard">
+                <?php if ($show_concession): ?><input type="hidden" name="source_concession" value="1"><?php endif; ?>
+                <?php if ($show_boutique): ?><input type="hidden" name="source_boutique" value="1"><?php endif; ?>
+                <?php if ($filter_store_code): ?><input type="hidden" name="store_code" value="<?= htmlspecialchars($filter_store_code) ?>"><?php endif; ?>
+                <div class="flex flex-col gap-1 flex-1 lg:flex-none">
+                    <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Start Date</label>
+                    <div class="relative">
+                        <i class="fas fa-calendar-day absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-600 pointer-events-none"></i>
+                        <input type="date" name="start_date" id="manual-start" value="<?= $start_date ?>" onchange="this.form.submit()" onclick="this.showPicker()" class="w-full bg-slate-900/80 border border-white/10 rounded-xl pl-8 pr-3 py-2 h-9 text-xs text-white focus:outline-none focus:border-purple-500/50 cursor-pointer transition-all">
                     </div>
                 </div>
-            </div>
+                <div class="flex flex-col gap-1 flex-1 lg:flex-none">
+                    <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">End Date</label>
+                    <div class="relative">
+                        <i class="fas fa-calendar-check absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-600 pointer-events-none"></i>
+                        <input type="date" name="end_date" id="manual-end" value="<?= $end_date ?>" onchange="this.form.submit()" onclick="this.showPicker()" class="w-full bg-slate-900/80 border border-white/10 rounded-xl pl-8 pr-3 py-2 h-9 text-xs text-white focus:outline-none focus:border-pink-500/50 cursor-pointer transition-all">
+                    </div>
+                </div>
+            </form>
 
-            <div class="space-y-1 group col-span-2 sm:col-span-1">
-                <label class="text-[9px] font-bold text-gray-500 uppercase ml-1 group-hover:text-purple-400 transition-colors">Start Date</label>
-                <div class="relative">
-                    <i class="fas fa-calendar-day absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-600 group-hover:text-purple-400 transition-colors pointer-events-none"></i>
-                    <input type="date" name="start_date" value="<?= $start_date ?>" onchange="this.form.submit()" onclick="this.showPicker()"
-                           class="w-full bg-slate-900/80 border border-white/10 rounded-xl pl-8 pr-3 py-2 h-9 text-xs text-white focus:outline-none focus:border-purple-500/50 cursor-pointer transition-all">
-                </div>
-            </div>
-            <div class="space-y-1 group col-span-2 sm:col-span-1">
-                <label class="text-[9px] font-bold text-gray-500 uppercase ml-1 group-hover:text-pink-400 transition-colors">End Date</label>
-                <div class="relative">
-                    <i class="fas fa-calendar-check absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-600 group-hover:text-pink-400 transition-colors pointer-events-none"></i>
-                    <input type="date" name="end_date" value="<?= $end_date ?>" onchange="this.form.submit()" onclick="this.showPicker()"
-                           class="w-full bg-slate-900/80 border border-white/10 rounded-xl pl-8 pr-3 py-2 h-9 text-xs text-white focus:outline-none focus:border-pink-500/50 cursor-pointer transition-all">
-                </div>
-            </div>
+            <!-- Store Filter -->
             <?php if ($is_admin): ?>
-            <div class="space-y-1 group relative col-span-2 sm:col-span-1">
-                <label class="text-[9px] font-bold text-gray-500 uppercase ml-1 group-hover:text-amber-400 transition-colors">Store Filter</label>
+            <div class="flex flex-col gap-1 flex-shrink-0">
+                <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Store Filter</label>
                 <div class="relative" id="store-filter-container">
-                    <i class="fas fa-store absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-600 group-hover:text-amber-400 transition-colors pointer-events-none z-10"></i>
-                    
+                    <i class="fas fa-store absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-600 pointer-events-none z-10"></i>
                     <?php
                     $current_store_label = "All Stores";
                     if ($filter_store_code) {
@@ -441,204 +430,130 @@ if (!function_exists('time_elapsed_string')) {
                         }
                     }
                     ?>
-                    
-                    <!-- Custom Trigger -->
-                    <div id="store-filter-trigger" class="w-full bg-slate-900/80 border border-white/10 rounded-xl pl-9 pr-4 py-2 h-9 text-xs text-white flex items-center justify-between cursor-pointer focus:border-amber-500/50 transition-all hover:bg-white/5">
-                        <span id="selected-store-label" class="truncate font-bold opacity-80 uppercase tracking-tight"><?= htmlspecialchars($current_store_label) ?></span>
+                    <div id="store-filter-trigger" class="w-40 sm:w-48 bg-slate-900/80 border border-white/10 rounded-xl pl-9 pr-4 py-2 h-9 text-xs text-white flex items-center justify-between cursor-pointer hover:bg-white/5 transition-all">
+                        <span id="selected-store-label" class="truncate font-bold opacity-80 uppercase tracking-tight text-[10px]"><?= htmlspecialchars($current_store_label) ?></span>
                         <i class="fas fa-chevron-down text-[9px] text-gray-500 ml-2"></i>
                     </div>
-
-                    <!-- Custom Menu -->
-                    <div id="store-filter-menu" class="absolute top-[calc(100%+4px)] right-0 min-w-[280px] w-full bg-[#0f172a] border border-white/10 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[100] hidden max-h-64 overflow-y-auto overflow-x-hidden backdrop-blur-xl">
+                    <div id="store-filter-menu" class="absolute top-[calc(100%+4px)] right-0 min-w-[260px] bg-[#0f172a] border border-white/10 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[100] hidden max-h-64 overflow-y-auto backdrop-blur-xl">
                         <div class="sticky top-0 bg-[#0f172a] p-2 border-b border-white/5 z-20">
                             <input type="text" id="store-search-filter" class="w-full bg-slate-900 border border-white/10 rounded-lg px-3 py-1.5 text-[10px] text-white focus:outline-none focus:border-amber-500/50" placeholder="Search store..." autocomplete="off">
                         </div>
-                        <div class="store-option px-3 py-2.5 text-[11px] text-white hover:bg-white/5 cursor-pointer flex justify-between items-center transition-all border-b border-white/5 last:border-0 <?= $filter_store_code === '' ? 'bg-amber-500/10' : '' ?>" data-value="">
-                            <span class="font-bold">All Stores</span>
-                        </div>
-                        <?php foreach($stores_list as $st): 
+                        <div class="store-option px-3 py-2.5 text-[11px] text-white hover:bg-white/5 cursor-pointer flex justify-between items-center border-b border-white/5 <?= $filter_store_code === '' ? 'bg-amber-500/10' : '' ?>" data-value=""><span class="font-bold">All Stores</span></div>
+                        <?php foreach($stores_list as $st):
                             $sel = ($filter_store_code == $st['scode']);
                             $displayName = $st['scode'] . " - " . $st['sname'];
                         ?>
-                            <div class="store-option px-3 py-2.5 text-[11px] text-white hover:bg-white/5 cursor-pointer flex justify-between items-center transition-all border-b border-white/5 last:border-0 <?= $sel ? 'bg-amber-500/10' : '' ?>" 
-                                 data-value="<?= htmlspecialchars($st['scode']) ?>" 
-                                 data-label="<?= htmlspecialchars($displayName) ?>">
-                                <div class="flex flex-col min-w-0 flex-1">
-                                    <span class="font-bold truncate"><?= htmlspecialchars($st['scode']) ?></span>
-                                    <span class="text-[9px] text-gray-500 truncate uppercase tracking-tighter"><?= htmlspecialchars($st['sname']) ?></span>
-                                </div>
+                        <div class="store-option px-3 py-2.5 text-[11px] text-white hover:bg-white/5 cursor-pointer flex justify-between items-center border-b border-white/5 last:border-0 <?= $sel ? 'bg-amber-500/10' : '' ?>" data-value="<?= htmlspecialchars($st['scode']) ?>" data-label="<?= htmlspecialchars($displayName) ?>">
+                            <div class="flex flex-col">
+                                <span class="font-bold"><?= htmlspecialchars($st['scode']) ?></span>
+                                <span class="text-[9px] text-gray-500 uppercase tracking-tighter"><?= htmlspecialchars($st['sname']) ?></span>
                             </div>
+                        </div>
                         <?php endforeach; ?>
                     </div>
-
-                    <!-- Hidden input for form submission -->
-                    <input type="hidden" name="store_code" id="store-filter-value" value="<?= htmlspecialchars($filter_store_code) ?>">
+                    <form id="store-filter-form" method="GET">
+                        <input type="hidden" name="action" value="dashboard">
+                        <input type="hidden" name="start_date" value="<?= $start_date ?>">
+                        <input type="hidden" name="end_date" value="<?= $end_date ?>">
+                        <?php if ($show_concession): ?><input type="hidden" name="source_concession" value="1"><?php endif; ?>
+                        <?php if ($show_boutique): ?><input type="hidden" name="source_boutique" value="1"><?php endif; ?>
+                        <input type="hidden" name="store_code" id="store-filter-value" value="<?= htmlspecialchars($filter_store_code) ?>">
+                    </form>
                 </div>
             </div>
             <?php endif; ?>
-        </form>
+
+        </div><!-- end mobile row B -->
+
     </div>
 </div>
 
-<style>
-.hide-scrollbar::-webkit-scrollbar { display: none; }
-.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-</style>
 
 <script>
-let currentQuickYear = parseInt('<?= isset($_GET["start_date"]) ? date("Y", strtotime($_GET["start_date"])) : date("Y") ?>', 10);
+const ACTIVE_CLS   = ['!bg-purple-500/20','!text-purple-400','shadow-sm','!border-purple-500/50'];
+const INACTIVE_CLS = ['text-gray-500','border-transparent'];
+let selectedYears  = new Set();
+let selectedMonths = new Set();
 
-function changeQuickYear(btn, val) {
-    currentQuickYear = parseInt(val);
-    
-    document.querySelectorAll('.year-btn').forEach(b => {
-        b.classList.remove('!bg-purple-500/20', '!text-purple-400', 'shadow-sm', '!border-purple-500/50');
-        b.classList.add('text-gray-500', 'border-transparent');
-    });
-    btn.classList.remove('text-gray-500', 'border-transparent');
-    btn.classList.add('!bg-purple-500/20', '!text-purple-400', 'shadow-sm', '!border-purple-500/50');
-
-    const form = document.getElementById('dashboard-filter-form');
-    const sDate = form.querySelector('[name="start_date"]')?.value;
-    let monthNum = '01';
-    if (sDate) {
-        const s = new Date(sDate);
-        monthNum = String(s.getMonth() + 1).padStart(2, '0');
-    } else {
-        monthNum = String(new Date().getMonth() + 1).padStart(2, '0');
-    }
-    
-    const btns = document.querySelectorAll('.month-btn');
-    let targetBtn = btns[parseInt(monthNum) - 1];
-    if (targetBtn) {
-        selectQuickMonth(targetBtn, monthNum);
-    }
+function applyQuickFilter() {
+    if (selectedYears.size === 0 || selectedMonths.size === 0) return;
+    const minY = Math.min(...selectedYears), maxY = Math.max(...selectedYears);
+    const minM = Math.min(...[...selectedMonths].map(Number));
+    const maxM = Math.max(...[...selectedMonths].map(Number));
+    const pad = v => String(v).padStart(2,'0');
+    const startDate = `${minY}-${pad(minM)}-01`;
+    const lastDay   = new Date(maxY, maxM, 0).getDate();
+    const endDate   = `${maxY}-${pad(maxM)}-${lastDay}`;
+    document.getElementById('manual-start').value = startDate;
+    document.getElementById('manual-end').value   = endDate;
+    document.getElementById('dashboard-filter-form').submit();
 }
-
-function scrollQuickYears(direction) {
-    const container = document.getElementById('years-container');
-    const scrollAmount = container.clientWidth;
-    container.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
+function toggleYear(btn, year) {
+    if (selectedYears.has(year)) { selectedYears.delete(year); btn.classList.remove(...ACTIVE_CLS); btn.classList.add(...INACTIVE_CLS); }
+    else { selectedYears.add(year); btn.classList.add(...ACTIVE_CLS); btn.classList.remove(...INACTIVE_CLS); }
+    document.getElementById('yr-multi-hint').textContent = selectedYears.size > 1 ? `(${selectedYears.size} selected)` : '';
+    applyQuickFilter();
 }
-
-function scrollQuickMonths(direction) {
-    const container = document.getElementById('months-container');
-    const scrollAmount = container.clientWidth;
-    container.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
+function toggleMonth(btn, monthNum) {
+    const m = parseInt(monthNum);
+    if (selectedMonths.has(m)) { selectedMonths.delete(m); btn.classList.remove(...ACTIVE_CLS); btn.classList.add(...INACTIVE_CLS); }
+    else { selectedMonths.add(m); btn.classList.add(...ACTIVE_CLS); btn.classList.remove(...INACTIVE_CLS); }
+    document.getElementById('mo-multi-hint').textContent = selectedMonths.size > 1 ? `(${selectedMonths.size} selected)` : '';
+    applyQuickFilter();
 }
-
-function selectQuickMonth(btn, monthNum) {
-    const year = currentQuickYear;
-    const startDate = `${year}-${monthNum}-01`;
-    const endDateObj = new Date(year, parseInt(monthNum), 0); 
-    const endDate = `${year}-${monthNum}-${String(endDateObj.getDate()).padStart(2, '0')}`;
-    
-    const form = document.getElementById('dashboard-filter-form');
-    form.querySelector('[name="start_date"]').value = startDate;
-    form.querySelector('[name="end_date"]').value = endDate;
-    
-    document.querySelectorAll('.month-btn').forEach(b => {
-        b.classList.remove('!bg-purple-500/20', '!text-purple-400', 'shadow-sm', '!border-purple-500/50');
-        b.classList.add('text-gray-500', 'border-transparent');
-    });
-    btn.classList.remove('text-gray-500', 'border-transparent');
-    btn.classList.add('!bg-purple-500/20', '!text-purple-400', 'shadow-sm', '!border-purple-500/50');
-    
-    form.submit();
-}
+function scrollQuickYears(dir) { const c = document.getElementById('years-container'); c.scrollBy({ left: dir * c.clientWidth, behavior: 'smooth' }); }
+function scrollQuickMonths(dir) { const c = document.getElementById('months-container'); c.scrollBy({ left: dir * c.clientWidth, behavior: 'smooth' }); }
 
 document.addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('dashboard-filter-form');
-    const sDate = form.querySelector('[name="start_date"]')?.value;
-    const eDate = form.querySelector('[name="end_date"]')?.value;
-    
-    let targetMonthIdx = new Date().getMonth(); // Default to current month
-    let exactMatchFound = false;
-    
+    const sDate = '<?= $start_date ?>';
+    const eDate = '<?= $end_date ?>';
     if (sDate && eDate) {
-        const s = new Date(sDate);
-        const e = new Date(eDate);
-        const eLastDay = new Date(e.getFullYear(), e.getMonth() + 1, 0).getDate();
-        
-        // If exact month is selected
-        if (s.getDate() === 1 && e.getDate() === eLastDay && s.getMonth() === e.getMonth() && s.getFullYear() === e.getFullYear()) {
-            currentQuickYear = s.getFullYear();
-            targetMonthIdx = s.getMonth();
-            exactMatchFound = true;
-        } else if (s.getFullYear() === currentQuickYear) {
-            targetMonthIdx = s.getMonth();
-            exactMatchFound = true;
+        const s = new Date(sDate + 'T00:00:00');
+        const e = new Date(eDate + 'T00:00:00');
+        for (let y = s.getFullYear(); y <= e.getFullYear(); y++) {
+            selectedYears.add(y);
+            const btn = document.querySelector(`.year-btn[data-year="${y}"]`);
+            if (btn) { btn.classList.add(...ACTIVE_CLS); btn.classList.remove(...INACTIVE_CLS); }
         }
-    }
-    
-    // Auto-scroll and highlight for Month
-    const btns = document.querySelectorAll('.month-btn');
-    if (btns[targetMonthIdx]) {
-        if (exactMatchFound) {
-            btns[targetMonthIdx].classList.remove('text-gray-500', 'border-transparent');
-            btns[targetMonthIdx].classList.add('!bg-purple-500/20', '!text-purple-400', 'shadow-sm', '!border-purple-500/50');
-        } else {
-            btns[targetMonthIdx].classList.remove('text-gray-500');
-            btns[targetMonthIdx].classList.add('!text-white', '!font-black');
+        let cur = new Date(s.getFullYear(), s.getMonth(), 1);
+        const end = new Date(e.getFullYear(), e.getMonth(), 1);
+        while (cur <= end) {
+            const m = cur.getMonth() + 1;
+            selectedMonths.add(m);
+            const pad = v => String(v).padStart(2,'0');
+            const btn = document.querySelector(`.month-btn[data-month="${pad(m)}"]`);
+            if (btn) { btn.classList.add(...ACTIVE_CLS); btn.classList.remove(...INACTIVE_CLS); }
+            cur.setMonth(cur.getMonth() + 1);
         }
-        
+        if (selectedYears.size > 1)  document.getElementById('yr-multi-hint').textContent = `(${selectedYears.size} selected)`;
+        if (selectedMonths.size > 1) document.getElementById('mo-multi-hint').textContent = `(${selectedMonths.size} selected)`;
         setTimeout(() => {
-            const container = document.getElementById('months-container');
-            const btn = btns[targetMonthIdx];
-            container.scrollTo({
-                left: btn.offsetLeft - container.clientWidth/2 + btn.clientWidth/2,
-                behavior: 'smooth'
-            });
+            const c = document.getElementById('months-container');
+            const pad = v => String(v).padStart(2,'0');
+            const btn = document.querySelector(`.month-btn[data-month="${pad(s.getMonth()+1)}"]`);
+            if (btn) c.scrollTo({ left: btn.offsetLeft - c.clientWidth/2 + btn.clientWidth/2, behavior: 'smooth' });
         }, 300);
     }
-    
-    // Auto-scroll for Year
-    const yearBtns = document.querySelectorAll('.year-btn');
-    let targetYearBtn = null;
-    yearBtns.forEach(btn => {
-        if (parseInt(btn.getAttribute('data-year')) === currentQuickYear) {
-            targetYearBtn = btn;
-        }
+    // Store filter dropdown
+    document.addEventListener('click', ev => {
+        const trigger = ev.target.closest('#store-filter-trigger');
+        const menu    = document.getElementById('store-filter-menu');
+        if (trigger) { menu?.classList.toggle('hidden'); }
+        else if (!ev.target.closest('#store-filter-container')) { menu?.classList.add('hidden'); }
     });
-    
-    if (targetYearBtn) {
-        setTimeout(() => {
-            const container = document.getElementById('years-container');
-            container.scrollTo({
-                left: targetYearBtn.offsetLeft - container.clientWidth/2 + targetYearBtn.clientWidth/2,
-                behavior: 'smooth'
-            });
-        }, 300);
-    }
-    
-    // Data Source Dropdown Logic
-    document.addEventListener('click', function(e) {
-        const trigger = e.target.closest('#source-filter-trigger');
-        const menu = document.getElementById('source-filter-menu');
-        
-        if (trigger) {
-            menu.classList.toggle('hidden');
-        } else if (menu && !e.target.closest('#source-filter-container')) {
-            menu.classList.add('hidden');
-        }
-    });
-
-    const sourceSearch = document.getElementById('source-search-filter');
-    if (sourceSearch) {
-        sourceSearch.addEventListener('input', function(e) {
-            const val = e.target.value.toLowerCase();
-            document.querySelectorAll('.source-option').forEach(opt => {
-                const text = opt.innerText.toLowerCase();
-                if (text.includes(val)) {
-                    opt.classList.remove('hidden');
-                    opt.classList.add('flex');
-                } else {
-                    opt.classList.add('hidden');
-                    opt.classList.remove('flex');
-                }
-            });
+    document.querySelectorAll('.store-option').forEach(opt => {
+        opt.addEventListener('click', () => {
+            document.getElementById('store-filter-value').value = opt.dataset.value || '';
+            document.getElementById('selected-store-label').textContent = opt.dataset.label || 'All Stores';
+            document.getElementById('store-filter-menu')?.classList.add('hidden');
+            document.getElementById('store-filter-form').submit();
         });
-    }
+    });
+    const ss = document.getElementById('store-search-filter');
+    if (ss) ss.addEventListener('input', () => {
+        const v = ss.value.toLowerCase();
+        document.querySelectorAll('.store-option').forEach(o => o.classList.toggle('hidden', !o.innerText.toLowerCase().includes(v)));
+    });
 });
 </script>
 
