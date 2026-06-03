@@ -141,6 +141,8 @@ if ($show_boutique) {
 
 // 1.1 Top Sellers (Admin Only) - Concession
 $top_store_name = 'N/A';
+$top_store_qty = 0;
+$top_store_amount = 0.00;
 $top_stores_ranking = [];
 if ($is_admin) {
     $top_store_res = $db->query("SELECT s.store_code, sc.sname, SUM(s.line_total) as total_sales, SUM(s.quantity) as total_qty FROM sales s LEFT JOIN storecode sc ON s.store_code = sc.scode COLLATE utf8mb4_unicode_ci WHERE s.created_at BETWEEN '$start_date 00:00:00' AND '$end_date 23:59:59' $store_clause GROUP BY s.store_code, sc.sname ORDER BY total_sales DESC");
@@ -149,12 +151,16 @@ if ($is_admin) {
         if (!empty($top_stores_ranking)) {
             $top = $top_stores_ranking[0];
             $top_store_name = $top['store_code'] . ($top['sname'] ? " (" . $top['sname'] . ")" : "");
+            $top_store_qty = $top['total_qty'];
+            $top_store_amount = $top['total_sales'];
         }
     }
 }
 
 // 1.2 Top Sellers (Admin Only) - Boutique
 $top_boutique_name = 'N/A';
+$top_boutique_qty = 0;
+$top_boutique_amount = 0.00;
 $top_boutique_ranking = [];
 if ($is_admin) {
     // Avoid crashing if table doesn't exist yet
@@ -166,6 +172,8 @@ if ($is_admin) {
             if (!empty($top_boutique_ranking)) {
                 $top = $top_boutique_ranking[0];
                 $top_boutique_name = $top['store_code'] . ($top['sname'] ? " (" . $top['sname'] . ")" : "");
+                $top_boutique_qty = $top['total_qty'];
+                $top_boutique_amount = $top['total_sales'];
             }
         }
     }
@@ -579,8 +587,12 @@ document.addEventListener('DOMContentLoaded', () => {
             <h3 class="text-[10px] sm:text-xs font-black text-gray-500 uppercase tracking-widest sm:tracking-[0.2em] truncate" title="Top Sellers Concession">Top Sellers Concession</h3>
         </div>
         <p class="text-lg sm:text-xl min-[1400px]:text-lg xl:text-xl 2xl:text-2xl font-bold text-white mb-1 truncate" title="<?= htmlspecialchars($top_store_name) ?>"><?= htmlspecialchars($top_store_name) ?></p>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-1.5 flex-wrap mt-2">
             <span class="text-[10px] font-bold text-[#3b82f6] bg-[#3b82f6]/10 px-2 py-0.5 rounded-full uppercase truncate">Click for Details</span>
+            <?php if ($top_store_name !== 'N/A'): ?>
+            <span class="text-[10px] font-bold text-white bg-white/10 px-2 py-0.5 rounded-full uppercase truncate">Qty: <?= number_format($top_store_qty) ?></span>
+            <span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full uppercase truncate">₱<?= number_format($top_store_amount, 2) ?></span>
+            <?php endif; ?>
         </div>
     </div>
     <div onclick="openTopBoutiqueModal()" class="glass-panel p-4 sm:p-5 xl:p-6 border border-white/5 relative overflow-hidden group hover:border-yellow-500/30 transition-all duration-500 cursor-pointer z-50">
@@ -592,8 +604,12 @@ document.addEventListener('DOMContentLoaded', () => {
             <h3 class="text-[10px] sm:text-xs font-black text-gray-500 uppercase tracking-widest sm:tracking-[0.2em] truncate" title="Top Sellers Boutique">Top Sellers Boutique</h3>
         </div>
         <p class="text-lg sm:text-xl min-[1400px]:text-lg xl:text-xl 2xl:text-2xl font-bold text-white mb-1 truncate" title="<?= htmlspecialchars($top_boutique_name) ?>"><?= htmlspecialchars($top_boutique_name) ?></p>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-1.5 flex-wrap mt-2">
             <span class="text-[10px] font-bold text-yellow-400 bg-yellow-500/10 px-2 py-0.5 rounded-full uppercase truncate">Click for Details</span>
+            <?php if ($top_boutique_name !== 'N/A'): ?>
+            <span class="text-[10px] font-bold text-white bg-white/10 px-2 py-0.5 rounded-full uppercase truncate">Qty: <?= number_format($top_boutique_qty) ?></span>
+            <span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full uppercase truncate">₱<?= number_format($top_boutique_amount, 2) ?></span>
+            <?php endif; ?>
         </div>
     </div>
     <?php endif; ?>
