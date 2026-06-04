@@ -580,35 +580,45 @@ document.addEventListener('DOMContentLoaded', () => {
     <?php if ($is_admin): ?>
     <div onclick="openTopSellersModal()" class="glass-panel p-4 sm:p-5 xl:p-6 border border-white/5 relative overflow-hidden group hover:border-[#3b82f6]/30 transition-all duration-500 cursor-pointer z-50">
         <div class="absolute -right-4 -top-4 w-24 h-24 bg-[#3b82f6]/10 rounded-full blur-2xl group-hover:bg-[#3b82f6]/20 transition-all"></div>
-        <div class="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
-            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-[#3b82f6]/10 flex items-center justify-center text-[#3b82f6] border border-[#3b82f6]/20 shadow-lg shadow-[#3b82f6]/5">
-                <i class="fas fa-trophy text-lg sm:text-xl"></i>
+        <div class="flex items-center justify-between gap-2 mb-3 sm:mb-4 relative z-10">
+            <div class="flex items-center gap-3 sm:gap-4">
+                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-[#3b82f6]/10 flex items-center justify-center text-[#3b82f6] border border-[#3b82f6]/20 shadow-lg shadow-[#3b82f6]/5 shrink-0">
+                    <i class="fas fa-trophy text-lg sm:text-xl"></i>
+                </div>
+                <h3 class="text-[10px] sm:text-xs font-black text-gray-500 uppercase tracking-widest sm:tracking-[0.2em] truncate" title="Top Sellers Concession">Top Sellers Concession</h3>
             </div>
-            <h3 class="text-[10px] sm:text-xs font-black text-gray-500 uppercase tracking-widest sm:tracking-[0.2em] truncate" title="Top Sellers Concession">Top Sellers Concession</h3>
+            <div class="opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0 flex items-center gap-1.5 bg-[#3b82f6]/10 border border-[#3b82f6]/20 px-2 sm:px-2.5 py-1 rounded-lg shrink-0">
+                <span class="text-[8px] font-bold text-[#3b82f6] uppercase tracking-widest whitespace-nowrap hidden sm:inline-block">View Details</span>
+                <i class="fas fa-external-link-alt text-[#3b82f6] text-[9px]"></i>
+            </div>
         </div>
         <p class="text-lg sm:text-xl min-[1400px]:text-lg xl:text-xl 2xl:text-2xl font-bold text-white mb-1 truncate" title="<?= htmlspecialchars($top_store_name) ?>"><?= htmlspecialchars($top_store_name) ?></p>
-        <div class="flex items-center gap-1.5 flex-wrap mt-2">
-            <span class="text-[10px] font-bold text-[#3b82f6] bg-[#3b82f6]/10 px-2 py-0.5 rounded-full uppercase truncate">Click for Details</span>
+        <div class="flex items-center gap-1.5 flex-wrap mt-2 relative z-10">
             <?php if ($top_store_name !== 'N/A'): ?>
-            <span class="text-[10px] font-bold text-white bg-white/10 px-2 py-0.5 rounded-full uppercase truncate">Qty: <?= number_format($top_store_qty) ?></span>
-            <span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full uppercase truncate">₱<?= number_format($top_store_amount, 2) ?></span>
+            <span class="text-sm sm:text-base lg:text-lg font-bold text-white bg-white/10 px-2.5 py-0.5 rounded-full uppercase truncate">Qty: <?= number_format($top_store_qty) ?></span>
+            <span class="text-sm sm:text-base lg:text-lg font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full uppercase truncate">₱<?= number_format($top_store_amount, 2) ?></span>
             <?php endif; ?>
         </div>
     </div>
     <div onclick="openTopBoutiqueModal()" class="glass-panel p-4 sm:p-5 xl:p-6 border border-white/5 relative overflow-hidden group hover:border-yellow-500/30 transition-all duration-500 cursor-pointer z-50">
         <div class="absolute -right-4 -top-4 w-24 h-24 bg-yellow-500/10 rounded-full blur-2xl group-hover:bg-yellow-500/20 transition-all"></div>
-        <div class="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
-            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-yellow-500/10 flex items-center justify-center text-yellow-400 border border-yellow-500/20 shadow-lg shadow-yellow-500/5">
-                <i class="fas fa-crown text-lg sm:text-xl"></i>
+        <div class="flex items-center justify-between gap-2 mb-3 sm:mb-4 relative z-10">
+            <div class="flex items-center gap-3 sm:gap-4">
+                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-yellow-500/10 flex items-center justify-center text-yellow-400 border border-yellow-500/20 shadow-lg shadow-yellow-500/5 shrink-0">
+                    <i class="fas fa-crown text-lg sm:text-xl"></i>
+                </div>
+                <h3 class="text-[10px] sm:text-xs font-black text-gray-500 uppercase tracking-widest sm:tracking-[0.2em] truncate" title="Top Sellers Boutique">Top Sellers Boutique</h3>
             </div>
-            <h3 class="text-[10px] sm:text-xs font-black text-gray-500 uppercase tracking-widest sm:tracking-[0.2em] truncate" title="Top Sellers Boutique">Top Sellers Boutique</h3>
+            <div class="opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0 flex items-center gap-1.5 bg-yellow-500/10 border border-yellow-500/20 px-2 sm:px-2.5 py-1 rounded-lg shrink-0">
+                <span class="text-[8px] font-bold text-yellow-400 uppercase tracking-widest whitespace-nowrap hidden sm:inline-block">View Details</span>
+                <i class="fas fa-external-link-alt text-yellow-400 text-[9px]"></i>
+            </div>
         </div>
         <p class="text-lg sm:text-xl min-[1400px]:text-lg xl:text-xl 2xl:text-2xl font-bold text-white mb-1 truncate" title="<?= htmlspecialchars($top_boutique_name) ?>"><?= htmlspecialchars($top_boutique_name) ?></p>
-        <div class="flex items-center gap-1.5 flex-wrap mt-2">
-            <span class="text-[10px] font-bold text-yellow-400 bg-yellow-500/10 px-2 py-0.5 rounded-full uppercase truncate">Click for Details</span>
+        <div class="flex items-center gap-1.5 flex-wrap mt-2 relative z-10">
             <?php if ($top_boutique_name !== 'N/A'): ?>
-            <span class="text-[10px] font-bold text-white bg-white/10 px-2 py-0.5 rounded-full uppercase truncate">Qty: <?= number_format($top_boutique_qty) ?></span>
-            <span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full uppercase truncate">₱<?= number_format($top_boutique_amount, 2) ?></span>
+            <span class="text-sm sm:text-base lg:text-lg font-bold text-white bg-white/10 px-2.5 py-0.5 rounded-full uppercase truncate">Qty: <?= number_format($top_boutique_qty) ?></span>
+            <span class="text-sm sm:text-base lg:text-lg font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full uppercase truncate">₱<?= number_format($top_boutique_amount, 2) ?></span>
             <?php endif; ?>
         </div>
     </div>
@@ -623,7 +633,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <p class="text-lg sm:text-xl min-[1400px]:text-lg xl:text-xl 2xl:text-2xl font-bold text-white mb-1 truncate" title="₱<?= number_format($total_sales, 2) ?>">₱<?= number_format($total_sales, 2) ?></p>
         <div class="flex items-center gap-2">
-            <span class="text-[10px] font-bold text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-full uppercase truncate"><?= number_format($total_sales_count) ?> Trans</span>
+            <span class="text-[10px] font-bold text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-full uppercase truncate">Total Amount</span>
         </div>
     </div>
 
