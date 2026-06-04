@@ -395,17 +395,23 @@ if ($is_single_day && ($is_admin || $is_multi_store_admin) && empty($store_filte
             </div>
             
             <div class="space-y-1">
-                <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Quick Year</label>
+                <?php 
+                $currYr = 2026;
+                $selMinYr = !empty($start_date) ? date('Y', strtotime($start_date)) : $currYr;
+                $selMaxYr = !empty($end_date) ? date('Y', strtotime($end_date)) : $currYr;
+                $selected_years_count = max(0, $selMaxYr - $selMinYr + 1);
+                $yr_hint = $selected_years_count > 1 ? "($selected_years_count selected)" : "";
+                ?>
+                <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Quick Year <span class="text-purple-400/60" id="table-yr-multi-hint"><?= $yr_hint ?></span></label>
                 <div class="shrink-0 flex items-center bg-slate-900/80 border border-white/10 rounded-lg shadow-inner h-8 relative z-20 overflow-hidden w-full">
                     <button type="button" onclick="scrollTableQuickYears(-1)" class="absolute left-0 z-10 h-full px-1.5 bg-gradient-to-r from-slate-900 via-slate-900/90 to-transparent flex items-center justify-start text-gray-400 hover:text-white transition-all"><i class="fas fa-chevron-left text-[8px]"></i></button>
                     
                     <div id="table-years-container" class="flex items-center gap-1 overflow-x-auto hide-scrollbar scroll-smooth w-full px-5">
                         <?php 
-                        $currYr = date('Y');
-                        $selectedYr = !empty($start_date) ? date('Y', strtotime($start_date)) : $currYr;
                         for($y = $currYr - 4; $y <= $currYr + 2; $y++):
+                            $is_active = ($y >= $selMinYr && $y <= $selMaxYr);
                         ?>
-                        <button type="button" data-year="<?= $y ?>" onclick="changeTableQuickYear(this, '<?= $y ?>')" class="flex-shrink-0 w-[45px] py-1 rounded text-[9px] font-bold uppercase tracking-wider transition-all table-year-btn text-center select-none border <?= $y == $selectedYr ? '!bg-purple-500/20 !text-purple-400 shadow-sm !border-purple-500/50' : 'text-gray-500 border-transparent hover:text-purple-400 hover:bg-white/5' ?>">
+                        <button type="button" data-year="<?= $y ?>" onclick="toggleTableYear(this, <?= $y ?>)" class="flex-shrink-0 w-[45px] py-1 rounded text-[9px] font-bold uppercase tracking-wider transition-all table-year-btn text-center select-none border <?= $is_active ? '!bg-purple-500/20 !text-purple-400 shadow-sm !border-purple-500/50 active-year' : 'text-gray-500 border-transparent hover:text-purple-400 hover:bg-white/5' ?>">
                             <?= $y ?>
                         </button>
                         <?php endfor; ?>
@@ -416,19 +422,24 @@ if ($is_single_day && ($is_admin || $is_multi_store_admin) && empty($store_filte
             </div>
 
             <div class="space-y-1">
-                <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Quick Month</label>
+                <?php
+                $selMinM = !empty($start_date) ? date('m', strtotime($start_date)) : null;
+                $selMaxM = !empty($end_date) ? date('m', strtotime($end_date)) : null;
+                $selected_months_count = ($selMinM && $selMaxM) ? max(0, (int)$selMaxM - (int)$selMinM + 1) : 0;
+                $mo_hint = $selected_months_count > 1 ? "($selected_months_count selected)" : "";
+                ?>
+                <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Quick Month <span class="text-purple-400/60" id="table-mo-multi-hint"><?= $mo_hint ?></span></label>
                 <div class="shrink-0 flex items-center bg-slate-900/80 border border-white/10 rounded-lg shadow-inner h-8 relative z-20 overflow-hidden w-full">
                     <button type="button" onclick="scrollTableQuickMonths(-1)" class="absolute left-0 z-10 h-full px-1.5 bg-gradient-to-r from-slate-900 via-slate-900/90 to-transparent flex items-center justify-start text-gray-400 hover:text-white transition-all"><i class="fas fa-chevron-left text-[8px]"></i></button>
                     
                     <div id="table-months-container" class="flex items-center gap-1 overflow-x-auto hide-scrollbar scroll-smooth w-full px-5">
                         <?php 
                         $months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                        $selectedMonth = !empty($start_date) ? date('m', strtotime($start_date)) : date('m');
                         foreach($months as $idx => $m): 
                             $m_num = str_pad($idx + 1, 2, '0', STR_PAD_LEFT);
-                            $is_active = ($m_num === $selectedMonth && !empty($start_date)); 
+                            $is_active = ($selMinM && $selMaxM && $m_num >= $selMinM && $m_num <= $selMaxM && !empty($start_date)); 
                         ?>
-                        <button type="button" data-month="<?= $m_num ?>" onclick="selectTableQuickMonth(this, '<?= $m_num ?>')" class="flex-shrink-0 w-[38px] py-1 rounded text-[9px] font-bold uppercase tracking-wider transition-all table-month-btn text-center select-none border <?= $is_active ? '!bg-purple-500/20 !text-purple-400 shadow-sm !border-purple-500/50' : 'text-gray-500 border-transparent hover:text-purple-400 hover:bg-white/5' ?>">
+                        <button type="button" data-month="<?= $m_num ?>" onclick="toggleTableMonth(this, '<?= $m_num ?>')" class="flex-shrink-0 w-[38px] py-1 rounded text-[9px] font-bold uppercase tracking-wider transition-all table-month-btn text-center select-none border <?= $is_active ? '!bg-purple-500/20 !text-purple-400 shadow-sm !border-purple-500/50 active-month' : 'text-gray-500 border-transparent hover:text-purple-400 hover:bg-white/5' ?>">
                             <?= $m ?>
                         </button>
                         <?php endforeach; ?>
@@ -653,3 +664,4 @@ function runExportSales(type) {
     }
 }
 </script>
+
