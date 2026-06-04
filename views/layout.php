@@ -394,6 +394,8 @@
                 $nav_items['prism_data'] = ['icon' => 'fa-gem', 'title' => 'Manage Prism Data'];
                 $nav_items['boutique_data'] = ['icon' => 'fa-store', 'title' => 'Manage Boutique Data'];
                 $nav_items['recent_activity'] = ['icon' => 'fa-clock-rotate-left', 'title' => 'Recent Activity'];
+            }
+            if ($is_full_admin || $is_admin_view) {
                 $nav_items['non_submission'] = ['icon' => 'fa-file-excel', 'title' => 'Non-Submission'];
             }
 

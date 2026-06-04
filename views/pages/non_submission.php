@@ -1,6 +1,9 @@
 <?php
-$is_admin = (($_SESSION['role'] ?? 'user') === 'admin' || ($_SESSION['user'] ?? '') === 'admin');
-if (!$is_admin) {
+$role = $_SESSION['role'] ?? 'user';
+$is_full_admin = ($role === 'admin' || ($_SESSION['user'] ?? '') === 'admin');
+$is_admin_view = ($role === 'admin_view');
+
+if (!$is_full_admin && !$is_admin_view) {
     echo "<div class='p-8 text-center text-red-400 font-bold'>Unauthorized Access</div>";
     exit;
 }
