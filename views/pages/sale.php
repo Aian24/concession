@@ -161,13 +161,9 @@ if (isset($_GET['ajax'])) {
                                 <div id="backdate-btn-content" class="py-1.5 px-3 flex items-center justify-center gap-2 rounded-lg border transition-all overflow-hidden relative bg-slate-900 border-white/5 text-gray-500 peer-checked:!border-purple-500/50 peer-checked:!bg-purple-500/10 peer-checked:!text-purple-400">
                                     <i class="fas fa-history text-[9px]"></i>
                                     <span id="backdate-text" class="text-[9px] font-bold uppercase tracking-tighter">Backdate</span>
-                                    <input type="date" id="page_custom_date" 
-                                           max="<?= date('Y-m-d') ?>" 
+                                    <input type="text" id="page_custom_date" 
                                            class="absolute inset-0 w-full h-full opacity-[0.01] cursor-pointer z-10" 
-                                           value="<?= date('Y-m-d') ?>"
-                                           onchange="updateBackdateText(this.value)"
-                                           onfocus="document.querySelector('input[name=\'page_date_type\'][value=\'backdate\']').checked = true; handleDateTypeChange('backdate');"
-                                           onclick="document.querySelector('input[name=\'page_date_type\'][value=\'backdate\']').checked = true; handleDateTypeChange('backdate'); try{this.showPicker();}catch(e){}">
+                                           value="<?= date('Y-m-d') ?>">
                                 </div>
                             </label>
                         </div>
@@ -225,6 +221,53 @@ if (isset($_GET['ajax'])) {
                             setTimeout(() => handleDateTypeChange('current'), 0);
                         }
                     }
+
+                    // Setup custom Flatpickr for Backdate with Cancel/Set buttons
+                    setTimeout(() => {
+                        if (typeof flatpickr !== 'undefined') {
+                            const dateEl = document.getElementById('page_custom_date');
+                            if (dateEl._flatpickr) {
+                                dateEl._flatpickr.destroy();
+                            }
+                            flatpickr(dateEl, {
+                                dateFormat: "Y-m-d",
+                                disableMobile: true,
+                                closeOnSelect: false,
+                                maxDate: "today",
+                                onChange: function(selectedDates, dateStr, instance) {
+                                    instance.close();
+                                    updateBackdateText(dateStr);
+                                },
+                                onReady: function(selectedDates, dateStr, instance) {
+                                    const btnContainer = document.createElement("div");
+                                    btnContainer.className = "flex items-center justify-between p-2 mt-1 border-t border-white/10";
+                                    btnContainer.innerHTML = `
+                                        <button type="button" class="px-3 py-1.5 rounded bg-white/5 hover:bg-white/10 text-gray-400 text-[10px] font-bold uppercase transition-all fp-cancel">Cancel</button>
+                                        <button type="button" class="px-3 py-1.5 rounded bg-purple-600 hover:bg-purple-500 text-white text-[10px] font-bold uppercase transition-all fp-set">Today</button>
+                                    `;
+                                    instance.calendarContainer.appendChild(btnContainer);
+                                    
+                                    btnContainer.querySelector('.fp-cancel').addEventListener('click', function(e) {
+                                        e.stopPropagation();
+                                        instance.close();
+                                        const radio = document.querySelector('input[name="page_date_type"][value="current"]');
+                                        if (radio) {
+                                            radio.checked = true;
+                                            handleDateTypeChange('current');
+                                        }
+                                    });
+                                    btnContainer.querySelector('.fp-set').addEventListener('click', function(e) {
+                                        e.stopPropagation();
+                                        const now = new Date();
+                                        instance.setDate(now, false);
+                                        instance.close();
+                                        const dStr = instance.formatDate(now, "Y-m-d");
+                                        updateBackdateText(dStr);
+                                    });
+                                }
+                            });
+                        }
+                    }, 500);
                 })();
             </script>
 
@@ -252,7 +295,7 @@ if (isset($_GET['ajax'])) {
                             </div>
                             <div class="relative">
                                 <span class="absolute top-0 -translate-y-1/2 left-3 px-1 bg-[#0d1527] text-[8px] font-black text-green-400/80 uppercase tracking-widest z-10">Qty</span>
-                                <input type="number" name="quantity" min="0" onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();" class="bg-slate-900/50 border border-white/10 rounded-xl px-4 py-2.5 w-full text-xs text-white focus:outline-none focus:border-green-500/50 font-medium" placeholder="0">
+                                <input type="number" name="quantity" min="0" max="1" maxlength="1" oninput="this.value = this.value.replace(/[^01]/g, '').substring(0, 1);" onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();" class="bg-slate-900/50 border border-white/10 rounded-xl px-4 py-2.5 w-full text-xs text-white focus:outline-none focus:border-green-500/50 font-medium" placeholder="0">
                             </div>
                         </div>
                     </div>
@@ -407,7 +450,7 @@ if (isset($_GET['ajax'])) {
                             <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Quantity</label>
                             <div class="relative group">
                                 <i class="fas fa-layer-group absolute left-5 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-blue-400 transition-colors"></i>
-                                <input type="number" name="quantity" id="edit-qty" required 
+                                <input type="number" name="quantity" id="edit-qty" required min="0" max="1" maxlength="1" oninput="this.value = this.value.replace(/[^01]/g, '').substring(0, 1);" onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();"
                                        class="w-full bg-slate-950/50 border border-white/10 rounded-2xl pl-12 pr-5 py-4 text-sm text-white focus:outline-none focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all font-bold" 
                                        placeholder="0">
                             </div>

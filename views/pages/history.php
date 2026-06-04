@@ -23,13 +23,12 @@ $total_rows = 0;
 // Check if admin
 $is_admin = (($_SESSION['role'] ?? 'user') === 'admin' || ($_SESSION['user'] ?? '') === 'admin');
 
-// Filter by session's transaction date (only for non-admins)
-$session_date = $_SESSION['transaction_date'] ?? date('Y-m-d');
-$today_clause = $is_admin ? "" : " AND DATE(created_at) = '$session_date'";
-$order_by     = $is_admin ? "id DESC" : "created_at DESC";
+// Filter by actual submission time (today) for non-admins
+$today_clause = $is_admin ? "" : " AND DATE(system_timestamp) = CURRENT_DATE";
+$order_by     = $is_admin ? "id DESC" : "system_timestamp DESC";
 
 if ($tab === 'sales') {
-    $sql = "SELECT id, item_no, amount_sold, quantity, line_total, created_at " . ($is_admin ? ", username" : "") . "
+    $sql = "SELECT id, item_no, amount_sold, quantity, line_total, created_at, system_timestamp " . ($is_admin ? ", username" : "") . "
             FROM sales 
             WHERE 1=1 " . ($is_admin ? "" : " AND username = ? ") . $today_clause;
     
@@ -71,10 +70,10 @@ if ($tab === 'sales') {
     $total_rows = $c_stmt->get_result()->fetch_assoc()['total'] ?? 0;
     
 } elseif ($tab === 'returns') {
-    $sql = "SELECT id, return_item, return_amount, reason, is_exchange, exchange_name, exchange_item, exchange_amount, created_at " . ($is_admin ? ", username" : "") . "
+    $sql = "SELECT id, return_item, return_amount, reason, is_exchange, exchange_name, exchange_item, exchange_amount, created_at, system_timestamp " . ($is_admin ? ", username" : "") . "
             FROM returns 
             WHERE 1=1 " . ($is_admin ? "" : " AND username = ? ") . $today_clause;
-            
+    
     $count_sql = "SELECT COUNT(*) as total FROM returns WHERE 1=1 " . ($is_admin ? "" : " AND username = ? ") . $today_clause;
     
     if ($search !== '') {
@@ -113,7 +112,7 @@ if ($tab === 'sales') {
     $total_rows = $c_stmt->get_result()->fetch_assoc()['total'] ?? 0;
 
 } elseif ($tab === 'receiving') {
-    $sql = "SELECT id, os_no, from_store, to_store, quantity, created_at " . ($is_admin ? ", username" : "") . "
+    $sql = "SELECT id, os_no, from_store, to_store, quantity, created_at, system_timestamp " . ($is_admin ? ", username" : "") . "
             FROM receiving 
             WHERE 1=1 " . ($is_admin ? "" : " AND username = ? ") . $today_clause;
             
@@ -242,7 +241,7 @@ if ($page > $total_pages) $page = $total_pages;
     <?php if (empty($records)): ?>
         <div class="glass-panel border border-white/5 shadow-xl p-16 text-center text-gray-500 rounded-2xl">
             <i class="fas fa-folder-open text-4xl mb-4 block opacity-10"></i>
-            <p class="text-xs font-bold uppercase tracking-widest"><?= $is_admin ? "No transactions recorded yet" : "No transactions recorded for " . date('M d, Y', strtotime($session_date)) ?></p>
+            <p class="text-xs font-bold uppercase tracking-widest"><?= $is_admin ? "No transactions recorded yet" : "No transactions recorded today" ?></p>
         </div>
     <?php else: ?>
         <!-- Desktop Table Layout (hidden on small screens) -->
@@ -286,7 +285,12 @@ if ($page > $total_pages) $page = $total_pages;
                                 <td class="px-6 py-4 text-center font-bold text-emerald-400">₱<?= number_format($r['amount_sold'], 2) ?></td>
                                 <td class="px-6 py-4 text-center text-purple-300 font-black"><?= $r['quantity'] ?></td>
                                 <td class="px-6 py-4 text-center font-black text-emerald-300">₱<?= number_format($r['line_total'], 2) ?></td>
-                                <td class="px-6 py-4 text-right text-gray-500 text-[10px]"><?= date('h:i A', strtotime($r['created_at'])) ?></td>
+                                <td class="px-6 py-4 text-right text-gray-500 text-[10px]">
+                                    <div><?= date('M d, Y', strtotime($r['created_at'])) ?></div>
+                                    <?php if (date('Y-m-d', strtotime($r['created_at'])) !== date('Y-m-d', strtotime($r['system_timestamp']))): ?>
+                                        <div class="mt-1"><span class="px-1.5 py-0.5 rounded text-[8px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 whitespace-nowrap">BACKDATED</span></div>
+                                    <?php endif; ?>
+                                </td>
                             <?php elseif ($tab === 'returns'): ?>
                                 <?php if($is_admin): ?><td class="px-6 py-4 font-bold text-purple-400"><?= htmlspecialchars($r['username']) ?></td><?php endif; ?>
                                 <td class="px-6 py-4 text-white font-bold"><?= htmlspecialchars($r['return_item'] ?: 'Exchange Only') ?></td>
@@ -306,14 +310,24 @@ if ($page > $total_pages) $page = $total_pages;
                                         <span class="text-gray-500 font-bold">₱0.00</span>
                                     <?php endif; ?>
                                 </td>
-                                <td class="px-6 py-4 text-right text-gray-500 text-[10px]"><?= date('h:i A', strtotime($r['created_at'])) ?></td>
+                                <td class="px-6 py-4 text-right text-gray-500 text-[10px]">
+                                    <div><?= date('M d, Y', strtotime($r['created_at'])) ?></div>
+                                    <?php if (date('Y-m-d', strtotime($r['created_at'])) !== date('Y-m-d', strtotime($r['system_timestamp']))): ?>
+                                        <div class="mt-1"><span class="px-1.5 py-0.5 rounded text-[8px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 whitespace-nowrap">BACKDATED</span></div>
+                                    <?php endif; ?>
+                                </td>
                             <?php elseif ($tab === 'receiving'): ?>
                                 <?php if($is_admin): ?><td class="px-6 py-4 font-bold text-purple-400"><?= htmlspecialchars($r['username']) ?></td><?php endif; ?>
                                 <td class="px-6 py-4 text-cyan-400 font-bold"><?= htmlspecialchars($r['os_no']) ?></td>
                                 <td class="px-6 py-4 font-medium text-gray-400"><?= htmlspecialchars($r['from_store']) ?></td>
                                 <td class="px-6 py-4 font-medium text-gray-300"><?= htmlspecialchars($r['to_store']) ?></td>
                                 <td class="px-6 py-4 text-center font-black text-white"><?= $r['quantity'] ?></td>
-                                <td class="px-6 py-4 text-right text-gray-500 text-[10px]"><?= date('h:i A', strtotime($r['created_at'])) ?></td>
+                                <td class="px-6 py-4 text-right text-gray-500 text-[10px]">
+                                    <div><?= date('M d, Y', strtotime($r['created_at'])) ?></div>
+                                    <?php if (date('Y-m-d', strtotime($r['created_at'])) !== date('Y-m-d', strtotime($r['system_timestamp']))): ?>
+                                        <div class="mt-1"><span class="px-1.5 py-0.5 rounded text-[8px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 whitespace-nowrap">BACKDATED</span></div>
+                                    <?php endif; ?>
+                                </td>
                             <?php endif; ?>
                         </tr>
                     <?php endforeach; ?>
@@ -326,12 +340,17 @@ if ($page > $total_pages) $page = $total_pages;
             <?php foreach ($records as $r): ?>
                 <div class="glass-panel border border-white/5 shadow-md p-4 bg-[#0d1527]/40 rounded-xl">
                     <div class="flex items-center justify-between border-b border-white/5 pb-2 mb-3">
-                        <span class="text-[8px] font-black tracking-widest uppercase text-gray-500">
-                            <?= date('h:i A', strtotime($r['created_at'])) ?>
-                            <?php if($is_admin): ?>
-                                <span class="ml-2 px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20"><?= htmlspecialchars($r['username']) ?></span>
+                        <div class="flex flex-col gap-1">
+                            <span class="text-[8px] font-black tracking-widest uppercase text-gray-500">
+                                <?= date('M d, Y', strtotime($r['created_at'])) ?>
+                                <?php if($is_admin): ?>
+                                    <span class="ml-2 px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20"><?= htmlspecialchars($r['username']) ?></span>
+                                <?php endif; ?>
+                            </span>
+                            <?php if (date('Y-m-d', strtotime($r['created_at'])) !== date('Y-m-d', strtotime($r['system_timestamp']))): ?>
+                                <span class="w-max px-1.5 py-0.5 rounded text-[8px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">BACKDATED</span>
                             <?php endif; ?>
-                        </span>
+                        </div>
                     </div>
 
                     <div class="grid grid-cols-2 gap-y-3 gap-x-4 text-xs">
