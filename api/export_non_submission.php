@@ -1,10 +1,8 @@
 <?php
 session_start();
-$role = $_SESSION['role'] ?? 'user';
-$is_full_admin = ($role === 'admin' || ($_SESSION['user'] ?? '') === 'admin');
-$is_admin_view = ($role === 'admin_view');
+$user_permissions = $_SESSION['user_permissions'] ?? [];
 
-if (!$is_full_admin && !$is_admin_view) {
+if (!in_array('non_submission', $user_permissions)) {
     die("Unauthorized");
 }
 

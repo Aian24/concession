@@ -373,30 +373,43 @@
         
         <nav class="flex-1 overflow-y-auto px-4 space-y-[2px]">
             <?php
+            $all_nav = [
+                'dashboard'       => ['icon' => 'fa-home', 'title' => 'Dashboard'],
+                'history'         => ['icon' => 'fa-history', 'title' => "Today's Transact"],
+                'monitoring'      => ['icon' => 'fa-chart-line', 'title' => 'Monitoring'],
+                
+                'create_sale'     => ['icon' => 'fa-shopping-cart', 'title' => 'Create Sale'],
+                'sale'            => ['icon' => 'fa-shopping-cart', 'title' => 'Sales Data'],
+                
+                'create_return'   => ['icon' => 'fa-undo', 'title' => 'Create Return'],
+                'return'          => ['icon' => 'fa-undo', 'title' => 'Returns Data'],
+                
+                'create_receiving'=> ['icon' => 'fa-box-open', 'title' => 'Create Receiving'],
+                'receiving'       => ['icon' => 'fa-box-open', 'title' => 'Receiving Data'],
+                
+                'create_pullout'  => ['icon' => 'fa-truck-loading', 'title' => 'Create Pullout'],
+                'pullout'         => ['icon' => 'fa-truck-loading', 'title' => 'Pullout Data'],
+                
+                'create_ros_supplies' => ['icon' => 'fa-boxes-stacked', 'title' => 'Create ROS Supply'],
+                'ros_supplies'    => ['icon' => 'fa-boxes-stacked', 'title' => 'ROS Data'],
+
+                'non_submission'  => ['icon' => 'fa-file-excel', 'title' => 'Non-Submission'],
+                'admin'           => ['icon' => 'fa-users-cog', 'title' => 'Manage Users'],
+                'roles'           => ['icon' => 'fa-user-shield', 'title' => 'Manage Roles'],
+                'stores'          => ['icon' => 'fa-store', 'title' => 'Manage Stores'],
+                'prism_data'      => ['icon' => 'fa-gem', 'title' => 'Manage Prism Data'],
+                'boutique_data'   => ['icon' => 'fa-store', 'title' => 'Manage Boutique Data'],
+                'recent_activity' => ['icon' => 'fa-clock-rotate-left', 'title' => 'Recent Activity'],
+            ];
+
             $nav_items = [];
-            if ($is_admin) {
-                $nav_items['dashboard']  = ['icon' => 'fa-home',           'title' => 'Dashboard'];
-            }
-            
-            if ($role === 'user') {
-                $nav_items['history'] = ['icon' => 'fa-history', 'title' => "Today's Transact"];
-            }
-            
-            $nav_items['sale']       = ['icon' => 'fa-shopping-cart',  'title' => 'Sale'];
-            $nav_items['return']     = ['icon' => 'fa-undo',           'title' => 'Return'];
-            $nav_items['receiving']  = ['icon' => 'fa-box-open',       'title' => 'Receiving'];
-            // $nav_items['pullout']    = ['icon' => 'fa-arrow-right-from-bracket', 'title' => 'Pullout'];
-            $nav_items['ros_supplies'] = ['icon' => 'fa-boxes-stacked','title' => 'ROS Supplies'];
-            
-            if ($is_full_admin) {
-                $nav_items['admin'] = ['icon' => 'fa-users-cog', 'title' => 'Manage Users'];
-                $nav_items['stores'] = ['icon' => 'fa-store', 'title' => 'Manage Stores'];
-                $nav_items['prism_data'] = ['icon' => 'fa-gem', 'title' => 'Manage Prism Data'];
-                $nav_items['boutique_data'] = ['icon' => 'fa-store', 'title' => 'Manage Boutique Data'];
-                $nav_items['recent_activity'] = ['icon' => 'fa-clock-rotate-left', 'title' => 'Recent Activity'];
-            }
-            if ($is_full_admin || $is_admin_view) {
-                $nav_items['non_submission'] = ['icon' => 'fa-file-excel', 'title' => 'Non-Submission'];
+            foreach ($all_nav as $key => $item) {
+                // history is a special case: we only want to show it in the sidebar if they are a standard user
+                // or if it's explicitly in their permissions and we want it. Actually, everyone has history.
+                // But admin uses dashboard usually. Let's just follow the permissions array.
+                if (in_array($key, $user_permissions)) {
+                    $nav_items[$key] = $item;
+                }
             }
 
             foreach ($nav_items as $key => $item):
@@ -485,7 +498,7 @@
             <div class="w-full mx-auto h-full animate-fade-in-up">
                 <?php
                 // Securely handle page inclusion
-                $page_file = "views/pages/" . basename($action) . ".php";
+                $page_file = "views/pages/" . basename($target_file) . ".php";
                 if (file_exists($page_file)) {
                     require $page_file;
                 } else {

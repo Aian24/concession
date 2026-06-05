@@ -5,9 +5,9 @@ if (!isset($can_delete)) {
     $is_admin_view  = ($role === 'admin_view');
     $is_store_admin = ($role === 'store_admin');
     $is_multi_store_admin = ($role === 'multi_store_admin');
-    $is_admin       = ($is_full_admin || $is_admin_view || $is_store_admin || $is_multi_store_admin);
-    $can_edit       = ($is_full_admin || $is_admin_view || $is_multi_store_admin);
-    $can_delete     = ($is_full_admin);
+    $is_admin       = $_SESSION['is_admin'] ?? ($is_full_admin || $is_admin_view || $is_store_admin || $is_multi_store_admin);
+    $can_edit       = $_SESSION['can_edit'] ?? false;
+    $can_delete     = $_SESSION['can_delete'] ?? false;
 }
 // Calculate Grand Totals based on current filters
 $grand_total_qty = 0;
@@ -272,7 +272,7 @@ if ($is_single_day && ($is_admin || $is_multi_store_admin) && empty($store_filte
                 </div>
             </div>
 
-            <?php if ($is_full_admin || $is_admin_view || $is_multi_store_admin): ?>
+            <?php if ($is_admin): ?>
             <div class="space-y-1 relative" id="store-filter-container">
                 <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Store Filter</label>
                 
@@ -479,7 +479,7 @@ if ($is_single_day && ($is_admin || $is_multi_store_admin) && empty($store_filte
             <tbody id="submitted-tbody" class="text-sm">
                 <?php if (empty($submitted_sales)): ?>
                 <tr>
-                    <td colspan="<?= ($is_admin ? 10 : 8) + ($is_full_admin ? 1 : 0) ?>" class="px-5 py-12 text-center text-gray-500">
+                    <td colspan="<?= ($is_admin ? 8 : 7) + ($is_full_admin ? 1 : 0) + ($can_edit ? 1 : 0) ?>" class="px-5 py-12 text-center text-gray-500">
                         <div class="flex flex-col items-center gap-2 opacity-20">
                             <i class="fas fa-inbox text-4xl text-gray-500"></i>
                             <span class="text-xs font-bold uppercase tracking-[0.2em] text-gray-400">No records found</span>

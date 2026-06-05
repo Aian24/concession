@@ -9,10 +9,10 @@ if (!isset($is_admin)) {
     $is_admin_view   = ($role === 'admin_view');
     $is_store_admin  = ($role === 'store_admin');
     $is_multi_store_admin = ($role === 'multi_store_admin');
-    $is_admin        = ($is_full_admin || $is_admin_view || $is_store_admin || $is_multi_store_admin);
-    $can_submit      = ($role === 'user');
-    $can_edit        = ($is_full_admin || $is_admin_view || $is_multi_store_admin);
-    $can_delete      = ($is_full_admin);
+    $is_admin        = $_SESSION['is_admin'] ?? ($is_full_admin || $is_admin_view || $is_store_admin || $is_multi_store_admin);
+    $can_submit      = $_SESSION['can_submit'] ?? ($role === 'user');
+    $can_edit        = $_SESSION['can_edit'] ?? false;
+    $can_delete      = $_SESSION['can_delete'] ?? false;
 }
 
 require_once 'includes/db.php';
@@ -332,8 +332,8 @@ if (isset($_GET['ajax'])) {
     </div>
     <?php endif; ?>
 
-    <!-- History Container (Only for Admins) -->
-    <?php if ($is_admin): ?>
+    <!-- History Container -->
+    <?php if ($show_history_table): ?>
     <div id="loading-overlay" class="fixed inset-0 bg-slate-950/60 backdrop-blur-md z-[100] flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300">
         <div class="relative w-20 h-20 mb-6">
             <div class="absolute inset-0 border-4 border-amber-500/20 border-t-amber-500 rounded-full animate-spin"></div>

@@ -74,12 +74,13 @@ function db_connect(): mysqli {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
     }
 
-    // Ensure multi_store_admin role exists in ENUM
+    // Ensure role column is VARCHAR (not ENUM) to support dynamic custom roles
     $col_res = $conn->query("SHOW COLUMNS FROM users LIKE 'role'");
     if ($col_res && $col_res->num_rows > 0) {
         $col = $col_res->fetch_assoc();
-        if (strpos($col['Type'], 'multi_store_admin') === false) {
-            $conn->query("ALTER TABLE users MODIFY COLUMN role ENUM('admin','user','admin_view','store_admin','multi_store_admin') DEFAULT 'user'");
+        // Only alter if it's still an ENUM (not already VARCHAR)
+        if (stripos($col['Type'], 'varchar') === false) {
+            $conn->query("ALTER TABLE users MODIFY COLUMN role VARCHAR(100) NOT NULL DEFAULT 'user'");
         }
     }
 

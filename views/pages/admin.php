@@ -1,5 +1,5 @@
 <?php
-if ($_SESSION['role'] !== 'admin') {
+if (!in_array('admin', $_SESSION['user_permissions'])) {
     echo "<div class='glass-panel p-8 text-center animate-fade-in'><h2 class='text-2xl font-bold text-red-400 mb-2'>Access Denied</h2><p class='text-gray-400'>You do not have permission to view administrative controls.</p></div>";
     return;
 }
@@ -11,6 +11,15 @@ $db = db_connect();
 $stores_res = $db->query("SELECT scode, sname FROM storecode ORDER BY sname ASC");
 $store_list = $stores_res->fetch_all(MYSQLI_ASSOC);
 
+// Fetch all dynamic roles (including is_admin flag for JS)
+$roles_res = $db->query("SELECT role_name, display_name, is_admin FROM roles ORDER BY display_name ASC");
+$roles_list = $roles_res->fetch_all(MYSQLI_ASSOC);
+// Build a JS-safe map of role_name => is_admin for the frontend
+$roles_is_admin_map = [];
+foreach ($roles_list as $r) {
+    $roles_is_admin_map[$r['role_name']] = (bool)$r['is_admin'];
+}
+
 // ── Action Handlers ──────────────────────────────────────────
 
 // 1. CREATE or UPDATE User
@@ -20,6 +29,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_user'])) {
     $password   = trim($_POST['password'] ?? '');
     $role       = $_POST['role'] ?? 'user';
     $store_code = $_POST['store_code'] ?? '';
+    // Default to 'ALL' for roles that are admin-level and have no specific store
+    if (empty($store_code)) $store_code = 'ALL';
     $multi_stores = $_POST['multi_stores'] ?? [];
 
     if ($uname) {
@@ -244,11 +255,11 @@ if (isset($_GET['edit'])) {
                 <div>
                     <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Permission Role</label>
                     <select name="role" id="role-select" class="input-modern w-full appearance-none bg-slate-900">
-                        <option value="user" <?= ($editUser['role']??'') === 'user' ? 'selected' : '' ?>>Standard User</option>
-                        <option value="admin" <?= ($editUser['role']??'') === 'admin' ? 'selected' : '' ?>>System Administrator</option>
-                        <option value="admin_view" <?= ($editUser['role']??'') === 'admin_view' ? 'selected' : '' ?>>View-Only Admin (All Stores)</option>
-                        <option value="store_admin" <?= ($editUser['role']??'') === 'store_admin' ? 'selected' : '' ?>>Store Admin (Specific Store Only)</option>
-                        <option value="multi_store_admin" <?= ($editUser['role']??'') === 'multi_store_admin' ? 'selected' : '' ?>>Multi-Store Admin (Multiple Stores)</option>
+                        <?php foreach ($roles_list as $r): ?>
+                            <option value="<?= htmlspecialchars($r['role_name']) ?>" <?= ($editUser['role'] ?? '') === $r['role_name'] ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($r['display_name']) ?>
+                            </option>
+                        <?php endforeach; ?>
                     </select>
                 </div>
 
@@ -679,19 +690,26 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Role select logic for Multi-Store
+    // Role select logic — multi-store only for 'multi_store_admin' and 'user' roles
     const roleSelect = document.getElementById('role-select');
     const storeContainer = document.getElementById('store-select-container');
     const multiStoreContainer = document.getElementById('multi-store-select-container');
 
+    // Map of role_name => is_admin from PHP
+    const rolesIsAdminMap = <?= json_encode($roles_is_admin_map) ?>;
+
     function toggleStoreContainers() {
         if (!roleSelect) return;
-        if (roleSelect.value === 'multi_store_admin' || roleSelect.value === 'user') {
+        const val = roleSelect.value;
+        // Only 'multi_store_admin' and 'user' get the multi-store picker
+        if (val === 'multi_store_admin' || val === 'user') {
             storeContainer.classList.add('hidden');
             multiStoreContainer.classList.remove('hidden');
+            multiStoreContainer.classList.add('flex');
         } else {
             storeContainer.classList.remove('hidden');
             multiStoreContainer.classList.add('hidden');
+            multiStoreContainer.classList.remove('flex');
         }
     }
 

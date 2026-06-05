@@ -9,10 +9,10 @@ if (!isset($is_admin)) {
     $is_admin_view   = ($role === 'admin_view');
     $is_store_admin  = ($role === 'store_admin');
     $is_multi_store_admin = ($role === 'multi_store_admin');
-    $is_admin        = ($is_full_admin || $is_admin_view || $is_store_admin || $is_multi_store_admin);
-    $can_submit      = ($role === 'user');
-    $can_edit        = ($is_full_admin || $is_admin_view || $is_multi_store_admin);
-    $can_delete      = ($is_full_admin);
+    $is_admin        = $_SESSION['is_admin'] ?? ($is_full_admin || $is_admin_view || $is_store_admin || $is_multi_store_admin);
+    $can_submit      = $_SESSION['can_submit'] ?? ($role === 'user');
+    $can_edit        = $_SESSION['can_edit'] ?? false;
+    $can_delete      = $_SESSION['can_delete'] ?? false;
 }
 
 require_once 'includes/db.php';
@@ -343,7 +343,7 @@ $all_stores_stmt->close();
     </div>
 
     <!-- History Container -->
-    <?php if ($is_admin): ?>
+    <?php if ($show_history_table): ?>
     <div id="history-container" class="mt-4">
         <?php include 'views/pages/receiving_table_partial.php'; ?>
     </div>

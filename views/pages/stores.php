@@ -1,6 +1,5 @@
 <?php
-$is_admin = (($_SESSION['role'] ?? 'user') === 'admin' || ($_SESSION['user'] ?? '') === 'admin');
-if (!$is_admin) {
+if (!in_array('stores', $_SESSION['user_permissions'])) {
     echo "<div class='p-8 text-center text-red-400 font-bold'>Unauthorized Access</div>";
     exit;
 }
