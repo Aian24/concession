@@ -1113,11 +1113,12 @@
         #scanner-modal [class*="bg-slate-900"],
         #scanner-modal [class*="bg-slate-950"] { background-color: transparent !important; }
         
-        /* Restore necessary backgrounds manually */
+        /* Restore necessary backgrounds manually with higher specificity */
         #scanner-modal > div:first-child { background-color: rgba(15,23,42,0.85) !important; }
         #scanner-modal .w-full.aspect-square { background-color: #000 !important; }
-        #scanner-confirm-panel { background-color: rgba(2,6,23,0.8) !important; }
-        #scanner-confirm-panel > div { background-color: rgba(15,23,42,1) !important; }
+        #scanner-modal #scanner-confirm-panel { background-color: rgba(2,6,23,0.8) !important; }
+        #scanner-modal #scanner-confirm-panel > div { background-color: rgba(15,23,42,1) !important; }
+        #scanner-modal .rounded-full.bg-slate-900\/60 { background-color: rgba(15,23,42,0.6) !important; }
 
         /* ONLY the viewport + its feed elements need transparent bg
            to override the theme's [class*="bg-slate-950"] opaque rule */
