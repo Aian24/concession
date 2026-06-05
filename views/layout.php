@@ -1108,10 +1108,17 @@
         /* Quagga scanner — precise CSS overrides to beat the global theme rules */
         /* Modal itself: solid dark background so page content is hidden */
         #scanner-modal { background-color: rgba(2,6,23,0.97) !important; }
-        /* Header bar inside modal */
+        
+        /* Reset opaque theme overrides for slate backgrounds inside the modal */
+        #scanner-modal [class*="bg-slate-900"],
+        #scanner-modal [class*="bg-slate-950"] { background-color: transparent !important; }
+        
+        /* Restore necessary backgrounds manually */
         #scanner-modal > div:first-child { background-color: rgba(15,23,42,0.85) !important; }
-        /* The viewfinder box: pure black so camera renders cleanly */
         #scanner-modal .w-full.aspect-square { background-color: #000 !important; }
+        #scanner-confirm-panel { background-color: rgba(2,6,23,0.8) !important; }
+        #scanner-confirm-panel > div { background-color: rgba(15,23,42,1) !important; }
+
         /* ONLY the viewport + its feed elements need transparent bg
            to override the theme's [class*="bg-slate-950"] opaque rule */
         #scanner-viewport { position: relative; z-index: 0; background: transparent !important; }
