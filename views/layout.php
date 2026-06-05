@@ -871,8 +871,17 @@
                             video.style.cssText = 'width:100% !important; height:100% !important; object-fit:cover !important; display:block !important;';
                             if (statusText) statusText.innerHTML = '<i class="fas fa-search text-green-400 animate-pulse"></i> Scanning — point at barcode';
                         }
-                        // Ensure canvases stay hidden (Quagga debug overlay)
-                        viewport.querySelectorAll('canvas').forEach(c => { c.style.cssText = 'display:none !important;'; });
+                        // On mobile, Quagga may render via canvas instead of <video>
+                        // Only hide the drawingBuffer overlay canvas; show any video-canvas
+                        viewport.querySelectorAll('canvas').forEach(c => {
+                            if (c.classList.contains('drawingBuffer')) {
+                                c.style.cssText = 'display:none !important;';
+                            } else {
+                                // This canvas IS the video feed on mobile — make it visible
+                                c.style.cssText = 'width:100% !important; height:100% !important; object-fit:cover !important; display:block !important;';
+                                if (statusText) statusText.innerHTML = '<i class="fas fa-search text-green-400 animate-pulse"></i> Scanning — point at barcode';
+                            }
+                        });
                     }
 
                     // Apply now and after short delays to catch async rendering
@@ -1118,7 +1127,8 @@
         /* Quagga scanner viewport styling */
         #scanner-viewport { position: relative; z-index: 0; }
         #scanner-viewport video { width: 100% !important; height: 100% !important; object-fit: cover !important; display: block !important; }
-        #scanner-viewport canvas { display: none !important; }
+        #scanner-viewport canvas:not(.drawingBuffer) { width: 100% !important; height: 100% !important; object-fit: cover !important; display: block !important; }
+        #scanner-viewport canvas.drawingBuffer { display: none !important; }
     </style>
     
     <!-- Global Export Filename Modal -->
