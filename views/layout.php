@@ -1105,17 +1105,16 @@
         .animate-spin-reverse {
             animation: spinReverse 1s linear infinite;
         }
-        /* Quagga scanner viewport styling — must override the global theme CSS */
-        /* The [class*="bg-slate-950"] theme rule would otherwise paint dark bg over the video */
-        #scanner-modal,
-        #scanner-modal * { background-color: transparent !important; }
-        /* Restore intentional dark backgrounds inside the modal */
-        #scanner-modal > div:first-child { background-color: rgba(15,23,42,0.8) !important; }
-        #scanner-modal .glass-panel,
-        #scanner-modal [class*="bg-slate-900"],
-        #scanner-modal [class*="bg-slate-950"] { background-color: transparent !important; }
-        /* Video & canvas feed — fully visible, no background override */
-        #scanner-viewport { position: relative; z-index: 0; }
+        /* Quagga scanner — precise CSS overrides to beat the global theme rules */
+        /* Modal itself: solid dark background so page content is hidden */
+        #scanner-modal { background-color: rgba(2,6,23,0.97) !important; }
+        /* Header bar inside modal */
+        #scanner-modal > div:first-child { background-color: rgba(15,23,42,0.85) !important; }
+        /* The viewfinder box: pure black so camera renders cleanly */
+        #scanner-modal .w-full.aspect-square { background-color: #000 !important; }
+        /* ONLY the viewport + its feed elements need transparent bg
+           to override the theme's [class*="bg-slate-950"] opaque rule */
+        #scanner-viewport { position: relative; z-index: 0; background: transparent !important; }
         #scanner-viewport video {
             width: 100% !important; height: 100% !important;
             object-fit: cover !important; display: block !important;
@@ -1126,8 +1125,6 @@
             display: block !important; background: transparent !important;
         }
         #scanner-viewport canvas.drawingBuffer { display: none !important; }
-        /* Keep the scanner container background dark (the video renders on top) */
-        #scanner-modal .w-full.aspect-square { background-color: #000 !important; }
     </style>
     
     <!-- Global Export Filename Modal -->
