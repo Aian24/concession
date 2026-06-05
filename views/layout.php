@@ -860,13 +860,20 @@
                         const viewport = document.getElementById('scanner-viewport');
                         if (!viewport) return;
 
-                        // Show <video> element if present (desktop)
+                        // Show <video> element if present (desktop/most browsers)
                         const video = viewport.querySelector('video');
                         if (video) {
-                            video.style.width       = '100%';
-                            video.style.height      = '100%';
-                            video.style.objectFit   = 'cover';
-                            video.style.display     = 'block';
+                            // Ensure mobile-required attributes are set
+                            video.setAttribute('playsinline', '');
+                            video.setAttribute('muted', '');
+                            video.muted = true;
+                            video.style.width      = '100%';
+                            video.style.height     = '100%';
+                            video.style.objectFit  = 'cover';
+                            video.style.display    = 'block';
+                            video.style.background = 'transparent';
+                            // Force play if paused
+                            if (video.paused) { video.play().catch(() => {}); }
                             if (statusText) statusText.innerHTML = '<i class="fas fa-search text-green-400 animate-pulse"></i> Scanning — point at barcode';
                         }
 
@@ -1098,11 +1105,29 @@
         .animate-spin-reverse {
             animation: spinReverse 1s linear infinite;
         }
-        /* Quagga scanner viewport styling */
+        /* Quagga scanner viewport styling — must override the global theme CSS */
+        /* The [class*="bg-slate-950"] theme rule would otherwise paint dark bg over the video */
+        #scanner-modal,
+        #scanner-modal * { background-color: transparent !important; }
+        /* Restore intentional dark backgrounds inside the modal */
+        #scanner-modal > div:first-child { background-color: rgba(15,23,42,0.8) !important; }
+        #scanner-modal .glass-panel,
+        #scanner-modal [class*="bg-slate-900"],
+        #scanner-modal [class*="bg-slate-950"] { background-color: transparent !important; }
+        /* Video & canvas feed — fully visible, no background override */
         #scanner-viewport { position: relative; z-index: 0; }
-        #scanner-viewport video { width: 100% !important; height: 100% !important; object-fit: cover !important; display: block !important; }
-        #scanner-viewport canvas:not(.drawingBuffer) { width: 100% !important; height: 100% !important; object-fit: cover !important; display: block !important; }
+        #scanner-viewport video {
+            width: 100% !important; height: 100% !important;
+            object-fit: cover !important; display: block !important;
+            background: transparent !important;
+        }
+        #scanner-viewport canvas:not(.drawingBuffer) {
+            width: 100% !important; height: 100% !important;
+            display: block !important; background: transparent !important;
+        }
         #scanner-viewport canvas.drawingBuffer { display: none !important; }
+        /* Keep the scanner container background dark (the video renders on top) */
+        #scanner-modal .w-full.aspect-square { background-color: #000 !important; }
     </style>
     
     <!-- Global Export Filename Modal -->
