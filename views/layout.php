@@ -804,82 +804,124 @@
                 return;
             }
 
-            try {
-            Quagga.init({
-                inputStream: {
-                    name: "Live",
-                    type: "LiveStream",
-                    target: document.getElementById('scanner-viewport'),
-                    constraints: {
-                        facingMode: "environment",
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
-                    },
-                    area: {
-                        top: "40%",
-                        right: "0%",
-                        left: "0%",
-                        bottom: "40%"
-                    }
-                },
-                locator: {
-                    patchSize: "small",
-                    halfSample: true
-                },
-                numOfWorkers: 0,
-                frequency: 10,
-                decoder: {
-                    readers: [
-                        "code_128_reader",
-                        "ean_reader",
-                        "ean_8_reader",
-                        "upc_reader",
-                        "upc_e_reader",
-                        "code_39_reader",
-                        "codabar_reader"
-                    ]
-                },
-                locate: false
-            }, function(err) {
-                if (err) {
-                    console.error("Quagga init error:", err);
-                    const errMsg = err.message || err.name || JSON.stringify(err);
-                    if (errorText) { errorText.textContent = 'Camera Error: ' + errMsg; errorText.classList.remove('hidden'); }
-                    if (statusText) statusText.innerHTML = '<i class="fas fa-exclamation-triangle text-red-400"></i> Camera failed';
-                    return;
-                }
-                
-                try { Quagga.start(); } catch(startErr) {
-                    console.error("Quagga start error:", startErr);
-                    if (errorText) { errorText.textContent = 'Start Error: ' + startErr.message; errorText.classList.remove('hidden'); }
-                    return;
-                }
-                
-                if (statusText) statusText.innerHTML = '<i class="fas fa-satellite-dish text-purple-500"></i> Signal Acquired — Scanning';
-                
-                // Style the video element Quagga creates (delay to let DOM render)
-                setTimeout(() => {
-                    const viewport = document.getElementById('scanner-viewport');
-                    if (viewport) {
-                        const video = viewport.querySelector('video');
-                        if (video) { 
-                            video.style.width = '100%'; 
-                            video.style.height = '100%'; 
-                            video.style.objectFit = 'cover';
-                            if (statusText) statusText.innerHTML = '<i class="fas fa-search text-green-400 animate-pulse"></i> Scanning — point at barcode';
-                        } else {
-                            if (statusText) statusText.innerHTML = '<i class="fas fa-exclamation-triangle text-yellow-400"></i> Video element not found';
+            // Helper: initialize Quagga with given constraints
+            function _initQuagga(constraints) {
+                try {
+                Quagga.init({
+                    inputStream: {
+                        name: "Live",
+                        type: "LiveStream",
+                        target: document.getElementById('scanner-viewport'),
+                        constraints: constraints,
+                        area: {
+                            top: "40%",
+                            right: "0%",
+                            left: "0%",
+                            bottom: "40%"
                         }
-                        // Hide ALL canvas elements Quagga injects
-                        viewport.querySelectorAll('canvas').forEach(c => { c.style.display = 'none'; });
+                    },
+                    locator: {
+                        patchSize: "small",
+                        halfSample: true
+                    },
+                    numOfWorkers: 0,
+                    frequency: 10,
+                    decoder: {
+                        readers: [
+                            "code_128_reader",
+                            "ean_reader",
+                            "ean_8_reader",
+                            "upc_reader",
+                            "upc_e_reader",
+                            "code_39_reader",
+                            "codabar_reader"
+                        ]
+                    },
+                    locate: false
+                }, function(err) {
+                    if (err) {
+                        console.error("Quagga init error:", err);
+                        // If "environment" facing mode failed, retry with no constraints
+                        if ((err.name === 'NotFoundError' || err.name === 'OverconstrainedError') && constraints.facingMode) {
+                            console.warn("Retrying without facingMode constraint...");
+                            if (statusText) statusText.innerHTML = '<i class="fas fa-spinner animate-spin text-yellow-400"></i> Retrying camera...';
+                            _initQuagga({ width: { ideal: 1280 }, height: { ideal: 720 } });
+                            return;
+                        }
+                        const errMsg = err.message || err.name || JSON.stringify(err);
+                        if (errorText) { errorText.textContent = 'Camera Error: ' + errMsg; errorText.classList.remove('hidden'); }
+                        if (statusText) statusText.innerHTML = '<i class="fas fa-exclamation-triangle text-red-400"></i> Camera failed';
+                        return;
                     }
-                }, 300);
-            });
-            } catch(initErr) {
-                console.error("Quagga init exception:", initErr);
-                if (errorText) { errorText.textContent = 'Init Exception: ' + initErr.message; errorText.classList.remove('hidden'); }
-                if (statusText) statusText.innerHTML = '<i class="fas fa-exclamation-triangle text-red-400"></i> Scanner crashed';
-                return;
+                    
+                    try { Quagga.start(); } catch(startErr) {
+                        console.error("Quagga start error:", startErr);
+                        if (errorText) { errorText.textContent = 'Start Error: ' + startErr.message; errorText.classList.remove('hidden'); }
+                        return;
+                    }
+                    
+                    if (statusText) statusText.innerHTML = '<i class="fas fa-satellite-dish text-purple-500"></i> Signal Acquired — Scanning';
+                    
+                    // Force video visible immediately & watch for it via MutationObserver
+                    function _applyVideoStyles() {
+                        const viewport = document.getElementById('scanner-viewport');
+                        if (!viewport) return;
+                        const video = viewport.querySelector('video');
+                        if (video) {
+                            video.style.cssText = 'width:100% !important; height:100% !important; object-fit:cover !important; display:block !important; position:relative !important; z-index:1 !important;';
+                            if (statusText) statusText.innerHTML = '<i class="fas fa-search text-green-400 animate-pulse"></i> Scanning — point at barcode';
+                        }
+                        // Ensure canvases stay hidden (Quagga debug overlay)
+                        viewport.querySelectorAll('canvas').forEach(c => { c.style.cssText = 'display:none !important;'; });
+                    }
+
+                    // Apply now and after short delays to catch async rendering
+                    _applyVideoStyles();
+                    setTimeout(_applyVideoStyles, 200);
+                    setTimeout(_applyVideoStyles, 600);
+
+                    // Also watch for DOM changes inside viewport (video added asynchronously)
+                    const vp = document.getElementById('scanner-viewport');
+                    if (vp) {
+                        const obs = new MutationObserver(() => { _applyVideoStyles(); });
+                        obs.observe(vp, { childList: true, subtree: true });
+                        // Disconnect after 5s to avoid leaking
+                        setTimeout(() => obs.disconnect(), 5000);
+                    }
+                });
+                } catch(initErr) {
+                    console.error("Quagga init exception:", initErr);
+                    if (errorText) { errorText.textContent = 'Init Exception: ' + initErr.message; errorText.classList.remove('hidden'); }
+                    if (statusText) statusText.innerHTML = '<i class="fas fa-exclamation-triangle text-red-400"></i> Scanner crashed';
+                }
+            }
+
+            // Enumerate cameras first; pick a real device, then init
+            try {
+                navigator.mediaDevices.enumerateDevices().then(function(devices) {
+                    const cameras = devices.filter(d => d.kind === 'videoinput');
+                    let constraints;
+                    if (cameras.length === 0) {
+                        // No cameras found at all — still try, browser may prompt
+                        constraints = { width: { ideal: 1280 }, height: { ideal: 720 } };
+                    } else {
+                        // Prefer back camera on mobile if available, otherwise use first
+                        const backCam = cameras.find(d => /back|rear|environment/i.test(d.label));
+                        const cam = backCam || cameras[0];
+                        if (cam.deviceId) {
+                            constraints = { deviceId: { exact: cam.deviceId }, width: { ideal: 1280 }, height: { ideal: 720 } };
+                        } else {
+                            // deviceId not available yet (permissions not granted), fall back to facingMode attempt
+                            constraints = { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } };
+                        }
+                    }
+                    _initQuagga(constraints);
+                }).catch(function() {
+                    // enumerateDevices failed — try without facingMode
+                    _initQuagga({ width: { ideal: 1280 }, height: { ideal: 720 } });
+                });
+            } catch(enumErr) {
+                _initQuagga({ width: { ideal: 1280 }, height: { ideal: 720 } });
             }
 
             Quagga.onDetected(function(result) {
