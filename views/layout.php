@@ -804,8 +804,14 @@
                 return;
             }
 
-            // Helper: initialize Quagga with given constraints
-            function _initQuagga(constraints) {
+            // Try with environment (rear) camera first — works on mobile.
+            // On desktop where there's no "environment" camera, the error handler retries
+            // without any facingMode so it picks whatever camera is available.
+            function _initQuagga(constraints, isRetry) {
+                // Clear the viewport before re-init
+                const vp = document.getElementById('scanner-viewport');
+                if (vp && isRetry) vp.innerHTML = '';
+
                 try {
                 Quagga.init({
                     inputStream: {
@@ -813,39 +819,26 @@
                         type: "LiveStream",
                         target: document.getElementById('scanner-viewport'),
                         constraints: constraints,
-                        area: {
-                            top: "40%",
-                            right: "0%",
-                            left: "0%",
-                            bottom: "40%"
-                        }
+                        area: { top: "40%", right: "0%", left: "0%", bottom: "40%" }
                     },
-                    locator: {
-                        patchSize: "small",
-                        halfSample: true
-                    },
+                    locator:  { patchSize: "small", halfSample: true },
                     numOfWorkers: 0,
                     frequency: 10,
                     decoder: {
                         readers: [
-                            "code_128_reader",
-                            "ean_reader",
-                            "ean_8_reader",
-                            "upc_reader",
-                            "upc_e_reader",
-                            "code_39_reader",
-                            "codabar_reader"
+                            "code_128_reader", "ean_reader", "ean_8_reader",
+                            "upc_reader", "upc_e_reader", "code_39_reader", "codabar_reader"
                         ]
                     },
                     locate: false
                 }, function(err) {
                     if (err) {
                         console.error("Quagga init error:", err);
-                        // If "environment" facing mode failed, retry with no constraints
-                        if ((err.name === 'NotFoundError' || err.name === 'OverconstrainedError') && constraints.facingMode) {
-                            console.warn("Retrying without facingMode constraint...");
+                        // If environment facing mode not found, retry with any camera
+                        if (!isRetry && (err.name === 'NotFoundError' || err.name === 'OverconstrainedError' || err.name === 'TypeError')) {
+                            console.warn("Retrying without facingMode...");
                             if (statusText) statusText.innerHTML = '<i class="fas fa-spinner animate-spin text-yellow-400"></i> Retrying camera...';
-                            _initQuagga({ width: { ideal: 1280 }, height: { ideal: 720 } });
+                            _initQuagga({ width: { ideal: 1280 }, height: { ideal: 720 } }, true);
                             return;
                         }
                         const errMsg = err.message || err.name || JSON.stringify(err);
@@ -853,48 +846,54 @@
                         if (statusText) statusText.innerHTML = '<i class="fas fa-exclamation-triangle text-red-400"></i> Camera failed';
                         return;
                     }
-                    
+
                     try { Quagga.start(); } catch(startErr) {
                         console.error("Quagga start error:", startErr);
                         if (errorText) { errorText.textContent = 'Start Error: ' + startErr.message; errorText.classList.remove('hidden'); }
                         return;
                     }
-                    
+
                     if (statusText) statusText.innerHTML = '<i class="fas fa-satellite-dish text-purple-500"></i> Signal Acquired — Scanning';
-                    
-                    // Force video visible immediately & watch for it via MutationObserver
+
+                    // Make the video (desktop) or canvas (mobile) feed visible
                     function _applyVideoStyles() {
                         const viewport = document.getElementById('scanner-viewport');
                         if (!viewport) return;
+
+                        // Show <video> element if present (desktop)
                         const video = viewport.querySelector('video');
                         if (video) {
-                            video.style.cssText = 'width:100% !important; height:100% !important; object-fit:cover !important; display:block !important;';
+                            video.style.width       = '100%';
+                            video.style.height      = '100%';
+                            video.style.objectFit   = 'cover';
+                            video.style.display     = 'block';
                             if (statusText) statusText.innerHTML = '<i class="fas fa-search text-green-400 animate-pulse"></i> Scanning — point at barcode';
                         }
-                        // On mobile, Quagga may render via canvas instead of <video>
-                        // Only hide the drawingBuffer overlay canvas; show any video-canvas
+
+                        // Handle canvases — Quagga injects two types:
+                        //   1. canvas (no class)        → the live video feed on mobile
+                        //   2. canvas.drawingBuffer     → debug detection overlay (hide it)
                         viewport.querySelectorAll('canvas').forEach(c => {
                             if (c.classList.contains('drawingBuffer')) {
-                                c.style.cssText = 'display:none !important;';
+                                c.style.display = 'none';
                             } else {
-                                // This canvas IS the video feed on mobile — make it visible
-                                c.style.cssText = 'width:100% !important; height:100% !important; object-fit:cover !important; display:block !important;';
+                                // Video-feed canvas used by mobile browsers
+                                c.style.width   = '100%';
+                                c.style.height  = '100%';
+                                c.style.display = 'block';
                                 if (statusText) statusText.innerHTML = '<i class="fas fa-search text-green-400 animate-pulse"></i> Scanning — point at barcode';
                             }
                         });
                     }
 
-                    // Apply now and after short delays to catch async rendering
                     _applyVideoStyles();
-                    setTimeout(_applyVideoStyles, 200);
-                    setTimeout(_applyVideoStyles, 600);
+                    setTimeout(_applyVideoStyles, 300);
+                    setTimeout(_applyVideoStyles, 800);
 
-                    // Also watch for DOM changes inside viewport (video added asynchronously)
-                    const vp = document.getElementById('scanner-viewport');
+                    // Watch for Quagga injecting elements asynchronously
                     if (vp) {
                         const obs = new MutationObserver(() => { _applyVideoStyles(); });
                         obs.observe(vp, { childList: true, subtree: true });
-                        // Disconnect after 5s to avoid leaking
                         setTimeout(() => obs.disconnect(), 5000);
                     }
                 });
@@ -905,33 +904,8 @@
                 }
             }
 
-            // Enumerate cameras first; pick a real device, then init
-            try {
-                navigator.mediaDevices.enumerateDevices().then(function(devices) {
-                    const cameras = devices.filter(d => d.kind === 'videoinput');
-                    let constraints;
-                    if (cameras.length === 0) {
-                        // No cameras found at all — still try, browser may prompt
-                        constraints = { width: { ideal: 1280 }, height: { ideal: 720 } };
-                    } else {
-                        // Prefer back camera on mobile if available, otherwise use first
-                        const backCam = cameras.find(d => /back|rear|environment/i.test(d.label));
-                        const cam = backCam || cameras[0];
-                        if (cam.deviceId) {
-                            constraints = { deviceId: { exact: cam.deviceId }, width: { ideal: 1280 }, height: { ideal: 720 } };
-                        } else {
-                            // deviceId not available yet (permissions not granted), fall back to facingMode attempt
-                            constraints = { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } };
-                        }
-                    }
-                    _initQuagga(constraints);
-                }).catch(function() {
-                    // enumerateDevices failed — try without facingMode
-                    _initQuagga({ width: { ideal: 1280 }, height: { ideal: 720 } });
-                });
-            } catch(enumErr) {
-                _initQuagga({ width: { ideal: 1280 }, height: { ideal: 720 } });
-            }
+            // Kick off: try rear/environment camera first
+            _initQuagga({ facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } }, false);
 
             Quagga.onDetected(function(result) {
                 if (isScanningLocked) return;
