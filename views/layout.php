@@ -263,7 +263,7 @@
                     <div id="scanner-viewport" class="w-full h-full"></div>
                     
                     <!-- New High-Tech Overlay -->
-                    <div class="absolute inset-0 pointer-events-none">
+                    <div class="absolute inset-0 pointer-events-none" style="z-index:10;">
                         <!-- Darkened background outside target -->
                         <div class="absolute inset-0 bg-slate-950/40"></div>
                         
@@ -868,7 +868,7 @@
                         if (!viewport) return;
                         const video = viewport.querySelector('video');
                         if (video) {
-                            video.style.cssText = 'width:100% !important; height:100% !important; object-fit:cover !important; display:block !important; position:relative !important; z-index:1 !important;';
+                            video.style.cssText = 'width:100% !important; height:100% !important; object-fit:cover !important; display:block !important;';
                             if (statusText) statusText.innerHTML = '<i class="fas fa-search text-green-400 animate-pulse"></i> Scanning — point at barcode';
                         }
                         // Ensure canvases stay hidden (Quagga debug overlay)
@@ -1116,9 +1116,9 @@
             animation: spinReverse 1s linear infinite;
         }
         /* Quagga scanner viewport styling */
-        #scanner-viewport { position: relative; }
-        #scanner-viewport video { width: 100% !important; height: 100% !important; object-fit: cover !important; }
-        #scanner-viewport canvas.drawingBuffer { display: none !important; }
+        #scanner-viewport { position: relative; z-index: 0; }
+        #scanner-viewport video { width: 100% !important; height: 100% !important; object-fit: cover !important; display: block !important; }
+        #scanner-viewport canvas { display: none !important; }
     </style>
     
     <!-- Global Export Filename Modal -->
