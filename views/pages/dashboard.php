@@ -376,8 +376,8 @@ if (!function_exists('time_elapsed_string')) {
 
         </div><!-- end mobile row A -->
 
-        <!-- Quick Month multi-select (full width on mobile, flex-[2] on desktop) -->
-        <div class="flex flex-col gap-1 flex-[2] min-w-0">
+        <!-- Quick Month multi-select (full width on mobile, flex-1 on desktop) -->
+        <div class="flex flex-col gap-1 flex-1 min-w-0">
             <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Quick Month <span class="text-purple-400/60" id="mo-multi-hint"></span></label>
             <div class="flex items-center bg-slate-900/80 border border-white/10 rounded-xl h-9 relative w-full">
                 <button type="button" onclick="scrollQuickMonths(-1)" class="absolute left-0 z-10 h-full px-2 bg-gradient-to-r from-slate-900 via-slate-900/80 to-transparent text-gray-400 hover:text-white transition-all flex-shrink-0"><i class="fas fa-chevron-left text-[9px]"></i></button>
@@ -400,19 +400,19 @@ if (!function_exists('time_elapsed_string')) {
         <div class="flex items-end gap-3 w-full lg:contents">
 
             <!-- Manual Date Inputs -->
-            <form id="dashboard-filter-form" method="GET" class="flex gap-3 items-end flex-1 lg:flex-none">
+            <form id="dashboard-filter-form" method="GET" class="flex gap-3 items-end flex-1 lg:flex-[2]">
                 <input type="hidden" name="action" value="dashboard">
                 <?php if ($show_concession): ?><input type="hidden" name="source_concession" value="1"><?php endif; ?>
                 <?php if ($show_boutique): ?><input type="hidden" name="source_boutique" value="1"><?php endif; ?>
                 <?php if ($filter_store_code): ?><input type="hidden" name="store_code" value="<?= htmlspecialchars($filter_store_code) ?>"><?php endif; ?>
-                <div class="flex flex-col gap-1 flex-1 lg:flex-none">
+                <div class="flex flex-col gap-1 flex-1">
                     <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Start Date</label>
                     <div class="relative">
                         <i class="fas fa-calendar-day absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-600 pointer-events-none"></i>
                         <input type="date" name="start_date" id="manual-start" value="<?= $start_date ?>" onchange="this.form.submit()" onclick="this.showPicker()" class="w-full bg-slate-900/80 border border-white/10 rounded-xl pl-8 pr-3 py-2 h-9 text-xs text-white focus:outline-none focus:border-purple-500/50 cursor-pointer transition-all">
                     </div>
                 </div>
-                <div class="flex flex-col gap-1 flex-1 lg:flex-none">
+                <div class="flex flex-col gap-1 flex-1">
                     <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">End Date</label>
                     <div class="relative">
                         <i class="fas fa-calendar-check absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-600 pointer-events-none"></i>
