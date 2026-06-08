@@ -162,9 +162,13 @@ $stores_stmt->close();
             <!-- Filters -->
             <style>
                 input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
+                .no-scrollbar::-webkit-scrollbar { display: none !important; }
+                .no-scrollbar { -ms-overflow-style: none !important; scrollbar-width: none !important; }
             </style>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-3 bg-white/5 p-3 rounded-xl border border-white/5">
-                <div class="space-y-1">
+            
+            <!-- Live Filters Grid -->
+            <div class="grid grid-cols-2 lg:grid-cols-6 gap-3 bg-white/5 p-3 rounded-xl border border-white/5 mb-4">
+                <div class="space-y-1 col-span-2 lg:col-span-1">
                     <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Search</label>
                     <div class="relative">
                         <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-[10px]"></i>
@@ -173,7 +177,7 @@ $stores_stmt->close();
                     </div>
                 </div>
 
-                <div class="space-y-1 relative" id="store-filter-container">
+                <div class="space-y-1 col-span-2 lg:col-span-1 relative" id="store-filter-container">
                     <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Store Filter</label>
                     <?php
                     $current_label = "All Stores";
@@ -243,6 +247,46 @@ $stores_stmt->close();
                         </div>
                     </div>
                 </div>
+
+                <!-- Quick Year -->
+                <div class="space-y-1 w-full min-w-0">
+                    <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Quick Year <span class="text-purple-400/60" id="yr-multi-hint"></span></label>
+                    <div class="shrink-0 flex items-center bg-slate-900/80 border border-white/10 rounded-lg shadow-inner h-8 relative z-20 overflow-hidden w-full">
+                        <button type="button" onclick="scrollQuickYears(-1)" class="absolute left-0 z-10 h-full px-1.5 bg-gradient-to-r from-slate-900 via-slate-900/90 to-transparent flex items-center justify-start text-gray-400 hover:text-white transition-all"><i class="fas fa-chevron-left text-[8px]"></i></button>
+                        <div id="years-container" class="no-scrollbar flex items-center gap-1 overflow-x-auto scroll-smooth w-full px-5">
+                            <?php
+                            $currYr = date('Y');
+                            for($y = $currYr - 4; $y <= $currYr + 2; $y++):
+                            ?>
+                            <button type="button" data-year="<?= $y ?>" onclick="toggleYear(this, <?= $y ?>)" class="year-btn flex-shrink-0 w-[45px] py-1 rounded text-[9px] font-bold uppercase tracking-wider transition-all text-center select-none border text-gray-500 border-transparent hover:text-purple-400 hover:bg-white/5">
+                                <?= $y ?>
+                            </button>
+                            <?php endfor; ?>
+                        </div>
+                        <button type="button" onclick="scrollQuickYears(1)" class="absolute right-0 z-10 h-full px-1.5 bg-gradient-to-l from-slate-900 via-slate-900/90 to-transparent flex items-center justify-end text-gray-400 hover:text-white transition-all"><i class="fas fa-chevron-right text-[8px]"></i></button>
+                    </div>
+                </div>
+
+                <!-- Quick Month -->
+                <div class="space-y-1 w-full min-w-0">
+                    <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Quick Month <span class="text-purple-400/60" id="mo-multi-hint"></span></label>
+                    <div class="shrink-0 flex items-center bg-slate-900/80 border border-white/10 rounded-lg shadow-inner h-8 relative z-20 overflow-hidden w-full">
+                        <button type="button" onclick="scrollQuickMonths(-1)" class="absolute left-0 z-10 h-full px-1.5 bg-gradient-to-r from-slate-900 via-slate-900/90 to-transparent flex items-center justify-start text-gray-400 hover:text-white transition-all"><i class="fas fa-chevron-left text-[8px]"></i></button>
+                        <div id="months-container" class="no-scrollbar flex items-center gap-1 overflow-x-auto scroll-smooth w-full px-5">
+                            <?php
+                            $months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                            foreach($months as $idx => $m):
+                                $m_num = str_pad($idx + 1, 2, '0', STR_PAD_LEFT);
+                            ?>
+                            <button type="button" data-month="<?= $m_num ?>" onclick="toggleMonth(this, '<?= $m_num ?>')" class="month-btn flex-shrink-0 w-[38px] py-1 rounded text-[9px] font-bold uppercase tracking-wider transition-all text-center select-none border text-gray-500 border-transparent hover:text-purple-400 hover:bg-white/5">
+                                <?= $m ?>
+                            </button>
+                            <?php endforeach; ?>
+                        </div>
+                        <button type="button" onclick="scrollQuickMonths(1)" class="absolute right-0 z-10 h-full px-1.5 bg-gradient-to-l from-slate-900 via-slate-900/90 to-transparent flex items-center justify-end text-gray-400 hover:text-white transition-all"><i class="fas fa-chevron-right text-[8px]"></i></button>
+                    </div>
+                </div>
+            </div>
             </div>
         </div>
 
@@ -255,6 +299,80 @@ $stores_stmt->close();
 <script>
 (function() {
     let filterTimer;
+    
+    const ACTIVE_CLS   = ['!bg-purple-500/20','!text-purple-400','shadow-sm','!border-purple-500/50'];
+    const INACTIVE_CLS = ['text-gray-500','border-transparent'];
+    let selectedYears  = new Set();
+    let selectedMonths = new Set();
+
+    function applyQuickFilter() {
+        if (selectedYears.size === 0 || selectedMonths.size === 0) return;
+        const minY = Math.min(...selectedYears), maxY = Math.max(...selectedYears);
+        const minM = Math.min(...[...selectedMonths].map(Number));
+        const maxM = Math.max(...[...selectedMonths].map(Number));
+        const pad = v => String(v).padStart(2,'0');
+        const startDate = `${minY}-${pad(minM)}-01`;
+        const lastDay   = new Date(maxY, maxM, 0).getDate();
+        const endDate   = `${maxY}-${pad(maxM)}-${lastDay}`;
+        document.querySelector('[name="start_date"]').value = startDate;
+        document.querySelector('[name="end_date"]').value   = endDate;
+        refreshTable(1);
+    }
+
+    window.toggleYear = function(btn, year) {
+        if (selectedYears.has(year)) { selectedYears.delete(year); btn.classList.remove(...ACTIVE_CLS); btn.classList.add(...INACTIVE_CLS); }
+        else { selectedYears.add(year); btn.classList.add(...ACTIVE_CLS); btn.classList.remove(...INACTIVE_CLS); }
+        document.getElementById('yr-multi-hint').textContent = selectedYears.size > 1 ? `(${selectedYears.size} selected)` : '';
+        applyQuickFilter();
+    };
+
+    window.toggleMonth = function(btn, monthNum) {
+        const m = parseInt(monthNum);
+        if (selectedMonths.has(m)) { selectedMonths.delete(m); btn.classList.remove(...ACTIVE_CLS); btn.classList.add(...INACTIVE_CLS); }
+        else { selectedMonths.add(m); btn.classList.add(...ACTIVE_CLS); btn.classList.remove(...INACTIVE_CLS); }
+        document.getElementById('mo-multi-hint').textContent = selectedMonths.size > 1 ? `(${selectedMonths.size} selected)` : '';
+        applyQuickFilter();
+    };
+
+    window.scrollQuickYears = function(dir) { const c = document.getElementById('years-container'); c.scrollBy({ left: dir * c.clientWidth, behavior: 'smooth' }); };
+    window.scrollQuickMonths = function(dir) { const c = document.getElementById('months-container'); c.scrollBy({ left: dir * c.clientWidth, behavior: 'smooth' }); };
+
+    function initQuickFilters() {
+        const sDate = document.querySelector('[name="start_date"]').value;
+        const eDate = document.querySelector('[name="end_date"]').value;
+        if (sDate && eDate) {
+            const s = new Date(sDate + 'T00:00:00');
+            const e = new Date(eDate + 'T00:00:00');
+            for (let y = s.getFullYear(); y <= e.getFullYear(); y++) {
+                selectedYears.add(y);
+                const btn = document.querySelector(`.year-btn[data-year="${y}"]`);
+                if (btn) { btn.classList.add(...ACTIVE_CLS); btn.classList.remove(...INACTIVE_CLS); }
+            }
+            let cur = new Date(s.getFullYear(), s.getMonth(), 1);
+            const end = new Date(e.getFullYear(), e.getMonth(), 1);
+            while (cur <= end) {
+                const m = cur.getMonth() + 1;
+                selectedMonths.add(m);
+                const pad = v => String(v).padStart(2,'0');
+                const btn = document.querySelector(`.month-btn[data-month="${pad(m)}"]`);
+                if (btn) { btn.classList.add(...ACTIVE_CLS); btn.classList.remove(...INACTIVE_CLS); }
+                cur.setMonth(cur.getMonth() + 1);
+            }
+            if (selectedYears.size > 1)  document.getElementById('yr-multi-hint').textContent = `(${selectedYears.size} selected)`;
+            if (selectedMonths.size > 1) document.getElementById('mo-multi-hint').textContent = `(${selectedMonths.size} selected)`;
+            setTimeout(() => {
+                const yc = document.getElementById('years-container');
+                const yBtn = document.querySelector(`.year-btn[data-year="${s.getFullYear()}"]`);
+                if (yBtn && yc) yc.scrollTo({ left: yBtn.offsetLeft - yc.clientWidth/2 + yBtn.clientWidth/2, behavior: 'smooth' });
+                
+                const mc = document.getElementById('months-container');
+                const pad = v => String(v).padStart(2,'0');
+                const mBtn = document.querySelector(`.month-btn[data-month="${pad(s.getMonth()+1)}"]`);
+                if (mBtn && mc) mc.scrollTo({ left: mBtn.offsetLeft - mc.clientWidth/2 + mBtn.clientWidth/2, behavior: 'smooth' });
+            }, 300);
+        }
+    }
+
     function refreshTable(page = 1) {
         const container = document.getElementById('non-submission-container');
         const searchInputEl = document.querySelector('[name="search"]');
@@ -306,8 +424,23 @@ $stores_stmt->close();
         });
 
         [limitSelect, startDate, endDate, storeFilter].forEach(el => {
-            el?.addEventListener('change', () => refreshTable(1));
+            el?.addEventListener('change', () => {
+                if (el === startDate || el === endDate) {
+                    selectedYears.clear();
+                    selectedMonths.clear();
+                    document.querySelectorAll('.year-btn, .month-btn').forEach(btn => {
+                        btn.classList.remove(...ACTIVE_CLS);
+                        btn.classList.add(...INACTIVE_CLS);
+                    });
+                    document.getElementById('yr-multi-hint').textContent = '';
+                    document.getElementById('mo-multi-hint').textContent = '';
+                    initQuickFilters();
+                }
+                refreshTable(1);
+            });
         });
+        
+        initQuickFilters();
     }
 
     window.exportToExcel = function(format = 'csv') {
