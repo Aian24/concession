@@ -737,7 +737,10 @@ if (isset($_GET['ajax'])) {
         const storeFilter = document.querySelector('[name="store_filter"]');
         const selectAll   = document.getElementById('selectAll');
         
-        searchInput?.addEventListener('input', () => { clearTimeout(filterTimer); filterTimer = setTimeout(() => refreshTable(1), 300); });
+        searchInput?.addEventListener('input', () => {
+            clearTimeout(filterTimer);
+            filterTimer = setTimeout(() => refreshTable(1), 800);
+        });
         [limitSelect, startInput, endInput, storeFilter].forEach(el => el?.addEventListener('change', () => refreshTable(1)));
         
         document.querySelectorAll('#history-container .pagination-link').forEach(link => {

@@ -228,7 +228,7 @@ if ($page > $total_pages) $page = $total_pages;
             clearTimeout(timer);
             timer = setTimeout(() => {
                 form.submit();
-            }, 500);
+            }, 800);
         });
         
         limitSelect.addEventListener('change', function() {

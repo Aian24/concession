@@ -580,7 +580,10 @@ $all_stores_stmt->close();
         const storeFilter    = document.querySelector('[name="store_filter"]');
         const selectAll      = document.getElementById('select-all');
         
-        searchInput?.addEventListener('input', () => { clearTimeout(filterTimer); filterTimer = setTimeout(() => refreshTable(1), 300); });
+        searchInput?.addEventListener('input', () => {
+            clearTimeout(filterTimer);
+            filterTimer = setTimeout(() => refreshTable(1), 800);
+        });
         [limitSelect, startInput, endInput, storeFilter].forEach(el => el?.addEventListener('change', () => refreshTable(1)));
         
         document.querySelectorAll('#receiving-history-section .pagination-link').forEach(link => {

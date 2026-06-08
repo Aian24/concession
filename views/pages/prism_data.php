@@ -216,7 +216,7 @@ if (isset($_GET['ajax'])) {
 
         searchInput?.addEventListener('input', () => {
             clearTimeout(filterTimer);
-            filterTimer = setTimeout(() => refreshPrismTable(1), 300);
+            filterTimer = setTimeout(() => refreshPrismTable(1), 800);
         });
 
         limitSelect?.addEventListener('change', () => refreshPrismTable(1));

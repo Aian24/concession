@@ -302,7 +302,7 @@ $stores_stmt->close();
 
         searchInput?.addEventListener('input', () => {
             clearTimeout(filterTimer);
-            filterTimer = setTimeout(() => refreshTable(1), 300);
+            filterTimer = setTimeout(() => refreshTable(1), 800);
         });
 
         [limitSelect, startDate, endDate, storeFilter].forEach(el => {

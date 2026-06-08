@@ -416,7 +416,7 @@ function initTableEvents() {
             let timer;
             document.querySelector(`[name="${name}"]`)?.addEventListener('input', () => {
                 clearTimeout(timer);
-                timer = setTimeout(() => refreshTable(1), 500);
+                timer = setTimeout(() => refreshTable(1), 800);
             });
         }
     });

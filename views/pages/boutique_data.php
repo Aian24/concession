@@ -252,7 +252,7 @@ if (isset($_GET['ajax'])) {
 
         searchInput?.addEventListener('input', () => {
             clearTimeout(filterTimer);
-            filterTimer = setTimeout(() => refreshBoutiqueTable(1), 300);
+            filterTimer = setTimeout(() => refreshBoutiqueTable(1), 800);
         });
 
         limitSelect?.addEventListener('change', () => refreshBoutiqueTable(1));
