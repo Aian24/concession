@@ -955,6 +955,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     borderColor: '#ec4899',
                     borderWidth: 3,
                     borderDash: [5, 5],
+                    borderDashOffset: 0,
                     backgroundColor: 'transparent',
                     fill: false,
                     tension: 0.45,
@@ -971,6 +972,28 @@ document.addEventListener('DOMContentLoaded', function() {
             ]
         },
         options: {
+            animations: {
+                borderDashOffset: {
+                    animation: true,
+                    duration: 2000,
+                    easing: 'linear',
+                    from: 20,
+                    to: 0,
+                    loop: true
+                }
+            },
+            animation: {
+                delay: (context) => {
+                    let delay = 0;
+                    if (context.type === 'data' && context.mode === 'default' && !context.dropped) {
+                        delay = context.dataIndex * 40;
+                        context.dropped = true;
+                    }
+                    return delay;
+                },
+                duration: 1500,
+                easing: 'easeOutQuart'
+            },
             responsive: true,
             maintainAspectRatio: false,
             interaction: {
