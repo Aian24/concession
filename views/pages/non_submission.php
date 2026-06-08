@@ -167,7 +167,7 @@ $stores_stmt->close();
             </style>
             
             <!-- Live Filters Grid -->
-            <div class="grid grid-cols-2 lg:grid-cols-6 gap-3 bg-white/5 p-3 rounded-xl border border-white/5 mb-4">
+            <div class="grid grid-cols-2 lg:grid-cols-6 gap-3 bg-white/5 p-3 rounded-xl border border-white/5">
                 <div class="space-y-1 col-span-2 lg:col-span-1">
                     <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Search</label>
                     <div class="relative">
@@ -286,7 +286,6 @@ $stores_stmt->close();
                         <button type="button" onclick="scrollQuickMonths(1)" class="absolute right-0 z-10 h-full px-1.5 bg-gradient-to-l from-slate-900 via-slate-900/90 to-transparent flex items-center justify-end text-gray-400 hover:text-white transition-all"><i class="fas fa-chevron-right text-[8px]"></i></button>
                     </div>
                 </div>
-            </div>
             </div>
         </div>
 
