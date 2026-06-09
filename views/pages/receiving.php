@@ -489,6 +489,7 @@ $all_stores_stmt->close();
 
     window.submitReceiving = function () {
         const entries = [];
+        let valid = true;
         document.querySelectorAll('.entry-row').forEach(row => {
             const os   = row.querySelector('[name="os_no"]').value.trim();
             let from = row.querySelector('[name="from_store"]').value.trim();
@@ -498,12 +499,24 @@ $all_stores_stmt->close();
             if (from.includes(' - ')) from = from.split(' - ')[0];
             if (to.includes(' - ')) to = to.split(' - ')[0];
 
-            if (os && qty > 0) {
-                entries.push({ item_no: '', os_no: os, from_store: from, to_store: to, quantity: qty });
+            if (os || from || to || qty) {
+                if (!os || !from || !to || !qty) {
+                    valid = false;
+                } else {
+                    entries.push({ item_no: '', os_no: os, from_store: from, to_store: to, quantity: qty });
+                }
             }
         });
 
-        if (entries.length === 0) return;
+        if (!valid) {
+            showStatusModal(false, 'Please complete all fields (OS #, From, To, and Qty) for each entry.', 'Incomplete Entry');
+            return;
+        }
+
+        if (entries.length === 0) {
+            showStatusModal(false, 'Please add at least one receiving entry.', 'Empty List');
+            return;
+        }
         
         const loader = document.getElementById('loading-overlay');
         loader.classList.remove('opacity-0', 'pointer-events-none');

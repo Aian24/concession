@@ -575,14 +575,30 @@ if (isset($_GET['ajax'])) {
 
     window.submitSale = function () {
         const entries = [];
+        let valid = true;
         document.querySelectorAll('.entry-row').forEach(row => {
             const item = row.querySelector('[name="item_no"]').value.trim();
             const amt  = row.querySelector('[name="amount_sold"]').value;
             const qty  = row.querySelector('[name="quantity"]').value;
-            if (item) entries.push({ item_no: item, amount_sold: amt, quantity: qty });
+            
+            if (item || amt || qty) {
+                if (!item || !amt || !qty) {
+                    valid = false;
+                } else {
+                    entries.push({ item_no: item, amount_sold: amt, quantity: qty });
+                }
+            }
         });
 
-        if (entries.length === 0) return;
+        if (!valid) {
+            showStatusModal(false, 'Please complete all fields (Item #, Price, and Qty) for each entry.', 'Incomplete Entry');
+            return;
+        }
+
+        if (entries.length === 0) {
+            showStatusModal(false, 'Please add at least one sale entry.', 'Empty List');
+            return;
+        }
         
         // Show Loader
         const loader = document.getElementById('loading-overlay');

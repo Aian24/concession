@@ -626,29 +626,34 @@ if (isset($_GET['ajax'])) {
                 ex_amt = c.querySelector('.entry-ex-amt').value;
             }
 
-            const has_return = (item !== '' && (amt !== '' || qty !== ''));
+            const has_return = (item !== '' || amt !== '' || qty !== '');
             const has_exchange = hasExToggle && (ex_name !== '' || ex_item !== '' || ex_amt !== '' || ex_qty !== '');
 
-            if (has_return || has_exchange) {
+            if (has_return || has_exchange || hasExToggle) {
                 // If return is partially filled, it's invalid
-                if (item !== '' && amt === '' && qty === '') { valid = false; }
+                if (has_return && (item === '' || amt === '' || qty === '')) { valid = false; }
                 
-                entries.push({
-                    return_item: item,
-                    quantity: qty,
-                    return_amount: amt,
-                    reason: reason,
-                    is_exchange: has_exchange ? 1 : 0,
-                    exchange_name: ex_name,
-                    exchange_item: ex_item,
-                    exchange_quantity: ex_qty,
-                    exchange_amount: ex_amt || 0
-                });
+                // If exchange is enabled, all exchange fields must be filled
+                if (hasExToggle && (ex_name === '' || ex_item === '' || ex_amt === '' || ex_qty === '')) { valid = false; }
+                
+                if (valid && (has_return || has_exchange)) {
+                    entries.push({
+                        return_item: item,
+                        quantity: qty,
+                        return_amount: amt,
+                        reason: reason,
+                        is_exchange: has_exchange ? 1 : 0,
+                        exchange_name: ex_name,
+                        exchange_item: ex_item,
+                        exchange_quantity: ex_qty,
+                        exchange_amount: ex_amt || 0
+                    });
+                }
             }
         });
 
         if (!valid) {
-            showStatusModal(false, 'Please complete both Item # and Amount if you are filling a section.', 'Input Missing');
+            showStatusModal(false, 'Please complete all required fields for Return (Item #, Qty, Amount) or Exchange if enabled.', 'Incomplete Entry');
             return;
         }
 
