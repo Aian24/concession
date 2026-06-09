@@ -109,11 +109,11 @@
                         <td class="px-4 py-2 md:text-right text-emerald-400 font-black" data-label="Amount">₱<?= number_format($row['amount'], 2) ?></td>
                         <td class="px-4 py-2 text-right" data-label="Actions">
                             <div class="flex items-center justify-end gap-2">
-                                <button onclick="editBoutique(<?= $row['id'] ?>, '<?= htmlspecialchars($row['date'], ENT_QUOTES) ?>', '<?= htmlspecialchars($row['store_code'], ENT_QUOTES) ?>', '<?= htmlspecialchars($row['store_name'], ENT_QUOTES) ?>', <?= $row['qty_sold'] ?>, <?= $row['amount'] ?>)" class="w-7 h-7 rounded-lg bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 flex items-center justify-center transition-colors" title="Edit">
-                                    <i class="fas fa-edit"></i>
+                                <button onclick="editBoutique(<?= $row['id'] ?>, '<?= htmlspecialchars($row['date'], ENT_QUOTES) ?>', '<?= htmlspecialchars($row['store_code'], ENT_QUOTES) ?>', '<?= htmlspecialchars($row['store_name'], ENT_QUOTES) ?>', <?= $row['qty_sold'] ?>, <?= $row['amount'] ?>)" class="w-7 h-7 rounded-lg bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 border border-yellow-500/20 flex items-center justify-center transition-colors" title="Edit">
+                                    <i class="fas fa-edit text-[10px]"></i>
                                 </button>
-                                <button onclick="deleteBoutique(<?= $row['id'] ?>)" class="w-7 h-7 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 flex items-center justify-center transition-colors" title="Delete">
-                                    <i class="fas fa-trash-alt"></i>
+                                <button onclick="deleteBoutique(<?= $row['id'] ?>)" class="w-7 h-7 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 flex items-center justify-center transition-colors" title="Delete">
+                                    <i class="fas fa-trash-alt text-[10px]"></i>
                                 </button>
                             </div>
                         </td>
