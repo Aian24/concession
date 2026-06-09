@@ -169,11 +169,11 @@
 
         <!-- Install App Button -->
         <div id="install-app-section" class="mt-4 pt-4 border-t border-white/5">
-            <button id="install-app-btn" onclick="installApp()" class="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-purple-500/30 text-gray-400 hover:text-white transition-all flex items-center justify-center gap-2.5 group">
-                <i class="fas fa-mobile-alt text-purple-400 group-hover:scale-110 transition-transform"></i>
-                <span class="text-xs font-bold uppercase tracking-widest">Install App</span>
+            <a href="mobile/apk/concession.apk" download id="install-app-btn" class="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-purple-500/30 text-gray-400 hover:text-white transition-all flex items-center justify-center gap-2.5 group">
+                <i class="fab fa-android text-purple-400 group-hover:scale-110 transition-transform"></i>
+                <span class="text-xs font-bold uppercase tracking-widest">Download App</span>
                 <span class="text-[8px] bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded-full font-black uppercase tracking-wider">APK</span>
-            </button>
+            </a>
         </div>
 
         <script>
@@ -402,88 +402,7 @@
             });
         });
 
-        // ── PWA Install Logic ────────────────────────────────────
-        let deferredPrompt = null;
-
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            // Show the install button with a badge
-            const btn = document.getElementById('install-app-btn');
-            if (btn) {
-                btn.classList.add('ring-1', 'ring-purple-500/30');
-            }
-        });
-
-        window.addEventListener('appinstalled', () => {
-            deferredPrompt = null;
-            const section = document.getElementById('install-app-section');
-            if (section) {
-                section.innerHTML = `
-                    <div class="text-center py-2">
-                        <span class="text-[10px] text-green-400 font-bold uppercase tracking-widest flex items-center justify-center gap-2">
-                            <i class="fas fa-check-circle"></i> App Installed Successfully
-                        </span>
-                    </div>
-                `;
-            }
-        });
-
-        function installApp() {
-            if (deferredPrompt) {
-                // Browser supports install prompt - use it
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then((choice) => {
-                    deferredPrompt = null;
-                });
-            } else if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
-                // Already installed
-                alert('App is already installed on your device!');
-            } else {
-                // Show manual install instructions modal
-                showInstallInstructions();
-            }
-        }
-
-        function showInstallInstructions() {
-            const overlay = document.createElement('div');
-            overlay.id = 'install-modal';
-            overlay.className = 'fixed inset-0 z-[200] flex items-center justify-center opacity-0 transition-opacity duration-300';
-            overlay.innerHTML = `
-                <div class="absolute inset-0 bg-slate-950/70 backdrop-blur-md" onclick="this.parentElement.remove()"></div>
-                <div class="relative w-full max-w-sm mx-4 bg-slate-900 border border-white/10 rounded-2xl shadow-2xl p-6 transform scale-95 transition-transform duration-300" id="install-modal-content">
-                    <div class="text-center mb-5">
-                        <div class="w-16 h-16 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mx-auto mb-4">
-                            <i class="fas fa-download text-purple-400 text-2xl"></i>
-                        </div>
-                        <h3 class="text-lg font-black text-white uppercase tracking-wider mb-1">Install App</h3>
-                        <p class="text-gray-500 text-xs">Choose your install method</p>
-                    </div>
-                    
-                    <div class="space-y-3">
-                        <a href="mobile/apk/concession.apk" download class="block bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl p-4 text-center hover:brightness-110 transition-all">
-                            <div class="flex items-center justify-center gap-2">
-                                <i class="fab fa-android text-white"></i>
-                                <span class="text-xs font-black text-white uppercase tracking-widest">Download APK</span>
-                            </div>
-                            <p class="text-[9px] text-white/60 mt-1">Android • Direct Install</p>
-                        </a>
-                    </div>
-
-                    <button onclick="this.closest('#install-modal').remove()" class="w-full mt-4 py-2.5 rounded-xl bg-white/5 text-gray-400 text-[10px] font-bold uppercase tracking-widest hover:bg-white/10 transition-all border border-white/5">
-                        Close
-                    </button>
-                </div>
-            `;
-            document.body.appendChild(overlay);
-            setTimeout(() => {
-                overlay.classList.remove('opacity-0');
-                overlay.querySelector('#install-modal-content').classList.remove('scale-95');
-                overlay.querySelector('#install-modal-content').classList.add('scale-100');
-            }, 10);
-        }
-
-        // Register Service Worker
+        // Register Service Worker for offline fallback (optional but good for speed)
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('service-worker.js').catch(() => {});
         }
