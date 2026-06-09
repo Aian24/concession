@@ -288,7 +288,24 @@ if (isset($_GET['edit'])) {
                         z-index: 10;
                     }
                     #roles-table td[data-label="Actions"]::before { display: none; }
-                    #roles-table td[data-label="Actions"] .flex { justify-content: flex-end; }
+                    #roles-table td[data-label="Actions"] .flex { 
+                        justify-content: flex-end; 
+                        overflow: visible !important;
+                    }
+                    #roles-table td[data-label="Actions"] button,
+                    #roles-table td[data-label="Actions"] a {
+                        display: flex !important;
+                        align-items: center !important;
+                        justify-content: center !important;
+                        padding: 0 !important;
+                        margin: 0 !important;
+                    }
+                    #roles-table td[data-label="Actions"] button i,
+                    #roles-table td[data-label="Actions"] a i {
+                        display: block !important;
+                        line-height: 1 !important;
+                        margin: auto !important;
+                    }
                     
                     #roles-table td span, 
                     #roles-table td div { 

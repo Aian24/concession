@@ -66,7 +66,22 @@
                 z-index: 10;
             }
             #boutique-data-table td[data-label="Actions"]::before { display: none; }
-            #boutique-data-table td[data-label="Actions"] .flex { justify-content: flex-end; }
+            #boutique-data-table td[data-label="Actions"] .flex { 
+                justify-content: flex-end; 
+                overflow: visible !important; 
+            }
+            #boutique-data-table td[data-label="Actions"] button {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            #boutique-data-table td[data-label="Actions"] button i {
+                display: block !important;
+                line-height: 1 !important;
+                margin: auto !important;
+            }
             
             #boutique-data-table td span, 
             #boutique-data-table td div { 
