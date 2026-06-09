@@ -27,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
     // For local testing with Android Emulator, use: http://10.0.2.2/Concession/
     // For local testing with real device on same WiFi, use your PC's IP: http://192.168.x.x/Concession/
     // ============================================================
-    private static final String WEB_URL = "http://10.0.2.2/Concession/";
+    private static final String WEB_URL = "https://rustylopez.com/Concession/";
     // ============================================================
 
     private WebView webView;
