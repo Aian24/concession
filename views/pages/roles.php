@@ -237,8 +237,70 @@ if (isset($_GET['edit'])) {
                 <span class="text-[10px] uppercase font-bold tracking-widest text-gray-500"><?= count($all_roles) ?> Roles</span>
             </div>
             
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse glass-table whitespace-nowrap">
+            <style>
+                @media (max-width: 768px) {
+                    #roles-table thead { display: none; }
+                    #roles-table, #roles-table tbody { display: block; width: 100%; }
+                    #roles-table tr { 
+                        display: grid;
+                        grid-template-columns: repeat(2, 1fr);
+                        gap: 12px;
+                        margin-bottom: 1.5rem; 
+                        margin-left: 1.25rem;
+                        margin-right: 1.25rem;
+                        border: 1px solid rgba(255,255,255,0.08); 
+                        border-radius: 1.5rem; 
+                        padding: 1.25rem; 
+                        background: linear-gradient(145deg, rgba(30, 41, 59, 0.4), rgba(15, 23, 42, 0.4));
+                        position: relative;
+                        box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+                    }
+                    #roles-table tr:first-child { margin-top: 1.5rem; }
+                    #roles-table td { 
+                        display: flex; 
+                        flex-direction: column;
+                        justify-content: flex-start; 
+                        align-items: flex-start; 
+                        padding: 0; 
+                        border: none; 
+                        white-space: normal;
+                        min-width: 0;
+                        grid-column: span 1 !important;
+                    }
+                    #roles-table td::before { 
+                        content: attr(data-label); 
+                        font-weight: 900; 
+                        text-transform: uppercase; 
+                        font-size: 7px; 
+                        color: #64748b; 
+                        letter-spacing: 0.1em;
+                        margin-bottom: 4px;
+                        opacity: 0.8;
+                    }
+                    
+                    #roles-table td[data-label="Actions"] {
+                        position: absolute;
+                        top: 1rem;
+                        right: 1rem;
+                        width: auto;
+                        border: none;
+                        padding: 0;
+                        z-index: 10;
+                    }
+                    #roles-table td[data-label="Actions"]::before { display: none; }
+                    #roles-table td[data-label="Actions"] .flex { justify-content: flex-end; }
+                    
+                    #roles-table td span, 
+                    #roles-table td div { 
+                        font-size: 10px !important; 
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    }
+                    #roles-table td[data-label="Role Display Name"] { grid-column: span 2 !important; }
+                }
+            </style>
+            <div class="overflow-x-auto min-h-[300px]">
+                <table id="roles-table" class="w-full text-left border-collapse glass-table whitespace-nowrap">
                     <thead>
                         <tr>
                             <th class="p-4 font-semibold text-gray-400 text-[10px] tracking-widest uppercase">Role Display Name</th>
@@ -249,8 +311,8 @@ if (isset($_GET['edit'])) {
                     </thead>
                     <tbody class="text-sm">
                         <?php foreach($all_roles as $r): ?>
-                        <tr class="hover:bg-white/5 transition-colors group">
-                            <td class="p-4">
+                        <tr class="hover:bg-white/5 transition-colors group border-b border-white/5 last:border-0 border-r border-transparent hover:border-r-purple-500/50">
+                            <td class="p-4" data-label="Role Display Name">
                                 <div class="flex items-center gap-3">
                                     <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-purple-700 to-pink-600 border border-white/10 flex items-center justify-center text-white font-bold text-xs">
                                         <?= strtoupper(substr($r['display_name'], 0, 1)) ?>
@@ -266,15 +328,15 @@ if (isset($_GET['edit'])) {
                                     </div>
                                 </div>
                             </td>
-                            <td class="p-4">
+                            <td class="p-4" data-label="Internal Key">
                                 <span class="text-gray-400 font-mono text-xs"><?= htmlspecialchars($r['role_name']) ?></span>
                             </td>
-                            <td class="p-4 text-center">
+                            <td class="p-4 md:text-center" data-label="Users Assigned">
                                 <span class="px-3 py-1 rounded-full text-[10px] font-bold <?= $r['user_count'] > 0 ? 'bg-blue-500/20 text-blue-400' : 'bg-slate-700 text-gray-400' ?>">
                                     <?= $r['user_count'] ?> Users
                                 </span>
                             </td>
-                            <td class="p-4">
+                            <td class="p-4" data-label="Actions">
                                 <div class="flex justify-end gap-2">
                                     <a href="roles?edit=<?= $r['id'] ?>" class="w-8 h-8 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 transition-colors flex items-center justify-center" title="Edit Role">
                                         <i class="fas fa-edit text-xs"></i>
