@@ -167,13 +167,16 @@
             </button>
         </form>
 
-        <!-- Install App Button -->
-        <div id="install-app-section" class="mt-4 pt-4 border-t border-white/5">
-            <a href="mobile/apk/concession.apk" download id="install-app-btn" class="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-purple-500/30 text-gray-400 hover:text-white transition-all flex items-center justify-center gap-2.5 group">
-                <i class="fab fa-android text-purple-400 group-hover:scale-110 transition-transform"></i>
-                <span class="text-xs font-bold uppercase tracking-widest">Download App</span>
-                <span class="text-[8px] bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded-full font-black uppercase tracking-wider">APK</span>
+        <!-- Install App Buttons -->
+        <div id="install-app-section" class="mt-4 pt-4 border-t border-white/5 grid grid-cols-2 gap-3">
+            <a href="mobile/apk/concession.apk" download id="install-android-btn" class="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-green-500/30 text-gray-400 hover:text-white transition-all flex flex-col items-center justify-center gap-1 group">
+                <i class="fab fa-android text-green-400 text-lg group-hover:scale-110 transition-transform"></i>
+                <span class="text-[9px] font-bold uppercase tracking-widest">Android APK</span>
             </a>
+            <button type="button" onclick="showIOSInstructions()" id="install-ios-btn" class="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-blue-500/30 text-gray-400 hover:text-white transition-all flex flex-col items-center justify-center gap-1 group outline-none">
+                <i class="fab fa-apple text-gray-300 text-lg group-hover:scale-110 transition-transform group-hover:text-white"></i>
+                <span class="text-[9px] font-bold uppercase tracking-widest">iOS / iPhone</span>
+            </button>
         </div>
 
         <script>
@@ -401,6 +404,50 @@
                 loginBtn.classList.add('opacity-80', 'cursor-not-allowed');
             });
         });
+        
+        // ── iOS Install Instructions ─────────────────────────────
+        function showIOSInstructions() {
+            const overlay = document.createElement('div');
+            overlay.id = 'ios-install-modal';
+            overlay.className = 'fixed inset-0 z-[200] flex items-center justify-center opacity-0 transition-opacity duration-300 px-4';
+            overlay.innerHTML = `
+                <div class="absolute inset-0 bg-slate-950/70 backdrop-blur-md" onclick="this.parentElement.remove()"></div>
+                <div class="relative w-full max-w-sm bg-slate-900 border border-white/10 rounded-2xl shadow-2xl p-6 transform scale-95 transition-transform duration-300" id="ios-modal-content">
+                    <div class="text-center mb-5">
+                        <div class="w-16 h-16 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mx-auto mb-4">
+                            <i class="fab fa-apple text-blue-400 text-3xl"></i>
+                        </div>
+                        <h3 class="text-lg font-black text-white uppercase tracking-wider mb-1">Install on iOS</h3>
+                        <p class="text-gray-500 text-xs">Follow these steps on your iPhone or iPad</p>
+                    </div>
+                    
+                    <div class="bg-white/5 rounded-xl p-5 border border-white/5 space-y-4">
+                        <div class="flex items-start gap-3">
+                            <div class="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center shrink-0 mt-0.5 text-blue-400 font-bold text-xs">1</div>
+                            <p class="text-xs text-gray-300 leading-relaxed">Open this page using the <strong class="text-white">Safari</strong> browser.</p>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center shrink-0 mt-0.5 text-blue-400 font-bold text-xs">2</div>
+                            <p class="text-xs text-gray-300 leading-relaxed">Tap the <strong class="text-white">Share</strong> icon at the bottom of the screen.</p>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center shrink-0 mt-0.5 text-blue-400 font-bold text-xs">3</div>
+                            <p class="text-xs text-gray-300 leading-relaxed">Scroll down and select <strong class="text-white">"Add to Home Screen"</strong>.</p>
+                        </div>
+                    </div>
+
+                    <button onclick="this.closest('#ios-install-modal').remove()" class="w-full mt-5 py-3 rounded-xl bg-white/5 text-gray-400 text-[10px] font-bold uppercase tracking-widest hover:bg-white/10 hover:text-white transition-all border border-white/5 outline-none">
+                        Got it
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+            setTimeout(() => {
+                overlay.classList.remove('opacity-0');
+                overlay.querySelector('#ios-modal-content').classList.remove('scale-95');
+                overlay.querySelector('#ios-modal-content').classList.add('scale-100');
+            }, 10);
+        }
 
         // Register Service Worker for offline fallback (optional but good for speed)
         if ('serviceWorker' in navigator) {
