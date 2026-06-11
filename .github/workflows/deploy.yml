@@ -1,0 +1,36 @@
+name: Deploy Concession to FTP
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 2 # Fetches the current and previous commit to calculate changes
+
+    - name: FTP Deploy
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      with:
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        protocol: ftp
+        # List of files/folders to completely ignore during the FTP transfer
+        exclude: |
+          **/.git*
+          **/.git*/**
+          **/.github/**
+          node_modules/**
+          vendor/**
+          mobile/**
+          error_log
+          includes/db.php
+          images/**
+          *.log
