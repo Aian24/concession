@@ -552,26 +552,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }, 300);
     }
-    // Store filter dropdown
-    document.addEventListener('click', ev => {
-        const trigger = ev.target.closest('#store-filter-trigger');
-        const menu    = document.getElementById('store-filter-menu');
-        if (trigger) { menu?.classList.toggle('hidden'); }
-        else if (!ev.target.closest('#store-filter-container')) { menu?.classList.add('hidden'); }
-    });
-    document.querySelectorAll('.store-option').forEach(opt => {
-        opt.addEventListener('click', () => {
-            document.getElementById('store-filter-value').value = opt.dataset.value || '';
-            document.getElementById('selected-store-label').textContent = opt.dataset.label || 'All Stores';
-            document.getElementById('store-filter-menu')?.classList.add('hidden');
-            document.getElementById('store-filter-form').submit();
+    // Submit store filter form when a store is selected
+    const storeValInput = document.getElementById('store-filter-value');
+    if (storeValInput) {
+        storeValInput.addEventListener('change', () => {
+            document.getElementById('store-filter-form')?.submit();
         });
-    });
-    const ss = document.getElementById('store-search-filter');
-    if (ss) ss.addEventListener('input', () => {
-        const v = ss.value.toLowerCase();
-        document.querySelectorAll('.store-option').forEach(o => o.classList.toggle('hidden', !o.innerText.toLowerCase().includes(v)));
-    });
+    }
 });
 </script>
 
