@@ -576,10 +576,16 @@ if (isset($_GET['ajax'])) {
     window.submitSale = function () {
         const entries = [];
         let valid = true;
+        let hasErrors = false;
+        
         document.querySelectorAll('.entry-row').forEach(row => {
             const item = row.querySelector('[name="item_no"]').value.trim();
             const amt  = row.querySelector('[name="amount_sold"]').value;
             const qty  = row.querySelector('[name="quantity"]').value;
+            
+            if (row.querySelector('.item-error-msg')) {
+                hasErrors = true;
+            }
             
             if (item || amt || qty) {
                 if (!item || !amt || !qty) {
@@ -589,6 +595,11 @@ if (isset($_GET['ajax'])) {
                 }
             }
         });
+
+        if (hasErrors) {
+            showStatusModal(false, 'Please correct the invalid items before submitting.', 'Validation Error');
+            return;
+        }
 
         if (!valid) {
             showStatusModal(false, 'Please complete all fields (Item #, Price, and Qty) for each entry.', 'Incomplete Entry');
@@ -944,27 +955,76 @@ if (isset($_GET['ajax'])) {
         document.getElementById('summary-total').textContent = '₱' + total.toLocaleString('en-US', {minimumFractionDigits:2});
     };
 
+    window.showItemError = function(input, message) {
+        window.removeItemError(input);
+        const err = document.createElement('span');
+        err.className = 'item-error-msg absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 px-2 py-0.5 bg-red-600 text-[8px] font-black text-white rounded uppercase tracking-widest z-20 shadow-md whitespace-nowrap animate-fade-in';
+        err.textContent = message;
+        input.closest('.relative').appendChild(err);
+        input.classList.remove('border-white/10', 'focus:border-green-500/50', 'border-green-500/50');
+        input.classList.add('border-red-500/50', 'focus:border-red-500/50');
+    };
+
+    window.removeItemError = function(input) {
+        const wrapper = input.closest('.relative');
+        const err = wrapper.querySelector('.item-error-msg');
+        if (err) err.remove();
+        input.classList.remove('border-red-500/50', 'focus:border-red-500/50');
+        input.classList.add('border-white/10', 'focus:border-green-500/50');
+    };
+
+    window.itemValidationTimers = window.itemValidationTimers || new WeakMap();
+
     window.lookupPrismPrice = function(input) {
         const item_no = input.value.trim();
-        if (item_no.length < 3) return; // Minimum length to trigger lookup
+        
+        window.removeItemError(input);
+        input.classList.remove('border-green-500/50');
+
+        if (window.itemValidationTimers.has(input)) {
+            clearTimeout(window.itemValidationTimers.get(input));
+        }
 
         const row = input.closest('.entry-row');
-        if (!row) return;
+        const amountInput = row ? row.querySelector('[name="amount_sold"]') : null;
 
-        const amountInput = row.querySelector('[name="amount_sold"]');
-        if (!amountInput) return;
+        if (item_no.length === 0) {
+            if (amountInput) { amountInput.value = ''; window.updateSummary(); }
+            return;
+        }
 
-        fetch(`api/get_prism_price.php?item_no=${encodeURIComponent(item_no)}`)
-        .then(r => r.json())
-        .then(res => {
-            if (res.success) {
-                amountInput.value = res.srp;
-                window.updateSummary();
-                // Visual feedback
-                amountInput.classList.add('ring-2', 'ring-green-500/50');
-                setTimeout(() => amountInput.classList.remove('ring-2', 'ring-green-500/50'), 1000);
+        if (item_no.length === 6) {
+            fetch(`api/get_prism_price.php?item_no=${encodeURIComponent(item_no)}`)
+            .then(r => r.json())
+            .then(res => {
+                if (res.success) {
+                    window.removeItemError(input);
+                    input.classList.add('border-green-500/50');
+                    if (amountInput) {
+                        amountInput.value = res.srp;
+                        window.updateSummary();
+                        amountInput.classList.add('ring-2', 'ring-green-500/50');
+                        setTimeout(() => amountInput.classList.remove('ring-2', 'ring-green-500/50'), 1000);
+                    }
+                } else {
+                    window.showItemError(input, 'Item # not found');
+                    if (amountInput) {
+                        amountInput.value = '';
+                        window.updateSummary();
+                    }
+                }
+            });
+            return;
+        }
+
+        if (amountInput) { amountInput.value = ''; window.updateSummary(); }
+        
+        const timer = setTimeout(() => {
+            if (input.value.trim().length > 0 && input.value.trim().length < 6) {
+                window.showItemError(input, 'Invalid Item#');
             }
-        });
+        }, 1000);
+        window.itemValidationTimers.set(input, timer);
     };
 
     // Attach listener to initial rows
