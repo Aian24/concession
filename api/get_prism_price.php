@@ -12,13 +12,19 @@ if ($item_no === '') {
     exit;
 }
 
-$stmt = $db->prepare("SELECT srp FROM prismdata WHERE item_no = ? LIMIT 1");
+$stmt = $db->prepare("SELECT srp, stylename, color, size FROM prismdata WHERE item_no = ? LIMIT 1");
 $stmt->bind_param("s", $item_no);
 $stmt->execute();
 $res = $stmt->get_result();
 
 if ($row = $res->fetch_assoc()) {
-    echo json_encode(['success' => true, 'srp' => $row['srp']]);
+    echo json_encode([
+        'success' => true, 
+        'srp' => $row['srp'],
+        'stylename' => $row['stylename'],
+        'color' => $row['color'],
+        'size' => $row['size']
+    ]);
 } else {
     echo json_encode(['success' => false, 'message' => 'Item not found in Prism Data.']);
 }

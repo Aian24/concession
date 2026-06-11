@@ -281,7 +281,7 @@ if (isset($_GET['ajax'])) {
                                 <i class="fas fa-trash-alt text-[10px]"></i>
                             </button>
                         </div>
-                        <div class="p-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="p-4 grid grid-cols-1 md:grid-cols-4 gap-4">
                             <div class="relative flex items-stretch">
                                 <span class="absolute top-0 -translate-y-1/2 left-3 px-1 bg-[#0d1527] text-[8px] font-black text-green-400/80 uppercase tracking-widest z-10">Item #</span>
                                 <input type="number" name="item_no" min="0" oninput="if(this.value.length > 6) this.value = this.value.slice(0, 6);" onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();" class="bg-slate-900/50 border border-white/10 rounded-l-xl px-4 py-2.5 flex-1 text-xs text-white focus:outline-none focus:border-green-500/50 font-medium" placeholder="100123">
@@ -296,6 +296,10 @@ if (isset($_GET['ajax'])) {
                             <div class="relative">
                                 <span class="absolute top-0 -translate-y-1/2 left-3 px-1 bg-[#0d1527] text-[8px] font-black text-green-400/80 uppercase tracking-widest z-10">Qty</span>
                                 <input type="number" name="quantity" min="0" max="1" maxlength="1" oninput="this.value = this.value.replace(/[^01]/g, '').substring(0, 1);" onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();" class="bg-slate-900/50 border border-white/10 rounded-xl px-4 py-2.5 w-full text-xs text-white focus:outline-none focus:border-green-500/50 font-medium" placeholder="0">
+                            </div>
+                            <div class="relative">
+                                <span class="absolute top-0 -translate-y-1/2 left-3 px-1 bg-[#0d1527] text-[8px] font-black text-green-400/80 uppercase tracking-widest z-10">Details</span>
+                                <input type="text" name="item_details" readonly class="bg-slate-900/50 border border-white/10 rounded-xl px-4 py-2.5 w-full text-[10px] text-gray-400 focus:outline-none font-medium cursor-not-allowed truncate" placeholder="Style, Color, Size">
                             </div>
                         </div>
                     </div>
@@ -987,9 +991,11 @@ if (isset($_GET['ajax'])) {
 
         const row = input.closest('.entry-row');
         const amountInput = row ? row.querySelector('[name="amount_sold"]') : null;
+        const detailsInput = row ? row.querySelector('[name="item_details"]') : null;
 
         if (item_no.length === 0) {
             if (amountInput) { amountInput.value = ''; window.updateSummary(); }
+            if (detailsInput) detailsInput.value = '';
             return;
         }
 
@@ -1006,18 +1012,27 @@ if (isset($_GET['ajax'])) {
                         amountInput.classList.add('ring-2', 'ring-green-500/50');
                         setTimeout(() => amountInput.classList.remove('ring-2', 'ring-green-500/50'), 1000);
                     }
+                    if (detailsInput) {
+                        const style = res.stylename ? `Style: ${res.stylename}` : '';
+                        const color = res.color ? `Color: ${res.color}` : '';
+                        const size = res.size ? `Size: ${res.size}` : '';
+                        const parts = [style, color, size].filter(Boolean);
+                        detailsInput.value = parts.join(' | ');
+                    }
                 } else {
                     window.showItemError(input, 'Item # not found');
                     if (amountInput) {
                         amountInput.value = '';
                         window.updateSummary();
                     }
+                    if (detailsInput) detailsInput.value = '';
                 }
             });
             return;
         }
 
         if (amountInput) { amountInput.value = ''; window.updateSummary(); }
+        if (detailsInput) detailsInput.value = '';
         
         const timer = setTimeout(() => {
             if (input.value.trim().length > 0 && input.value.trim().length < 6) {

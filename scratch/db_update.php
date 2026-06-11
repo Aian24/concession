@@ -1,45 +1,5 @@
 <?php
-require_once '../includes/db.php';
-
-/**
- * DATABASE UPDATE SCRIPT
- * ----------------------
- * Use this to run SQL commands on Bluehost without opening phpMyAdmin.
- * 
- * INSTRUCTIONS:
- * 1. Put your SQL command in the $sql variable below.
- * 2. Push to GitHub.
- * 3. Visit: https://rustylopez.com/Concession/scratch/db_update.php
- * 4. IMPORTANT: Delete the SQL from this file after it runs successfully.
- */
-
-// --- ADD YOUR SQL HERE ---
-$sql = "
-    CREATE TABLE IF NOT EXISTS prismdata (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        item_no VARCHAR(255) NOT NULL,
-        srp DECIMAL(10, 2) NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-";
-// -------------------------
-
-if (trim($sql) == "") {
-    die("No SQL provided. Please edit the script first.");
-}
-
+require_once __DIR__ . '/../includes/db.php';
 $db = db_connect();
-
-if ($db->multi_query($sql)) {
-    echo "<h1 style='color:green;'>?? Database Updated Successfully!</h1>";
-    do {
-        if ($result = $db->store_result()) {
-            $result->free();
-        }
-    } while ($db->more_results() && $db->next_result());
-} else {
-    echo "<h1 style='color:red;'>?? Error updating database:</h1>";
-    echo "<pre>" . $db->error . "</pre>";
-}
-
-$db->close();
+$db->query("ALTER TABLE prismdata ADD COLUMN stylename VARCHAR(255) NULL AFTER item_no, ADD COLUMN color VARCHAR(100) NULL AFTER stylename, ADD COLUMN size VARCHAR(100) NULL AFTER color;");
+echo $db->error ? "Error: " . $db->error : "Success";

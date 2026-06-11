@@ -17,9 +17,12 @@ if (!$data) {
     exit;
 }
 
-$id      = $data['id'] ?? null;
-$item_no = trim($data['item_no'] ?? '');
-$srp     = floatval($data['srp'] ?? 0);
+$id        = $data['id'] ?? null;
+$item_no   = trim($data['item_no'] ?? '');
+$stylename = trim($data['stylename'] ?? '');
+$color     = trim($data['color'] ?? '');
+$size      = trim($data['size'] ?? '');
+$srp       = floatval($data['srp'] ?? 0);
 
 if ($item_no === '') {
     echo json_encode(['success' => false, 'message' => 'Item Number is required.']);
@@ -28,12 +31,12 @@ if ($item_no === '') {
 
 if ($id) {
     // Update
-    $stmt = $db->prepare("UPDATE prismdata SET item_no = ?, srp = ? WHERE id = ?");
-    $stmt->bind_param("sdi", $item_no, $srp, $id);
+    $stmt = $db->prepare("UPDATE prismdata SET item_no = ?, stylename = ?, color = ?, size = ?, srp = ? WHERE id = ?");
+    $stmt->bind_param("ssssdi", $item_no, $stylename, $color, $size, $srp, $id);
 } else {
     // Insert
-    $stmt = $db->prepare("INSERT INTO prismdata (item_no, srp) VALUES (?, ?)");
-    $stmt->bind_param("sd", $item_no, $srp);
+    $stmt = $db->prepare("INSERT INTO prismdata (item_no, stylename, color, size, srp) VALUES (?, ?, ?, ?, ?)");
+    $stmt->bind_param("ssssd", $item_no, $stylename, $color, $size, $srp);
 }
 
 if ($stmt->execute()) {

@@ -108,6 +108,9 @@ if (!isset($prism_rows)) {
                     </div>
                 </th>
                 <th class="p-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Item Number</th>
+                <th class="p-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Style Name</th>
+                <th class="p-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Color</th>
+                <th class="p-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Size</th>
                 <th class="p-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">SRP</th>
                 <th class="p-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Actions</th>
             </tr>
@@ -115,7 +118,7 @@ if (!isset($prism_rows)) {
         <tbody class="divide-y divide-white/5">
             <?php if (empty($prism_rows)): ?>
                 <tr>
-                    <td colspan="4" class="p-12 text-center text-gray-500 italic text-sm">No prism data found.</td>
+                    <td colspan="7" class="p-12 text-center text-gray-500 italic text-sm">No prism data found.</td>
                 </tr>
             <?php else: ?>
                 <?php foreach ($prism_rows as $row): ?>
@@ -133,12 +136,21 @@ if (!isset($prism_rows)) {
                             <span class="text-xs font-bold text-white"><?= htmlspecialchars($row['item_no']) ?></span>
                         </div>
                     </td>
+                    <td class="p-4" data-label="Style Name">
+                        <span class="text-xs font-medium text-gray-300"><?= htmlspecialchars($row['stylename'] ?? '') ?></span>
+                    </td>
+                    <td class="p-4" data-label="Color">
+                        <span class="text-xs font-medium text-gray-300"><?= htmlspecialchars($row['color'] ?? '') ?></span>
+                    </td>
+                    <td class="p-4" data-label="Size">
+                        <span class="text-xs font-medium text-gray-300"><?= htmlspecialchars($row['size'] ?? '') ?></span>
+                    </td>
                     <td class="p-4 text-right" data-label="SRP">
                         <span class="text-xs font-black text-emerald-400">&#8369; <?= number_format($row['srp'], 2) ?></span>
                     </td>
                     <td class="p-4 text-right" data-label="Actions">
                         <div class="flex items-center justify-end md:justify-end gap-2 opacity-40 group-hover:opacity-100 transition-all">
-                            <button onclick="editPrism(<?= $row['id'] ?>, '<?= addslashes($row['item_no']) ?>', <?= $row['srp'] ?>)" class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 border border-blue-500/20 transition-all flex items-center justify-center" title="Edit">
+                            <button onclick="editPrism(<?= $row['id'] ?>, '<?= addslashes($row['item_no']) ?>', '<?= addslashes($row['stylename'] ?? '') ?>', '<?= addslashes($row['color'] ?? '') ?>', '<?= addslashes($row['size'] ?? '') ?>', <?= $row['srp'] ?>)" class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 border border-blue-500/20 transition-all flex items-center justify-center" title="Edit">
                                 <i class="fas fa-edit text-[10px]"></i>
                             </button>
                             <button onclick="deletePrism(<?= $row['id'] ?>)" class="w-8 h-8 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20 transition-all flex items-center justify-center" title="Delete">

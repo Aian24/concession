@@ -31,10 +31,13 @@ $db->begin_transaction();
 
 try {
     while (($data = fgetcsv($handle)) !== false) {
-        if (count($data) < 2) continue;
+        if (count($data) < 5) continue;
         
-        $item_no = trim($data[0]);
-        $srp     = trim($data[1]);
+        $item_no   = trim($data[0]);
+        $stylename = trim($data[1]);
+        $color     = trim($data[2]);
+        $size      = trim($data[3]);
+        $srp       = trim($data[4]);
         
         if ($item_no === '') continue;
 
@@ -46,8 +49,8 @@ try {
         // But for now, simple insert or if we want uniqueness on item_no:
         // Let's check if item_no already exists or just use a unique index on item_no
         
-        $stmt = $db->prepare("INSERT INTO prismdata (item_no, srp) VALUES (?, ?) ON DUPLICATE KEY UPDATE srp = VALUES(srp)");
-        $stmt->bind_param("sd", $item_no, $srp);
+        $stmt = $db->prepare("INSERT INTO prismdata (item_no, stylename, color, size, srp) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE stylename = VALUES(stylename), color = VALUES(color), size = VALUES(size), srp = VALUES(srp)");
+        $stmt->bind_param("ssssd", $item_no, $stylename, $color, $size, $srp);
         
         if ($stmt->execute()) {
             $success_count++;

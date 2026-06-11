@@ -1,0 +1,106 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.concession.app"
+4    android:versionCode="1"
+5    android:versionName="1.0" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="24"
+9        android:targetSdkVersion="34" />
+10
+11    <!-- Permissions -->
+12    <uses-permission android:name="android.permission.INTERNET" />
+12-->C:\xampp\htdocs\Concession\mobile\app\src\main\AndroidManifest.xml:6:5-67
+12-->C:\xampp\htdocs\Concession\mobile\app\src\main\AndroidManifest.xml:6:22-64
+13    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+13-->C:\xampp\htdocs\Concession\mobile\app\src\main\AndroidManifest.xml:7:5-79
+13-->C:\xampp\htdocs\Concession\mobile\app\src\main\AndroidManifest.xml:7:22-76
+14    <uses-permission android:name="android.permission.CAMERA" />
+14-->C:\xampp\htdocs\Concession\mobile\app\src\main\AndroidManifest.xml:8:5-65
+14-->C:\xampp\htdocs\Concession\mobile\app\src\main\AndroidManifest.xml:8:22-62
+15    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+15-->C:\xampp\htdocs\Concession\mobile\app\src\main\AndroidManifest.xml:9:5-80
+15-->C:\xampp\htdocs\Concession\mobile\app\src\main\AndroidManifest.xml:9:22-77
+16    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+16-->C:\xampp\htdocs\Concession\mobile\app\src\main\AndroidManifest.xml:10:5-81
+16-->C:\xampp\htdocs\Concession\mobile\app\src\main\AndroidManifest.xml:10:22-78
+17
+18    <permission
+18-->[androidx.core:core:1.9.0] C:\Users\Administrator\.gradle\caches\transforms-3\f0f4ee7c3b88100b2d2cd4b05ab423cd\transformed\core-1.9.0\AndroidManifest.xml:22:5-24:47
+19        android:name="com.concession.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+19-->[androidx.core:core:1.9.0] C:\Users\Administrator\.gradle\caches\transforms-3\f0f4ee7c3b88100b2d2cd4b05ab423cd\transformed\core-1.9.0\AndroidManifest.xml:23:9-81
+20        android:protectionLevel="signature" />
+20-->[androidx.core:core:1.9.0] C:\Users\Administrator\.gradle\caches\transforms-3\f0f4ee7c3b88100b2d2cd4b05ab423cd\transformed\core-1.9.0\AndroidManifest.xml:24:9-44
+21
+22    <uses-permission android:name="com.concession.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+22-->[androidx.core:core:1.9.0] C:\Users\Administrator\.gradle\caches\transforms-3\f0f4ee7c3b88100b2d2cd4b05ab423cd\transformed\core-1.9.0\AndroidManifest.xml:26:5-97
+22-->[androidx.core:core:1.9.0] C:\Users\Administrator\.gradle\caches\transforms-3\f0f4ee7c3b88100b2d2cd4b05ab423cd\transformed\core-1.9.0\AndroidManifest.xml:26:22-94
+23
+24    <application
+24-->C:\xampp\htdocs\Concession\mobile\app\src\main\AndroidManifest.xml:12:5-32:19
+25        android:allowBackup="true"
+25-->C:\xampp\htdocs\Concession\mobile\app\src\main\AndroidManifest.xml:13:9-35
+26        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+26-->[androidx.core:core:1.9.0] C:\Users\Administrator\.gradle\caches\transforms-3\f0f4ee7c3b88100b2d2cd4b05ab423cd\transformed\core-1.9.0\AndroidManifest.xml:28:18-86
+27        android:debuggable="true"
+28        android:extractNativeLibs="false"
+29        android:hardwareAccelerated="true"
+29-->C:\xampp\htdocs\Concession\mobile\app\src\main\AndroidManifest.xml:18:9-43
+30        android:icon="@mipmap/ic_launcher"
+30-->C:\xampp\htdocs\Concession\mobile\app\src\main\AndroidManifest.xml:14:9-43
+31        android:label="@string/app_name"
+31-->C:\xampp\htdocs\Concession\mobile\app\src\main\AndroidManifest.xml:15:9-41
+32        android:supportsRtl="true"
+32-->C:\xampp\htdocs\Concession\mobile\app\src\main\AndroidManifest.xml:19:9-35
+33        android:theme="@style/AppTheme"
+33-->C:\xampp\htdocs\Concession\mobile\app\src\main\AndroidManifest.xml:16:9-40
+34        android:usesCleartextTraffic="true" >
+34-->C:\xampp\htdocs\Concession\mobile\app\src\main\AndroidManifest.xml:17:9-44
+35        <activity
+35-->C:\xampp\htdocs\Concession\mobile\app\src\main\AndroidManifest.xml:21:9-31:20
+36            android:name="com.concession.app.MainActivity"
+36-->C:\xampp\htdocs\Concession\mobile\app\src\main\AndroidManifest.xml:22:13-41
+37            android:configChanges="orientation|screenSize|keyboard|keyboardHidden"
+37-->C:\xampp\htdocs\Concession\mobile\app\src\main\AndroidManifest.xml:24:13-83
+38            android:exported="true"
+38-->C:\xampp\htdocs\Concession\mobile\app\src\main\AndroidManifest.xml:23:13-36
+39            android:screenOrientation="portrait"
+39-->C:\xampp\htdocs\Concession\mobile\app\src\main\AndroidManifest.xml:25:13-49
+40            android:windowSoftInputMode="adjustResize" >
+40-->C:\xampp\htdocs\Concession\mobile\app\src\main\AndroidManifest.xml:26:13-55
+41            <intent-filter>
+41-->C:\xampp\htdocs\Concession\mobile\app\src\main\AndroidManifest.xml:27:13-30:29
+42                <action android:name="android.intent.action.MAIN" />
+42-->C:\xampp\htdocs\Concession\mobile\app\src\main\AndroidManifest.xml:28:17-69
+42-->C:\xampp\htdocs\Concession\mobile\app\src\main\AndroidManifest.xml:28:25-66
+43
+44                <category android:name="android.intent.category.LAUNCHER" />
+44-->C:\xampp\htdocs\Concession\mobile\app\src\main\AndroidManifest.xml:29:17-77
+44-->C:\xampp\htdocs\Concession\mobile\app\src\main\AndroidManifest.xml:29:27-74
+45            </intent-filter>
+46        </activity>
+47
+48        <provider
+48-->[androidx.emoji2:emoji2:1.2.0] C:\Users\Administrator\.gradle\caches\transforms-3\4cbcf27c467347a1a697d011e0391f2d\transformed\emoji2-1.2.0\AndroidManifest.xml:24:9-32:20
+49            android:name="androidx.startup.InitializationProvider"
+49-->[androidx.emoji2:emoji2:1.2.0] C:\Users\Administrator\.gradle\caches\transforms-3\4cbcf27c467347a1a697d011e0391f2d\transformed\emoji2-1.2.0\AndroidManifest.xml:25:13-67
+50            android:authorities="com.concession.app.androidx-startup"
+50-->[androidx.emoji2:emoji2:1.2.0] C:\Users\Administrator\.gradle\caches\transforms-3\4cbcf27c467347a1a697d011e0391f2d\transformed\emoji2-1.2.0\AndroidManifest.xml:26:13-68
+51            android:exported="false" >
+51-->[androidx.emoji2:emoji2:1.2.0] C:\Users\Administrator\.gradle\caches\transforms-3\4cbcf27c467347a1a697d011e0391f2d\transformed\emoji2-1.2.0\AndroidManifest.xml:27:13-37
+52            <meta-data
+52-->[androidx.emoji2:emoji2:1.2.0] C:\Users\Administrator\.gradle\caches\transforms-3\4cbcf27c467347a1a697d011e0391f2d\transformed\emoji2-1.2.0\AndroidManifest.xml:29:13-31:52
+53                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+53-->[androidx.emoji2:emoji2:1.2.0] C:\Users\Administrator\.gradle\caches\transforms-3\4cbcf27c467347a1a697d011e0391f2d\transformed\emoji2-1.2.0\AndroidManifest.xml:30:17-75
+54                android:value="androidx.startup" />
+54-->[androidx.emoji2:emoji2:1.2.0] C:\Users\Administrator\.gradle\caches\transforms-3\4cbcf27c467347a1a697d011e0391f2d\transformed\emoji2-1.2.0\AndroidManifest.xml:31:17-49
+55            <meta-data
+55-->[androidx.lifecycle:lifecycle-process:2.4.1] C:\Users\Administrator\.gradle\caches\transforms-3\99c153321b5a4708fb21029fa13f7442\transformed\lifecycle-process-2.4.1\AndroidManifest.xml:31:13-33:52
+56                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+56-->[androidx.lifecycle:lifecycle-process:2.4.1] C:\Users\Administrator\.gradle\caches\transforms-3\99c153321b5a4708fb21029fa13f7442\transformed\lifecycle-process-2.4.1\AndroidManifest.xml:32:17-78
+57                android:value="androidx.startup" />
+57-->[androidx.lifecycle:lifecycle-process:2.4.1] C:\Users\Administrator\.gradle\caches\transforms-3\99c153321b5a4708fb21029fa13f7442\transformed\lifecycle-process-2.4.1\AndroidManifest.xml:33:17-49
+58        </provider>
+59    </application>
+60
+61</manifest>
