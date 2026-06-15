@@ -76,7 +76,7 @@ if ($type === 'csv') {
     header('Content-Type: text/csv');
     header('Content-Disposition: attachment; filename="' . $filename . '.csv"');
     $output = fopen('php://output', 'w');
-    fputcsv($output, ['Date', 'Store', 'Item #', 'Qty', 'User', 'Image Proof']);
+    fputcsv($output, ['Date', 'Store', 'ITR # / OS #', 'Qty', 'User', 'Image Proof']);
     
     $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
     $base_url = $protocol . "://" . $_SERVER['HTTP_HOST'] . dirname(dirname($_SERVER['REQUEST_URI'])) . "/";
@@ -100,7 +100,7 @@ if ($type === 'csv') {
     $base_url = $protocol . "://" . $_SERVER['HTTP_HOST'] . dirname(dirname($_SERVER['REQUEST_URI'])) . "/";
 
     $excel_data = [];
-    $excel_data[] = ['Date', 'Store', 'Item #', 'Qty', 'User', 'Image Proof'];
+    $excel_data[] = ['Date', 'Store', 'ITR # / OS #', 'Qty', 'User', 'Image Proof'];
     
     foreach ($data_rows as $row) {
         $img_link = $row['image_path'] ? $base_url . $row['image_path'] : '';
@@ -111,7 +111,7 @@ if ($type === 'csv') {
             $row['item_no'],
             (int)$row['quantity'],
             $row['username'],
-            $img_link ?: 'No Image'
+            $img_link ? '<f>IMAGE("'.$img_link.'")</f>' : 'No Image'
         ];
     }
     
