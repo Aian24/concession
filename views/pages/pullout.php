@@ -275,7 +275,7 @@ if (isset($_GET['ajax'])) {
                     </div>
                     <div class="p-4 grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="relative">
-                            <span class="absolute top-0 -translate-y-1/2 left-3 px-1 bg-[#0d1527] text-[8px] font-black text-amber-400/80 uppercase tracking-widest z-10">ITR #</span>
+                            <span class="absolute top-0 -translate-y-1/2 left-3 px-1 bg-[#0d1527] text-[8px] font-black text-amber-400/80 uppercase tracking-widest z-10">ITR # / OS #</span>
                             <div class="relative">
                                 <input type="number" name="item_no[]" required oninput="if(this.value.length > 8) this.value = this.value.slice(0, 8);" onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();" class="bg-slate-900/50 border border-white/10 rounded-xl px-4 py-2.5 w-full text-xs text-white focus:outline-none focus:border-amber-500/50 font-medium" placeholder="10012345">
                             </div>
@@ -367,7 +367,7 @@ if (isset($_GET['ajax'])) {
                 <form id="edit-pullout-form" class="space-y-4">
                     <input type="hidden" name="id" id="edit-id">
                     <div class="space-y-1">
-                        <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">ITR #</label>
+                        <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">ITR # / OS #</label>
                         <input type="number" name="item_no" id="edit-item-no" required oninput="if(this.value.length > 8) this.value = this.value.slice(0, 8);" onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();" class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500/50 transition-all font-medium" placeholder="10012345">
                     </div>
                     <div class="space-y-1">
