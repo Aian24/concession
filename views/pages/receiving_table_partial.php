@@ -341,7 +341,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
                         <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 text-center">Store</th>
                     <?php endif; ?>
 
-                    <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 text-center">OS #</th>
+                    <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 text-center">TF#</th>
                     <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 text-center">Qty</th>
                     <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 text-center">Source (From)</th>
                     <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 text-center">Destination (To)</th>
@@ -387,7 +387,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
                             </td>
                         <?php endif; ?>
                         
-                        <td class="px-5 py-3.5 font-bold text-cyan-300 tracking-wide text-center" data-label="OS #"><?= htmlspecialchars($r['os_no']) ?></td>
+                        <td class="px-5 py-3.5 font-bold text-cyan-300 tracking-wide text-center" data-label="TF#"><?= htmlspecialchars($r['os_no']) ?></td>
                         <td class="px-5 py-3.5 text-center" data-label="Qty">
                             <span class="px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 font-black text-[11px]"><?= $r['quantity'] ?></span>
                         </td>

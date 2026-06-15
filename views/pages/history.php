@@ -268,7 +268,7 @@ if ($page > $total_pages) $page = $total_pages;
                             <th class="px-6 py-3 text-right">Date</th>
                         <?php elseif ($tab === 'receiving'): ?>
                             <?php if($is_admin): ?><th class="px-6 py-3">User</th><?php endif; ?>
-                            <th class="px-6 py-3">OS #</th>
+                            <th class="px-6 py-3">TF#</th>
                             <th class="px-6 py-3">From (Store)</th>
                             <th class="px-6 py-3">To (Store)</th>
                             <th class="px-6 py-3 text-center">Quantity</th>
@@ -417,7 +417,7 @@ if ($page > $total_pages) $page = $total_pages;
                             </div>
                         <?php elseif ($tab === 'receiving'): ?>
                             <div>
-                                <span class="text-[9px] text-gray-500 uppercase tracking-wider block">OS #</span>
+                                <span class="text-[9px] text-gray-500 uppercase tracking-wider block">TF#</span>
                                 <span class="text-cyan-400 font-bold"><?= htmlspecialchars($r['os_no']) ?></span>
                             </div>
                             <div>

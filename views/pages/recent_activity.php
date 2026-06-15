@@ -39,7 +39,7 @@ if ($table_check && $table_check->num_rows === 0) {
     $db->query("INSERT INTO activity_log (username, action_type, module, store_code, reference, quantity, details, created_at)
         SELECT username, 'create', 'Return', store_code, COALESCE(return_item, exchange_item, 'Return Item'), quantity, CONCAT('Created return/exchange entry for item #', COALESCE(return_item, exchange_item, 'Return Item')), created_at FROM returns");
     $db->query("INSERT INTO activity_log (username, action_type, module, store_code, reference, quantity, details, created_at)
-        SELECT username, 'create', 'Receiving', store_code, os_no, quantity, CONCAT('Created receiving entry for OS #', os_no), created_at FROM receiving");
+        SELECT username, 'create', 'Receiving', store_code, os_no, quantity, CONCAT('Created receiving entry for TF#', os_no), created_at FROM receiving");
     $db->query("INSERT INTO activity_log (username, action_type, module, store_code, reference, quantity, details, created_at)
         SELECT username, 'create', 'Pullout', store_code, item_no, quantity, CONCAT('Created pullout entry for item #', item_no), created_at FROM pullouts");
 } else {
