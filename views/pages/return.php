@@ -348,7 +348,7 @@ if (isset($_GET['ajax'])) {
                             </div>
                             <div class="space-y-1">
                                 <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Qty</label>
-                                <input type="number" name="quantity" id="edit-qty" min="0" max="1" maxlength="1" oninput="this.value = this.value.replace(/[^01]/g, '').substring(0, 1);" onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();" class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500/50 transition-all font-medium" placeholder="0">
+                                <input type="number" name="quantity" id="edit-qty" min="0" onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();" class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500/50 transition-all font-medium" placeholder="0">
                             </div>
                         </div>
                         <div class="space-y-1">
@@ -378,7 +378,7 @@ if (isset($_GET['ajax'])) {
                             </div>
                             <div class="space-y-1">
                                 <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Qty</label>
-                                <input type="number" name="exchange_quantity" id="edit-ex-qty" min="0" max="1" maxlength="1" oninput="this.value = this.value.replace(/[^01]/g, '').substring(0, 1);" onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();" class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500/50 transition-all font-medium" placeholder="0">
+                                <input type="number" name="exchange_quantity" id="edit-ex-qty" min="0" onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();" class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500/50 transition-all font-medium" placeholder="0">
                             </div>
                         </div>
                         <div class="space-y-1">
@@ -437,7 +437,7 @@ if (isset($_GET['ajax'])) {
                         </div>
                         <div class="relative mt-2">
                             <span class="absolute top-0 -translate-y-1/2 left-3 px-1 bg-[#0d1527] text-[8px] font-black text-orange-400/80 uppercase tracking-widest z-10">Qty</span>
-                            <input type="number" min="0" max="1" maxlength="1" class="entry-qty bg-slate-900 border border-white/10 rounded-lg px-3 py-2 w-full text-xs text-white focus:outline-none focus:border-orange-500/50" placeholder="0" oninput="this.value = this.value.replace(/[^01]/g, '').substring(0, 1); updateStats();" onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();">
+                            <input type="number" min="0" class="entry-qty bg-slate-900 border border-white/10 rounded-lg px-3 py-2 w-full text-xs text-white focus:outline-none focus:border-orange-500/50" placeholder="0" oninput="updateStats();" onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();">
                         </div>
                     </div>
                     <div class="relative mt-2">
@@ -475,7 +475,7 @@ if (isset($_GET['ajax'])) {
                             </div>
                             <div class="relative mt-2">
                                 <span class="absolute top-0 -translate-y-1/2 left-3 px-1 bg-[#0d1527] text-[8px] font-black text-blue-400/80 uppercase tracking-widest z-10">Qty</span>
-                                <input type="number" min="0" max="1" maxlength="1" class="entry-ex-qty bg-slate-900 border border-white/10 rounded-lg px-3 py-2 w-full text-xs text-white focus:outline-none focus:border-blue-500/50" placeholder="0" oninput="this.value = this.value.replace(/[^01]/g, '').substring(0, 1); updateStats();" onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();">
+                                <input type="number" min="0" class="entry-ex-qty bg-slate-900 border border-white/10 rounded-lg px-3 py-2 w-full text-xs text-white focus:outline-none focus:border-blue-500/50" placeholder="0" oninput="updateStats();" onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();">
                             </div>
                             <div class="relative mt-2">
                                 <span class="absolute top-0 -translate-y-1/2 left-3 px-1 bg-[#0d1527] text-[8px] font-black text-blue-400/80 uppercase tracking-widest z-10">Amount</span>
