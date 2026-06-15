@@ -299,7 +299,7 @@ if (isset($_GET['ajax'])) {
                             </div>
                             <div class="relative">
                                 <span class="absolute top-0 -translate-y-1/2 left-3 px-1 bg-[#0d1527] text-[8px] font-black text-green-400/80 uppercase tracking-widest z-10">Details</span>
-                                <input type="text" name="item_details" readonly class="bg-slate-900/50 border border-white/10 rounded-xl px-4 py-2.5 w-full text-xs text-gray-400 focus:outline-none font-medium cursor-not-allowed truncate" placeholder="Style, Color, Size">
+                                <input type="text" name="item_details" readonly class="bg-slate-900/50 border border-white/10 rounded-xl px-4 py-2.5 w-full text-xs text-gray-400 focus:outline-none font-medium cursor-not-allowed truncate" placeholder="Code | Style | Color | Size">
                             </div>
                         </div>
                     </div>
@@ -1013,10 +1013,11 @@ if (isset($_GET['ajax'])) {
                         setTimeout(() => amountInput.classList.remove('ring-2', 'ring-green-500/50'), 1000);
                     }
                     if (detailsInput) {
-                        const style = res.stylename ? `Style: ${res.stylename}` : '';
-                        const color = res.color ? `Color: ${res.color}` : '';
-                        const size = res.size ? `Size: ${res.size}` : '';
-                        const parts = [style, color, size].filter(Boolean);
+                        const itemcode = res.itemcode || '';
+                        const style = res.stylename || '';
+                        const color = res.color || '';
+                        const size = res.size || '';
+                        const parts = [itemcode, style, color, size].filter(Boolean);
                         detailsInput.value = parts.join(' | ');
                     }
                 } else {
