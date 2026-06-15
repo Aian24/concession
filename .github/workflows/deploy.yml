@@ -15,6 +15,14 @@ jobs:
       with:
         fetch-depth: 2 # Fetches the current and previous commit to calculate changes
 
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
+        
+    - name: Install Dependencies
+      run: composer install --no-dev --optimize-autoloader
+
     - name: FTP Deploy
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
       with:
@@ -28,7 +36,6 @@ jobs:
           **/.git*/**
           **/.github/**
           node_modules/**
-          vendor/**
           mobile/**
           error_log
           includes/db.php
