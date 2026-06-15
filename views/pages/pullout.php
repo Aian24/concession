@@ -282,7 +282,7 @@ if (isset($_GET['ajax'])) {
                         </div>
                         <div class="relative">
                             <span class="absolute top-0 -translate-y-1/2 left-3 px-1 bg-[#0d1527] text-[8px] font-black text-amber-400/80 uppercase tracking-widest z-10">Qty</span>
-                            <input type="number" name="quantity[]" min="0" onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();" class="bg-slate-900/50 border border-white/10 rounded-xl px-4 py-2.5 w-full text-xs text-white focus:outline-none focus:border-amber-500/50 font-medium" placeholder="0">
+                            <input type="number" name="quantity[]" min="0" max="999" maxlength="3" oninput="this.value = this.value.replace(/[^0-9]/g, '').substring(0, 3);" onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();" class="bg-slate-900/50 border border-white/10 rounded-xl px-4 py-2.5 w-full text-xs text-white focus:outline-none focus:border-amber-500/50 font-medium" placeholder="0">
                         </div>
                         <div class="relative">
                             <span class="absolute top-0 -translate-y-1/2 left-3 px-1 bg-[#0d1527] text-[8px] font-black text-amber-400/80 uppercase tracking-widest z-10">Image Proof</span>
@@ -372,7 +372,7 @@ if (isset($_GET['ajax'])) {
                     </div>
                     <div class="space-y-1">
                         <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Quantity</label>
-                        <input type="number" name="quantity" id="edit-qty" required min="0" onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();" class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500/50 transition-all font-medium">
+                        <input type="number" name="quantity" id="edit-qty" required min="0" max="999" maxlength="3" oninput="this.value = this.value.replace(/[^0-9]/g, '').substring(0, 3);" onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();" class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500/50 transition-all font-medium">
                     </div>
                     <div class="space-y-1">
                         <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Transaction Date</label>
