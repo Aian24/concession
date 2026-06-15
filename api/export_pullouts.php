@@ -94,29 +94,49 @@ if ($type === 'csv') {
     }
     fclose($output);
 } elseif ($type === 'xls') {
-    require_once '../includes/SimpleXLSXGen.php';
+    require '../vendor/autoload.php';
     
-    $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
-    $base_url = $protocol . "://" . $_SERVER['HTTP_HOST'] . dirname(dirname($_SERVER['REQUEST_URI'])) . "/";
-
-    $excel_data = [];
-    $excel_data[] = ['Date', 'Store', 'ITR # / OS #', 'Qty', 'User', 'Image Proof'];
+    $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+    $sheet = $spreadsheet->getActiveSheet();
     
+    $sheet->setCellValue('A1', 'Date');
+    $sheet->setCellValue('B1', 'Store');
+    $sheet->setCellValue('C1', 'ITR # / OS #');
+    $sheet->setCellValue('D1', 'Qty');
+    $sheet->setCellValue('E1', 'User');
+    $sheet->setCellValue('F1', 'Image Proof');
+    
+    $row_num = 2;
     foreach ($data_rows as $row) {
-        $img_link = $row['image_path'] ? $base_url . $row['image_path'] : '';
+        $sheet->setCellValue('A' . $row_num, date('M d, Y', strtotime($row['created_at'])));
+        $sheet->setCellValue('B' . $row_num, $row['sname'] ? "{$row['sname']} ({$row['store_code']})" : $row['store_code']);
+        $sheet->setCellValue('C' . $row_num, $row['item_no']);
+        $sheet->setCellValue('D' . $row_num, (int)$row['quantity']);
+        $sheet->setCellValue('E' . $row_num, $row['username']);
         
-        $excel_data[] = [
-            date('M d, Y', strtotime($row['created_at'])),
-            $row['sname'] ? "{$row['sname']} ({$row['store_code']})" : $row['store_code'],
-            $row['item_no'],
-            (int)$row['quantity'],
-            $row['username'],
-            $img_link ? '<f>IMAGE("'.$img_link.'")</f>' : 'No Image'
-        ];
+        if (!empty($row['image_path']) && file_exists('../' . $row['image_path'])) {
+            $drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
+            $drawing->setName('Proof');
+            $drawing->setDescription('Proof');
+            $drawing->setPath('../' . $row['image_path']);
+            $drawing->setCoordinates('F' . $row_num);
+            $drawing->setHeight(80);
+            $drawing->setWorksheet($sheet);
+            $sheet->getRowDimension($row_num)->setRowHeight(80);
+        } else {
+            $sheet->setCellValue('F' . $row_num, 'No Image');
+        }
+        $row_num++;
     }
     
-    $xlsx = Shuchkin\SimpleXLSXGen::fromArray($excel_data);
-    $xlsx->downloadAs("{$filename}.xlsx");
+    $sheet->getColumnDimension('F')->setWidth(15);
+    
+    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    header('Content-Disposition: attachment; filename="' . $filename . '.xlsx"');
+    header('Cache-Control: max-age=0');
+    
+    $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Xlsx');
+    $writer->save('php://output');
     exit;
 } else {
     header('Content-Type: text/plain');
