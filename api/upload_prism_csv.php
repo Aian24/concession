@@ -31,26 +31,22 @@ $db->begin_transaction();
 
 try {
     while (($data = fgetcsv($handle)) !== false) {
-        if (count($data) < 5) continue;
+        if (count($data) < 6) continue;
         
         $item_no   = trim($data[0]);
-        $stylename = trim($data[1]);
-        $color     = trim($data[2]);
-        $size      = trim($data[3]);
-        $srp       = trim($data[4]);
+        $itemcode  = trim($data[1]);
+        $stylename = trim($data[2]);
+        $color     = trim($data[3]);
+        $size      = trim($data[4]);
+        $srp       = trim($data[5]);
         
         if ($item_no === '') continue;
 
         // Convert SRP to float, remove commas if any
         $srp = floatval(str_replace(',', '', $srp));
 
-        // Use REPLACE INTO or INSERT ON DUPLICATE KEY UPDATE if you want to update existing items
-        // Since id is auto-increment but item_no might be unique logically, we can use item_no as a key
-        // But for now, simple insert or if we want uniqueness on item_no:
-        // Let's check if item_no already exists or just use a unique index on item_no
-        
-        $stmt = $db->prepare("INSERT INTO prismdata (item_no, stylename, color, size, srp) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE stylename = VALUES(stylename), color = VALUES(color), size = VALUES(size), srp = VALUES(srp)");
-        $stmt->bind_param("ssssd", $item_no, $stylename, $color, $size, $srp);
+        $stmt = $db->prepare("INSERT INTO prismdata (item_no, itemcode, stylename, color, size, srp) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE itemcode = VALUES(itemcode), stylename = VALUES(stylename), color = VALUES(color), size = VALUES(size), srp = VALUES(srp)");
+        $stmt->bind_param("sssssd", $item_no, $itemcode, $stylename, $color, $size, $srp);
         
         if ($stmt->execute()) {
             $success_count++;

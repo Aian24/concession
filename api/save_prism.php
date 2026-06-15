@@ -19,6 +19,7 @@ if (!$data) {
 
 $id        = $data['id'] ?? null;
 $item_no   = trim($data['item_no'] ?? '');
+$itemcode  = trim($data['itemcode'] ?? '');
 $stylename = trim($data['stylename'] ?? '');
 $color     = trim($data['color'] ?? '');
 $size      = trim($data['size'] ?? '');
@@ -31,12 +32,12 @@ if ($item_no === '') {
 
 if ($id) {
     // Update
-    $stmt = $db->prepare("UPDATE prismdata SET item_no = ?, stylename = ?, color = ?, size = ?, srp = ? WHERE id = ?");
-    $stmt->bind_param("ssssdi", $item_no, $stylename, $color, $size, $srp, $id);
+    $stmt = $db->prepare("UPDATE prismdata SET item_no = ?, itemcode = ?, stylename = ?, color = ?, size = ?, srp = ? WHERE id = ?");
+    $stmt->bind_param("sssssdi", $item_no, $itemcode, $stylename, $color, $size, $srp, $id);
 } else {
     // Insert
-    $stmt = $db->prepare("INSERT INTO prismdata (item_no, stylename, color, size, srp) VALUES (?, ?, ?, ?, ?)");
-    $stmt->bind_param("ssssd", $item_no, $stylename, $color, $size, $srp);
+    $stmt = $db->prepare("INSERT INTO prismdata (item_no, itemcode, stylename, color, size, srp) VALUES (?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("sssssd", $item_no, $itemcode, $stylename, $color, $size, $srp);
 }
 
 if ($stmt->execute()) {

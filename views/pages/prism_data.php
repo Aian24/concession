@@ -33,7 +33,7 @@ $total_pages = max(1, ceil($total_rows / $limit));
 $count_stmt->close();
 
 // Fetch Rows
-$stmt = $db->prepare("SELECT * FROM prismdata $where ORDER BY item_no ASC LIMIT ? OFFSET ?");
+$stmt = $db->prepare("SELECT * FROM prismdata $where ORDER BY item_no DESC LIMIT ? OFFSET ?");
 $p_with_limit = array_merge($params, [$limit, $offset]);
 $stmt->bind_param($types . "ii", ...$p_with_limit);
 $stmt->execute();
@@ -57,10 +57,14 @@ if (isset($_GET['ajax'])) {
         </div>
 
         <div class="p-6">
-            <form id="prism-form" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <form id="prism-form" class="grid grid-cols-1 md:grid-cols-6 gap-4">
                 <div class="space-y-1">
                     <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Item Number</label>
                     <input type="text" name="item_no" id="prism-item-no" required class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500/50 font-medium" placeholder="e.g. ITEM-001">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Item Code</label>
+                    <input type="text" name="itemcode" id="prism-itemcode" class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500/50 font-medium" placeholder="Item Code">
                 </div>
                 <div class="space-y-1">
                     <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Style Name</label>
@@ -78,7 +82,7 @@ if (isset($_GET['ajax'])) {
                     <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">SRP</label>
                     <input type="number" step="0.01" name="srp" id="prism-srp" required class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500/50 font-medium" placeholder="0.00">
                 </div>
-                <div class="md:col-span-5 flex items-end gap-2">
+                <div class="md:col-span-6 flex items-end gap-2">
                     <button type="submit" id="submit-prism-btn" class="flex-1 h-[38px] rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-[10px] font-black uppercase tracking-wider shadow-lg shadow-blue-500/10 hover:-translate-y-0.5 transition-all">
                         Save Prism Data
                     </button>
@@ -88,7 +92,7 @@ if (isset($_GET['ajax'])) {
                     <input type="file" id="prism-csv-upload" class="hidden" accept=".csv" onchange="uploadPrismCSV(this)">
                 </div>
             </form>
-            <p class="text-[9px] text-gray-500 mt-3 italic font-medium tracking-wide">* CSV format: Column 1 = Item No, Column 2 = Style Name, Column 3 = Color, Column 4 = Size, Column 5 = SRP (No Header)</p>
+            <p class="text-[9px] text-gray-500 mt-3 italic font-medium tracking-wide">* CSV format: Column 1 = Item No, Column 2 = Item Code, Column 3 = Style Name, Column 4 = Color, Column 5 = Size, Column 6 = SRP (No Header)</p>
         </div>
     </div>
 
@@ -164,6 +168,10 @@ if (isset($_GET['ajax'])) {
                 <div class="space-y-1">
                     <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Item Number</label>
                     <input type="text" name="item_no" id="edit-prism-item-no" required class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500/50 font-medium">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Item Code</label>
+                    <input type="text" name="itemcode" id="edit-prism-itemcode" class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500/50 font-medium">
                 </div>
                 <div class="space-y-1">
                     <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Style Name</label>
@@ -272,9 +280,10 @@ if (isset($_GET['ajax'])) {
         });
     };
 
-    window.editPrism = function(id, item_no, stylename, color, size, srp) {
+    window.editPrism = function(id, item_no, itemcode, stylename, color, size, srp) {
         document.getElementById('edit-prism-id').value = id;
         document.getElementById('edit-prism-item-no').value = item_no;
+        document.getElementById('edit-prism-itemcode').value = itemcode;
         document.getElementById('edit-prism-stylename').value = stylename;
         document.getElementById('edit-prism-color').value = color;
         document.getElementById('edit-prism-size').value = size;
