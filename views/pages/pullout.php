@@ -141,7 +141,7 @@ if (isset($_GET['ajax'])) {
                             <!-- Current Date Option -->
                             <label class="relative cursor-pointer group">
                                 <input type="radio" name="page_date_type" value="current" checked class="peer sr-only" onchange="handleDateTypeChange(this.value)">
-                                <div class="py-1.5 px-3 flex items-center justify-center gap-2 rounded-lg border transition-all bg-slate-900 border-white/5 text-gray-500 peer-checked:border-amber-500/50 peer-checked:bg-amber-500/10 peer-checked:text-amber-400">
+                                <div class="py-1.5 px-3 flex items-center justify-center gap-2 rounded-lg border transition-all bg-slate-900 border-white/5 text-gray-500 peer-checked:!border-amber-500/50 peer-checked:!bg-amber-500/10 peer-checked:!text-amber-400">
                                     <i class="fas fa-clock text-[9px]"></i>
                                     <span class="text-[9px] font-bold uppercase tracking-tighter">Current</span>
                                 </div>
@@ -150,7 +150,7 @@ if (isset($_GET['ajax'])) {
                             <!-- Backdate Option -->
                             <label class="relative cursor-pointer group">
                                 <input type="radio" name="page_date_type" value="backdate" class="peer sr-only" onchange="handleDateTypeChange(this.value)">
-                                <div id="backdate-btn-content" class="py-1.5 px-3 flex items-center justify-center gap-2 rounded-lg border transition-all overflow-hidden relative bg-slate-900 border-white/5 text-gray-500 peer-checked:border-amber-500/50 peer-checked:bg-amber-500/10 peer-checked:text-amber-400">
+                                <div id="backdate-btn-content" class="py-1.5 px-3 flex items-center justify-center gap-2 rounded-lg border transition-all overflow-hidden relative bg-slate-900 border-white/5 text-gray-500 peer-checked:!border-amber-500/50 peer-checked:!bg-amber-500/10 peer-checked:!text-amber-400">
                                     <i class="fas fa-history text-[9px]"></i>
                                     <span id="backdate-text" class="text-[9px] font-bold uppercase tracking-tighter">Backdate</span>
                                     <input type="text" id="page_custom_date" 
