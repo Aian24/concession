@@ -116,7 +116,7 @@ if (!isset($can_delete)) {
                 <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Search</label>
                 <div class="relative">
                     <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-[10px]"></i>
-                    <input type="text" name="search" value="<?= htmlspecialchars($search) ?>" placeholder="Item # or User..." 
+                    <input type="text" name="search" value="<?= htmlspecialchars($search) ?>" placeholder="ITR # or User..." 
                            class="w-full bg-slate-900/80 border border-white/10 rounded-lg pl-8 pr-4 py-1.5 h-8 text-xs text-white focus:outline-none focus:border-amber-500/50">
                 </div>
             </div>
@@ -251,7 +251,7 @@ if (!isset($can_delete)) {
                     <?php if ($is_admin): ?>
                         <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Store</th>
                     <?php endif; ?>
-                    <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Item #</th>
+                    <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">ITR #</th>
                     <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Qty</th>
                     <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Image</th>
                     <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Submitted By</th>
@@ -295,7 +295,7 @@ if (!isset($can_delete)) {
                                 </div>
                             </td>
                         <?php endif; ?>
-                        <td class="px-5 py-3.5 font-bold text-amber-300 tracking-wide text-center" data-label="Item #"><?= htmlspecialchars($p['item_no']) ?></td>
+                        <td class="px-5 py-3.5 font-bold text-amber-300 tracking-wide text-center" data-label="ITR #"><?= htmlspecialchars($p['item_no']) ?></td>
                         <td class="px-5 py-3.5 text-gray-300 font-bold text-center" data-label="Qty"><?= $p['quantity'] ?></td>
                         <td class="px-5 py-3.5 text-center" data-label="Image">
                             <?php if ($p['image_path']): ?>

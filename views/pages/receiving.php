@@ -286,7 +286,7 @@ $all_stores_stmt->close();
                         </div>
                         <div class="p-4 grid grid-cols-1 md:grid-cols-4 gap-4">
                             <div class="relative">
-                                <span class="absolute top-0 -translate-y-1/2 left-3 px-1 bg-[#0d1527] text-[8px] font-black text-cyan-400/80 uppercase tracking-widest z-10">TF#</span>
+                                <span class="absolute top-0 -translate-y-1/2 left-3 px-1 bg-[#0d1527] text-[8px] font-black text-cyan-400/80 uppercase tracking-widest z-10">TF #</span>
                                 <input type="number" name="os_no" min="0" oninput="if(this.value.length > 6) this.value = this.value.slice(0, 6);" onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();" class="bg-slate-900/50 border border-white/10 rounded-xl px-4 py-2.5 w-full text-xs text-white focus:outline-none focus:border-cyan-500/50 font-medium" placeholder="1001">
                             </div>
                             <div class="relative">
@@ -372,7 +372,7 @@ $all_stores_stmt->close();
                 <input type="hidden" name="id" id="edit-id">
                 <div class="grid grid-cols-2 gap-4">
                     <div class="space-y-1">
-                        <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">TF#</label>
+                        <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">TF #</label>
                         <input type="number" name="os_no" id="edit-os-no" required min="0" oninput="if(this.value.length > 6) this.value = this.value.slice(0, 6);" onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();" class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-500/50 transition-all font-medium" placeholder="1001">
                     </div>
                     <div class="space-y-1">
@@ -509,7 +509,7 @@ $all_stores_stmt->close();
         });
 
         if (!valid) {
-            showStatusModal(false, 'Please complete all fields (TF#, From, To, and Qty) for each entry.', 'Incomplete Entry');
+            showStatusModal(false, 'Please complete all fields (TF #, From, To, and Qty) for each entry.', 'Incomplete Entry');
             return;
         }
 
