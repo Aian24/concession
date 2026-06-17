@@ -999,6 +999,23 @@ if (isset($_GET['ajax'])) {
             return;
         }
 
+        if (item_no === '0') {
+            window.removeItemError(input);
+            input.classList.add('border-green-500/50');
+            if (amountInput) {
+                amountInput.value = '0';
+                window.updateSummary();
+            }
+            if (detailsInput) {
+                detailsInput.value = 'NO SALE';
+            }
+            const qtyInput = row ? row.querySelector('[name="quantity"]') : null;
+            if (qtyInput) {
+                qtyInput.value = '0';
+            }
+            return;
+        }
+
         if (item_no.length === 6) {
             fetch(`api/get_prism_price.php?item_no=${encodeURIComponent(item_no)}`)
             .then(r => r.json())
