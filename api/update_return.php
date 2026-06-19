@@ -16,13 +16,13 @@ $data = json_decode(file_get_contents('php://input'), true);
 
 $id            = intval($data['id'] ?? 0);
 $return_item   = trim($data['return_item'] ?? '');
-$qty           = intval($data['quantity'] ?? 0);
+$qty           = (isset($data['quantity']) && $data['quantity'] !== '') ? intval($data['quantity']) : null;
 // Ensure return amount is negative
-$return_amount = -abs(floatval($data['return_amount'] ?? 0));
+$return_amount = (isset($data['return_amount']) && $data['return_amount'] !== '') ? -abs(floatval($data['return_amount'])) : null;
 $reason        = trim($data['reason'] ?? '');
 $ex_item       = trim($data['exchange_item'] ?? '');
-$ex_qty        = intval($data['exchange_quantity'] ?? 0);
-$ex_amount     = floatval($data['exchange_amount'] ?? 0);
+$ex_qty        = (isset($data['exchange_quantity']) && $data['exchange_quantity'] !== '') ? intval($data['exchange_quantity']) : null;
+$ex_amount     = (isset($data['exchange_amount']) && $data['exchange_amount'] !== '') ? floatval($data['exchange_amount']) : null;
 $ex_name       = trim($data['exchange_name'] ?? '');
 
 $created_at = $data['created_at'] ?? '';
@@ -40,7 +40,7 @@ $old_qty = $old_row ? $old_row['quantity'] : 0;
 $old_item = $old_row ? ($old_row['return_item'] ?: $old_row['exchange_item']) : '';
 $old_time = $old_row ? date('H:i:s', strtotime($old_row['created_at'])) : '00:00:00';
 
-$is_exchange = ($ex_item !== '' || $ex_amount > 0 || $ex_name !== '' || $ex_qty > 0) ? 1 : 0;
+$is_exchange = ($ex_item !== '' || $ex_amount !== null || $ex_name !== '' || $ex_qty !== null) ? 1 : 0;
 
 if (!empty($created_at)) {
     if (strlen($created_at) === 10) {

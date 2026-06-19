@@ -38,20 +38,20 @@ foreach ($entries as $data) {
     $is_exchange = intval($data['is_exchange'] ?? 0);
     $ex_name     = $is_exchange ? trim($data['exchange_name'] ?? '') : null;
     $ex_item     = $is_exchange ? trim($data['exchange_item'] ?? '') : null;
-    $ex_qty      = $is_exchange ? intval($data['exchange_quantity'] ?? 0) : null;
-    $ex_amount   = $is_exchange ? floatval($data['exchange_amount'] ?? 0) : null;
+    $ex_qty      = $is_exchange ? ((isset($data['exchange_quantity']) && $data['exchange_quantity'] !== '') ? intval($data['exchange_quantity']) : null) : null;
+    $ex_amount   = $is_exchange ? ((isset($data['exchange_amount']) && $data['exchange_amount'] !== '') ? floatval($data['exchange_amount']) : null) : null;
 
     // A valid entry is either a return OR an exchange (or both)
-    $has_return = ($return_item !== '' && ($raw_amount > 0 || $qty > 0));
-    $has_exchange = ($is_exchange && ($ex_name !== '' || $ex_item !== '' || $ex_amount > 0 || $ex_qty > 0));
+    $has_return = ($return_item !== '');
+    $has_exchange = ($is_exchange && ($ex_name !== '' || $ex_item !== ''));
 
     if (!$has_return && !$has_exchange) continue;
 
     // bind_param requires variable references
     // Return amount is always stored as negative
     $v_item   = ($return_item !== '') ? $return_item : null;
-    $v_qty    = ($qty > 0) ? $qty : null;
-    $v_amount = ($raw_amount > 0) ? $return_amount : null;
+    $v_qty    = (isset($data['quantity']) && $data['quantity'] !== '') ? $qty : null;
+    $v_amount = (isset($data['return_amount']) && $data['return_amount'] !== '') ? $return_amount : null;
     $v_reason = ($reason !== '') ? $reason : null;
     $created_at = $req_date . ' ' . date('H:i:s');
 
