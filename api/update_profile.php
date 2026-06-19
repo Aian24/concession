@@ -78,21 +78,60 @@ if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
     
     $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
     if (in_array($ext, $allowed)) {
-        $new_file_name = "avatar_" . $user_id . "_" . time() . "." . $ext;
+        // ALWAYS convert to webp for optimization
+        $new_file_name = "avatar_" . $user_id . "_" . time() . ".webp";
         $upload_path = "../images/avatars/" . $new_file_name;
         $db_path = "images/avatars/" . $new_file_name;
         
-        if (move_uploaded_file($file_tmp, $upload_path)) {
-            // Delete old avatar if exists
-            if (!empty($user['avatar'])) {
-                $old_path = "../" . $user['avatar'];
-                if (file_exists($old_path)) @unlink($old_path);
-            }
-            $updates[] = "avatar = ?";
-            $params[]  = $db_path;
-            $types    .= "s";
+        // Compress and resize image
+        $image = null;
+        if ($ext === 'jpg' || $ext === 'jpeg') $image = @imagecreatefromjpeg($file_tmp);
+        elseif ($ext === 'png') $image = @imagecreatefrompng($file_tmp);
+        elseif ($ext === 'gif') $image = @imagecreatefromgif($file_tmp);
+        elseif ($ext === 'webp') $image = @imagecreatefromwebp($file_tmp);
+        
+        if ($image) {
+            $width = imagesx($image);
+            $height = imagesy($image);
+            $new_width = 150; // max width for avatar
+            $new_height = floor($height * ($new_width / $width));
             
-            $_SESSION['avatar'] = $db_path;
+            $tmp_img = imagecreatetruecolor($new_width, $new_height);
+            // Handle transparency
+            imagealphablending($tmp_img, false);
+            imagesavealpha($tmp_img, true);
+            $transparent = imagecolorallocatealpha($tmp_img, 255, 255, 255, 127);
+            imagefilledrectangle($tmp_img, 0, 0, $new_width, $new_height, $transparent);
+            
+            imagecopyresampled($tmp_img, $image, 0, 0, 0, 0, $new_width, $new_height, $width, $height);
+            
+            if (imagewebp($tmp_img, $upload_path, 80)) { // 80% quality
+                // Delete old avatar if exists
+                if (!empty($user['avatar'])) {
+                    $old_path = "../" . $user['avatar'];
+                    if (file_exists($old_path)) @unlink($old_path);
+                }
+                $updates[] = "avatar = ?";
+                $params[]  = $db_path;
+                $types    .= "s";
+                
+                $_SESSION['avatar'] = $db_path;
+            }
+            imagedestroy($image);
+            imagedestroy($tmp_img);
+        } else {
+            // Fallback to normal upload if GD fails
+            if (move_uploaded_file($file_tmp, $upload_path)) {
+                if (!empty($user['avatar'])) {
+                    $old_path = "../" . $user['avatar'];
+                    if (file_exists($old_path)) @unlink($old_path);
+                }
+                $updates[] = "avatar = ?";
+                $params[]  = $db_path;
+                $types    .= "s";
+                
+                $_SESSION['avatar'] = $db_path;
+            }
         }
     }
 }

@@ -38,39 +38,57 @@ self.addEventListener('activate', (event) => {
     self.clients.claim();
 });
 
-// Fetch: network-first strategy (always try network, fall back to cache)
+// Fetch: optimized caching strategy
 self.addEventListener('fetch', (event) => {
     // Skip non-GET requests
     if (event.request.method !== 'GET') return;
 
-    // Skip API calls and form submissions - always go to network
     const url = new URL(event.request.url);
+    
+    // Skip API calls and form submissions - always go to network
     if (url.pathname.includes('/api/') || url.search.includes('ajax=1')) return;
 
-    event.respondWith(
-        fetch(event.request)
-            .then((response) => {
-                // Cache successful responses for static assets
-                if (response.ok && (
-                    url.pathname.endsWith('.css') || 
-                    url.pathname.endsWith('.js') || 
-                    url.pathname.endsWith('.png') || 
-                    url.pathname.endsWith('.jpg')
-                )) {
-                    const clone = response.clone();
-                    caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-                }
-                return response;
-            })
-            .catch(() => {
-                // If network fails and we have a cached version, use it
-                return caches.match(event.request).then((cached) => {
-                    if (cached) return cached;
-                    // For navigation requests, show offline page
-                    if (event.request.mode === 'navigate') {
-                        return caches.match(OFFLINE_URL);
+    // Cache-First strategy for static assets
+    const isStaticAsset = url.pathname.match(/\.(css|js|png|jpg|jpeg|gif|svg|woff2|woff|ttf|webp)$/i) || 
+                          url.hostname === 'cdn.tailwindcss.com' ||
+                          url.hostname === 'cdnjs.cloudflare.com' ||
+                          url.hostname === 'cdn.sheetjs.com' ||
+                          url.hostname === 'cdn.jsdelivr.net';
+
+    if (isStaticAsset) {
+        event.respondWith(
+            caches.match(event.request).then((cached) => {
+                if (cached) return cached; // Return from cache if available
+
+                return fetch(event.request).then((response) => {
+                    if (response.ok) {
+                        const clone = response.clone();
+                        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
                     }
+                    return response;
+                }).catch(() => {
+                    // Ignore errors for optional assets
                 });
             })
+        );
+        return;
+    }
+
+    // Network-First for HTML/Navigation
+    event.respondWith(
+        fetch(event.request).then((response) => {
+            if (response.ok) {
+                const clone = response.clone();
+                caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+            }
+            return response;
+        }).catch(() => {
+            return caches.match(event.request).then((cached) => {
+                if (cached) return cached;
+                if (event.request.mode === 'navigate') {
+                    return caches.match(OFFLINE_URL);
+                }
+            });
+        })
     );
 });
