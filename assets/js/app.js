@@ -223,3 +223,88 @@ function resetInactivityTimer() {
 
 // Initialize the timer on load
 resetInactivityTimer();
+
+// ── Global Quick Date Filters Logic ────────────────────────────
+window.tableSelectedYears = new Set();
+window.tableSelectedMonths = new Set();
+
+window.initQuickFiltersState = function() {
+    window.tableSelectedYears.clear();
+    window.tableSelectedMonths.clear();
+    document.querySelectorAll('.active-year').forEach(btn => {
+        window.tableSelectedYears.add(parseInt(btn.getAttribute('data-year')));
+    });
+    document.querySelectorAll('.active-month').forEach(btn => {
+        window.tableSelectedMonths.add(parseInt(btn.getAttribute('data-month')));
+    });
+};
+
+window.applyTableQuickFilter = function() {
+    if (window.tableSelectedYears.size === 0 || window.tableSelectedMonths.size === 0) return;
+    const minY = Math.min(...window.tableSelectedYears), maxY = Math.max(...window.tableSelectedYears);
+    const minM = Math.min(...[...window.tableSelectedMonths].map(Number));
+    const maxM = Math.max(...[...window.tableSelectedMonths].map(Number));
+    const pad = v => String(v).padStart(2,'0');
+    const startDate = `${minY}-${pad(minM)}-01`;
+    const lastDay   = new Date(maxY, maxM, 0).getDate();
+    const endDate   = `${maxY}-${pad(maxM)}-${lastDay}`;
+    
+    const startInput = document.querySelector('[name="start_date"]');
+    const endInput = document.querySelector('[name="end_date"]');
+    if (startInput) startInput.value = startDate;
+    if (endInput) endInput.value = endDate;
+    
+    if (typeof window.refreshTable === 'function') window.refreshTable(1);
+    else if (typeof window.refreshSaleTable === 'function') window.refreshSaleTable(1);
+    else if (typeof window.refreshReturnTable === 'function') window.refreshReturnTable(1);
+    else if (typeof window.refreshReceivingTable === 'function') window.refreshReceivingTable(1);
+    else if (typeof window.refreshPulloutTable === 'function') window.refreshPulloutTable(1);
+};
+
+window.toggleTableYear = function(btn, year) {
+    if (window.tableSelectedYears.has(year)) { window.tableSelectedYears.delete(year); }
+    else { window.tableSelectedYears.add(year); }
+    window.applyTableQuickFilter();
+};
+
+window.toggleTableMonth = function(btn, monthNum) {
+    const m = parseInt(monthNum);
+    if (window.tableSelectedYears.size === 0) window.tableSelectedYears.add(2026);
+    if (window.tableSelectedMonths.has(m)) { window.tableSelectedMonths.delete(m); }
+    else { window.tableSelectedMonths.add(m); }
+    window.applyTableQuickFilter();
+};
+
+window.scrollTableQuickYears = function(direction) {
+    const container = document.getElementById('table-years-container');
+    // Scroll by half the container width so we don't skip items entirely
+    if (container) container.scrollBy({ left: direction * (container.clientWidth / 2), behavior: 'smooth' });
+};
+
+window.scrollTableQuickMonths = function(direction) {
+    const container = document.getElementById('table-months-container');
+    // Scroll by roughly 2-3 months to avoid skipping visible ones
+    if (container) container.scrollBy({ left: direction * 150, behavior: 'smooth' });
+};
+
+window.centerTableQuickFilters = function() {
+    setTimeout(() => {
+        const yc = document.getElementById('table-years-container');
+        const activeY = yc?.querySelector('.active-year');
+        if (yc && activeY) {
+            yc.scrollTo({ left: activeY.offsetLeft - yc.clientWidth/2 + activeY.clientWidth/2, behavior: 'smooth' });
+        }
+        
+        const mc = document.getElementById('table-months-container');
+        const activeM = mc?.querySelector('.active-month');
+        if (mc && activeM) {
+            mc.scrollTo({ left: activeM.offsetLeft - mc.clientWidth/2 + activeM.clientWidth/2, behavior: 'smooth' });
+        }
+    }, 300);
+};
+
+// Call init on page load
+document.addEventListener('DOMContentLoaded', () => {
+    window.initQuickFiltersState();
+    window.centerTableQuickFilters();
+});

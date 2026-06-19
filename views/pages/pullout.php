@@ -626,6 +626,8 @@ if (isset($_GET['ajax'])) {
         fetch(url).then(res => res.text()).then(html => {
             container.innerHTML = html;
             if (typeof initTableEvents === 'function') initTableEvents();
+            if (typeof window.initQuickFiltersState === 'function') window.initQuickFiltersState();
+            if (typeof window.centerTableQuickFilters === 'function') window.centerTableQuickFilters();
         });
     };
     window.refreshPulloutTable = refreshTable;

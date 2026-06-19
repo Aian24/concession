@@ -99,6 +99,8 @@ if (!isset($received_items)) {
 .overflow-x-auto::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
 .overflow-x-auto::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
 .overflow-x-auto::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
 /* Date picker appearance */
 input[type="date"]::-webkit-calendar-picker-indicator {
@@ -212,7 +214,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 
     <!-- Filters -->
     <div class="p-4 border-b border-white/5 bg-slate-800/10">
-        <div class="grid grid-cols-2 <?= $is_admin ? 'lg:grid-cols-4' : 'lg:grid-cols-3' ?> gap-4">
+        <div class="grid grid-cols-2 <?= $is_admin ? 'lg:grid-cols-6' : 'lg:grid-cols-5' ?> gap-4">
             <div class="relative">
                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-[10px]"><i class="fas fa-search"></i></span>
                 <input type="text" name="search" value="<?= htmlspecialchars($search) ?>" placeholder="OS, Item, Store or ID..." class="w-full bg-slate-900/50 border border-white/5 rounded-lg pl-9 pr-4 py-2 text-xs text-white focus:outline-none focus:border-cyan-500/30 transition-all">
@@ -268,7 +270,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
                 }
                 ?>
                 <!-- Custom Trigger -->
-                <div id="store-filter-trigger" class="w-full bg-slate-900/50 border border-white/5 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500/30 transition-all cursor-pointer flex items-center justify-between hover:bg-white/5">
+                <div id="store-filter-trigger" class="w-full bg-slate-900/50 border border-white/5 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500/30 transition-all cursor-pointer flex items-center justify-between hover:bg-white/5 h-[34px]">
                     <span id="selected-store-label" class="truncate font-bold opacity-80"><?= htmlspecialchars($current_label) ?></span>
                     <i class="fas fa-chevron-down text-[9px] text-gray-500 ml-2"></i>
                 </div>
@@ -314,19 +316,73 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 
             <div class="relative">
                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-[9px] font-bold uppercase tracking-wider z-10">From Date</span>
-                <input type="date" name="start_date" value="<?= $start_date ?>" onclick="this.showPicker()" placeholder="mm/dd/yyyy" class="w-full bg-slate-900/50 border border-white/5 rounded-lg pl-20 pr-8 py-2 text-xs text-white focus:outline-none focus:border-cyan-500/30 transition-all cursor-pointer">
+                <input type="date" name="start_date" value="<?= $start_date ?>" onclick="this.showPicker()" placeholder="mm/dd/yyyy" class="w-full bg-slate-900/50 border border-white/5 rounded-lg pl-20 pr-8 py-2 h-[34px] text-xs text-white focus:outline-none focus:border-cyan-500/30 transition-all cursor-pointer">
                 <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                     <i class="fas fa-calendar-alt text-gray-500 text-[10px]"></i>
                 </div>
             </div>
             <div class="relative">
                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-[9px] font-bold uppercase tracking-wider z-10">To Date</span>
-                <input type="date" name="end_date" value="<?= $end_date ?>" onclick="this.showPicker()" placeholder="mm/dd/yyyy" class="w-full bg-slate-900/50 border border-white/5 rounded-lg pl-16 pr-8 py-2 text-xs text-white focus:outline-none focus:border-cyan-500/30 transition-all cursor-pointer">
+                <input type="date" name="end_date" value="<?= $end_date ?>" onclick="this.showPicker()" placeholder="mm/dd/yyyy" class="w-full bg-slate-900/50 border border-white/5 rounded-lg pl-16 pr-8 py-2 h-[34px] text-xs text-white focus:outline-none focus:border-cyan-500/30 transition-all cursor-pointer">
                 <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                     <i class="fas fa-calendar-alt text-gray-500 text-[10px]"></i>
                 </div>
             </div>
+
+            <div class="space-y-1">
+                <?php 
+                $currYr = 2026;
+                $selMinYr = !empty($start_date) ? date('Y', strtotime($start_date)) : $currYr;
+                $selMaxYr = !empty($end_date) ? date('Y', strtotime($end_date)) : $currYr;
+                $selected_years_count = max(0, $selMaxYr - $selMinYr + 1);
+                $yr_hint = $selected_years_count > 1 ? "($selected_years_count selected)" : "";
+                ?>
+                <div class="shrink-0 flex items-center bg-slate-900/50 border border-white/5 rounded-lg shadow-inner h-[34px] relative z-20 overflow-hidden w-full">
+                    <button type="button" onclick="scrollTableQuickYears(-1)" class="absolute left-0 z-10 h-full px-1.5 bg-gradient-to-r from-slate-900 via-slate-900/90 to-transparent flex items-center justify-start text-gray-400 hover:text-white transition-all"><i class="fas fa-chevron-left text-[8px]"></i></button>
+                    
+                    <div id="table-years-container" class="flex items-center gap-1 overflow-x-auto hide-scrollbar scroll-smooth w-full px-5">
+                        <?php 
+                        for($y = $currYr - 4; $y <= $currYr + 2; $y++):
+                            $is_active = ($y >= $selMinYr && $y <= $selMaxYr);
+                        ?>
+                        <button type="button" data-year="<?= $y ?>" onclick="toggleTableYear(this, <?= $y ?>)" class="flex-shrink-0 w-[45px] py-1 rounded text-[9px] font-bold uppercase tracking-wider transition-all table-year-btn text-center select-none border <?= $is_active ? '!bg-cyan-500/20 !text-cyan-400 shadow-sm !border-cyan-500/50 active-year' : 'text-gray-500 border-transparent hover:text-cyan-400 hover:bg-white/5' ?>">
+                            <?= $y ?>
+                        </button>
+                        <?php endfor; ?>
+                    </div>
+                    
+                    <button type="button" onclick="scrollTableQuickYears(1)" class="absolute right-0 z-10 h-full px-1.5 bg-gradient-to-l from-slate-900 via-slate-900/90 to-transparent flex items-center justify-end text-gray-400 hover:text-white transition-all"><i class="fas fa-chevron-right text-[8px]"></i></button>
+                </div>
+            </div>
+
+            <div class="space-y-1">
+                <?php
+                $selMinM = !empty($start_date) ? date('m', strtotime($start_date)) : null;
+                $selMaxM = !empty($end_date) ? date('m', strtotime($end_date)) : null;
+                $selected_months_count = ($selMinM && $selMaxM) ? max(0, (int)$selMaxM - (int)$selMinM + 1) : 0;
+                $mo_hint = $selected_months_count > 1 ? "($selected_months_count selected)" : "";
+                ?>
+                <div class="shrink-0 flex items-center bg-slate-900/50 border border-white/5 rounded-lg shadow-inner h-[34px] relative z-20 overflow-hidden w-full">
+                    <button type="button" onclick="scrollTableQuickMonths(-1)" class="absolute left-0 z-10 h-full px-1.5 bg-gradient-to-r from-slate-900 via-slate-900/90 to-transparent flex items-center justify-start text-gray-400 hover:text-white transition-all"><i class="fas fa-chevron-left text-[8px]"></i></button>
+                    
+                    <div id="table-months-container" class="flex items-center gap-1 overflow-x-auto hide-scrollbar scroll-smooth w-full px-5">
+                        <?php 
+                        $months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                        foreach($months as $idx => $m): 
+                            $m_num = str_pad($idx + 1, 2, '0', STR_PAD_LEFT);
+                            $is_active = ($selMinM && $selMaxM && $m_num >= $selMinM && $m_num <= $selMaxM && !empty($start_date)); 
+                        ?>
+                        <button type="button" data-month="<?= $m_num ?>" onclick="toggleTableMonth(this, '<?= $m_num ?>')" class="flex-shrink-0 w-[38px] py-1 rounded text-[9px] font-bold uppercase tracking-wider transition-all table-month-btn text-center select-none border <?= $is_active ? '!bg-cyan-500/20 !text-cyan-400 shadow-sm !border-cyan-500/50 active-month' : 'text-gray-500 border-transparent hover:text-cyan-400 hover:bg-white/5' ?>">
+                            <?= $m ?>
+                        </button>
+                        <?php endforeach; ?>
+                    </div>
+                    
+                    <button type="button" onclick="scrollTableQuickMonths(1)" class="absolute right-0 z-10 h-full px-1.5 bg-gradient-to-l from-slate-900 via-slate-900/90 to-transparent flex items-center justify-end text-gray-400 hover:text-white transition-all"><i class="fas fa-chevron-right text-[8px]"></i></button>
+                </div>
+            </div>
         </div>
+    </div>
     </div>
 
     <!-- Table -->

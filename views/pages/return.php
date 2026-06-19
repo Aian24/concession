@@ -721,6 +721,8 @@ if (isset($_GET['ajax'])) {
         fetch(url).then(res => res.text()).then(html => {
             container.innerHTML = html;
             initTableEvents();
+            if (typeof window.initQuickFiltersState === 'function') window.initQuickFiltersState();
+            if (typeof window.centerTableQuickFilters === 'function') window.centerTableQuickFilters();
             if (isSearchFocused) {
                 const newSearchInput = document.querySelector('[name="search"]');
                 if (newSearchInput) {

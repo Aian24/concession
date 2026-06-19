@@ -794,61 +794,6 @@ if (isset($_GET['ajax'])) {
         });
     });
 
-    window.tableSelectedYears = new Set();
-    window.tableSelectedMonths = new Set();
-
-    function initQuickFiltersState() {
-        window.tableSelectedYears.clear();
-        window.tableSelectedMonths.clear();
-        document.querySelectorAll('.active-year').forEach(btn => {
-            window.tableSelectedYears.add(parseInt(btn.getAttribute('data-year')));
-        });
-        document.querySelectorAll('.active-month').forEach(btn => {
-            window.tableSelectedMonths.add(parseInt(btn.getAttribute('data-month')));
-        });
-    }
-
-    function applyTableQuickFilter() {
-        if (window.tableSelectedYears.size === 0 || window.tableSelectedMonths.size === 0) return;
-        const minY = Math.min(...window.tableSelectedYears), maxY = Math.max(...window.tableSelectedYears);
-        const minM = Math.min(...[...window.tableSelectedMonths].map(Number));
-        const maxM = Math.max(...[...window.tableSelectedMonths].map(Number));
-        const pad = v => String(v).padStart(2,'0');
-        const startDate = `${minY}-${pad(minM)}-01`;
-        const lastDay   = new Date(maxY, maxM, 0).getDate();
-        const endDate   = `${maxY}-${pad(maxM)}-${lastDay}`;
-        
-        const startInput = document.querySelector('[name="start_date"]');
-        const endInput = document.querySelector('[name="end_date"]');
-        if (startInput) startInput.value = startDate;
-        if (endInput) endInput.value = endDate;
-        if (typeof refreshTable === 'function') refreshTable(1);
-    }
-
-    window.toggleTableYear = function(btn, year) {
-        if (window.tableSelectedYears.has(year)) { window.tableSelectedYears.delete(year); }
-        else { window.tableSelectedYears.add(year); }
-        applyTableQuickFilter();
-    };
-
-    window.toggleTableMonth = function(btn, monthNum) {
-        const m = parseInt(monthNum);
-        if (window.tableSelectedYears.size === 0) window.tableSelectedYears.add(2026);
-        if (window.tableSelectedMonths.has(m)) { window.tableSelectedMonths.delete(m); }
-        else { window.tableSelectedMonths.add(m); }
-        applyTableQuickFilter();
-    };
-
-    window.scrollTableQuickYears = function(direction) {
-        const container = document.getElementById('table-years-container');
-        if (container) container.scrollBy({ left: direction * container.clientWidth, behavior: 'smooth' });
-    };
-
-    window.scrollTableQuickMonths = function(direction) {
-        const container = document.getElementById('table-months-container');
-        if (container) container.scrollBy({ left: direction * container.clientWidth, behavior: 'smooth' });
-    };
-
     let filterTimer;
     function refreshTable(page = 1) {
         const container = document.getElementById('submitted-sales-container');
@@ -868,8 +813,8 @@ if (isset($_GET['ajax'])) {
         fetch(url).then(res => res.text()).then(html => { 
             container.innerHTML = html; 
             initTableEvents(); 
-            initQuickFiltersState();
-            if (typeof centerTableQuickFilters === 'function') centerTableQuickFilters();
+            if (typeof window.initQuickFiltersState === 'function') window.initQuickFiltersState();
+            if (typeof window.centerTableQuickFilters === 'function') window.centerTableQuickFilters();
             if (isSearchFocused) {
                 const newSearchInput = document.querySelector('[name="search"]');
                 if (newSearchInput) {
@@ -924,25 +869,9 @@ if (isset($_GET['ajax'])) {
     
     // Call init on page load
     document.addEventListener('DOMContentLoaded', () => {
-        initQuickFiltersState();
-        if (typeof centerTableQuickFilters === 'function') centerTableQuickFilters();
+        if (typeof window.initQuickFiltersState === 'function') window.initQuickFiltersState();
+        if (typeof window.centerTableQuickFilters === 'function') window.centerTableQuickFilters();
     });
-
-    window.centerTableQuickFilters = function() {
-        setTimeout(() => {
-            const yc = document.getElementById('table-years-container');
-            const activeY = yc?.querySelector('.active-year');
-            if (yc && activeY) {
-                yc.scrollTo({ left: activeY.offsetLeft - yc.clientWidth/2 + activeY.clientWidth/2, behavior: 'smooth' });
-            }
-            
-            const mc = document.getElementById('table-months-container');
-            const activeM = mc?.querySelector('.active-month');
-            if (mc && activeM) {
-                mc.scrollTo({ left: activeM.offsetLeft - mc.clientWidth/2 + activeM.clientWidth/2, behavior: 'smooth' });
-            }
-        }, 300);
-    };
 
     window.updateSummary = function() {
         let items = 0, qty = 0, total = 0;

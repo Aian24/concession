@@ -521,7 +521,7 @@
         </div>
     </main>
 
-    <script src="assets/js/app.js"></script>
+    <script src="assets/js/app.js?v=<?= time() ?>"></script>
     <script>
         function showGlobalLoader(msg = "PROCESSING...") {
             const loader = document.getElementById('global-loader');
