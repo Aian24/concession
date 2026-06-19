@@ -30,7 +30,7 @@ if ($check && $check->num_rows === 0) {
 }
 
 $username   = $_SESSION['user'];
-$store_code = $_SESSION['store_code'];
+$store_code = $_SESSION['store_code'] ?? '';
 
 $entries = $_POST['entries'] ?? [];
 $success_count = 0;

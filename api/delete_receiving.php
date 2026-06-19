@@ -2,7 +2,7 @@
 session_start();
 header('Content-Type: application/json');
 
-$is_admin = (($_SESSION['role'] ?? 'user') === 'admin' || ($_SESSION['role'] ?? 'user') === 'admin_view' || ($_SESSION['user'] ?? '') === 'admin');
+$is_admin = (($_SESSION['role'] ?? 'user') === 'admin' || ($_SESSION['role'] ?? 'user') === 'admin_view' || ($_SESSION['role'] ?? 'user') === 'multi_store_admin' || ($_SESSION['user'] ?? '') === 'admin');
 if (!$is_admin) {
     echo json_encode(['success' => false, 'message' => 'Unauthorized. Admin access required.']);
     exit;

@@ -20,7 +20,7 @@ if (empty($entries) || !is_array($entries)) {
 }
 
 $username   = $_SESSION['user'];
-$store_code = $_SESSION['store_code'];
+$store_code = $_SESSION['store_code'] ?? '';
 $success_count = 0;
 
 $stmt = $db->prepare("INSERT INTO receiving (username, store_code, os_no, from_store, to_store, quantity, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)");
@@ -32,7 +32,7 @@ foreach ($entries as $row) {
     $to    = trim($row['to_store'] ?? '');
     $qty   = intval($row['quantity'] ?? 0);
 
-    if ($qty <= 0) continue;
+    if ($os === '') continue;
 
     $created_at = $req_date . ' ' . date('H:i:s');
     $stmt->bind_param("sssssis", $username, $store_code, $os, $from, $to, $qty, $created_at);
