@@ -13,7 +13,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&family=Poppins:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/app.css">
-    <link rel="icon" type="image/webp" href="images/concessiontab.webp">
+    <link rel="icon" type="image/webp" href="assets/images/concessiontab.webp">
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- SheetJS for Excel export -->
@@ -348,7 +348,7 @@
     <!-- Sidebar -->
     <aside id="sidebar" class="sidebar-glass w-64 h-[100dvh] lg:h-screen fixed lg:relative z-50 flex flex-col transition-transform duration-300 transform -translate-x-full lg:translate-x-0 overflow-hidden">
         <div class="p-6 flex flex-col items-center justify-center relative">
-            <img src="images/concession.webp" alt="Concession Logo" class="h-16 lg:h-24 w-auto object-contain transition-all">
+            <img src="assets/images/concession.webp" alt="Concession Logo" class="h-16 lg:h-24 w-auto object-contain transition-all">
             <button class="lg:hidden text-gray-400 hover:text-white transition-colors absolute right-6 top-1/2 -translate-y-1/2" onclick="toggleSidebar()">
                 <i class="fas fa-times text-xl"></i>
             </button>

@@ -13,7 +13,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/app.css">
-    <link rel="icon" type="image/webp" href="images/concessiontab.webp">
+    <link rel="icon" type="image/webp" href="assets/images/concessiontab.webp">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @keyframes spinReverse {
@@ -61,7 +61,7 @@
         }
     </style>
 </head>
-<body class="bg-slate-900 bg-[url('images/bg.webp')] bg-cover bg-center bg-no-repeat bg-fixed text-white font-outfit min-h-screen min-h-[100dvh] flex items-center justify-center relative overflow-hidden">
+<body class="bg-slate-900 bg-[url('assets/images/bg.webp')] bg-cover bg-center bg-no-repeat bg-fixed text-white font-outfit min-h-screen min-h-[100dvh] flex items-center justify-center relative overflow-hidden">
 
 
     <!-- Animated background glowing orbs -->
@@ -71,7 +71,7 @@
 
     <div class="login-card glass-panel p-6 sm:p-8 md:p-12 w-full max-w-md relative z-10 mx-4 my-6">
         <div class="text-center mb-6 md:mb-8">
-            <img src="images/concession.webp" alt="Concession Logo" class="login-logo h-24 sm:h-32 mx-auto mb-3 md:mb-4 object-contain">
+            <img src="assets/images/concession.webp" alt="Concession Logo" class="login-logo h-24 sm:h-32 mx-auto mb-3 md:mb-4 object-contain">
             <p class="login-subtitle text-gray-400 text-sm md:text-base">Sign in to your account</p>
         </div>
 

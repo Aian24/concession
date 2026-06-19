@@ -7,8 +7,8 @@ const OFFLINE_URL = 'offline.html';
 // Assets to cache for the app shell (keep lightweight)
 const PRECACHE_ASSETS = [
     './',
-    'images/concession.png',
-    'images/concessiontab.png',
+    'assets/images/concession.webp',
+    'assets/images/concessiontab.webp',
     'images/icon-192.png',
     'images/icon-512.png',
     'assets/css/app.css',
