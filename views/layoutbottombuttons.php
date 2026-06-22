@@ -26,18 +26,6 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script>
-    // Global helper: retry until flatpickr is loaded, then run callback
-    window.whenFlatpickrReady = function(callback, maxAttempts) {
-        maxAttempts = maxAttempts || 40; // up to ~10 seconds
-        let attempts = 0;
-        function check() {
-            if (typeof flatpickr !== 'undefined') { callback(); }
-            else if (++attempts < maxAttempts) { setTimeout(check, 250); }
-        }
-        check();
-    };
-    </script>
-    <script>
     (function() {
         // Load theme from localStorage early to prevent white flashes
         const saved = localStorage.getItem('concession_theme');
