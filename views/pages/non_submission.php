@@ -333,8 +333,8 @@ $stores_stmt->close();
         applyQuickFilter();
     };
 
-    window.scrollQuickYears = function(dir) { const c = document.getElementById('years-container'); c.scrollBy({ left: dir * c.clientWidth, behavior: 'smooth' }); };
-    window.scrollQuickMonths = function(dir) { const c = document.getElementById('months-container'); c.scrollBy({ left: dir * c.clientWidth, behavior: 'smooth' }); };
+    window.scrollQuickYears = function(dir) { const c = document.getElementById('years-container'); if(c) c.scrollBy({ left: dir * (c.clientWidth / 2), behavior: 'smooth' }); };
+    window.scrollQuickMonths = function(dir) { const c = document.getElementById('months-container'); if(c) c.scrollBy({ left: dir * 150, behavior: 'smooth' }); };
 
     function initQuickFilters() {
         const sDate = document.querySelector('[name="start_date"]').value;
@@ -361,13 +361,22 @@ $stores_stmt->close();
             if (selectedMonths.size > 1) document.getElementById('mo-multi-hint').textContent = `(${selectedMonths.size} selected)`;
             setTimeout(() => {
                 const yc = document.getElementById('years-container');
-                const yBtn = document.querySelector(`.year-btn[data-year="${s.getFullYear()}"]`);
-                if (yBtn && yc) yc.scrollTo({ left: yBtn.offsetLeft - yc.clientWidth/2 + yBtn.clientWidth/2, behavior: 'smooth' });
+                const activeYBtns = yc ? Array.from(yc.querySelectorAll('.year-btn.shadow-sm')) : [];
+                if (activeYBtns.length > 0 && yc) {
+                    const firstBtn = activeYBtns[0];
+                    const lastBtn = activeYBtns[activeYBtns.length - 1];
+                    const centerOffset = firstBtn.offsetLeft + ((lastBtn.offsetLeft + lastBtn.clientWidth) - firstBtn.offsetLeft) / 2;
+                    yc.scrollTo({ left: centerOffset - yc.clientWidth/2, behavior: 'smooth' });
+                }
                 
                 const mc = document.getElementById('months-container');
-                const pad = v => String(v).padStart(2,'0');
-                const mBtn = document.querySelector(`.month-btn[data-month="${pad(s.getMonth()+1)}"]`);
-                if (mBtn && mc) mc.scrollTo({ left: mBtn.offsetLeft - mc.clientWidth/2 + mBtn.clientWidth/2, behavior: 'smooth' });
+                const activeMBtns = mc ? Array.from(mc.querySelectorAll('.month-btn.shadow-sm')) : [];
+                if (activeMBtns.length > 0 && mc) {
+                    const firstBtn = activeMBtns[0];
+                    const lastBtn = activeMBtns[activeMBtns.length - 1];
+                    const centerOffset = firstBtn.offsetLeft + ((lastBtn.offsetLeft + lastBtn.clientWidth) - firstBtn.offsetLeft) / 2;
+                    mc.scrollTo({ left: centerOffset - mc.clientWidth/2, behavior: 'smooth' });
+                }
             }, 300);
         }
     }
