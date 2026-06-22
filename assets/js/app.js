@@ -290,15 +290,21 @@ window.scrollTableQuickMonths = function(direction) {
 window.centerTableQuickFilters = function() {
     setTimeout(() => {
         const yc = document.getElementById('table-years-container');
-        const activeY = yc?.querySelector('.active-year');
-        if (yc && activeY) {
-            yc.scrollTo({ left: activeY.offsetLeft - yc.clientWidth/2 + activeY.clientWidth/2, behavior: 'smooth' });
+        const activeYBtns = yc ? Array.from(yc.querySelectorAll('.active-year')) : [];
+        if (activeYBtns.length > 0 && yc) {
+            const firstBtn = activeYBtns[0];
+            const lastBtn = activeYBtns[activeYBtns.length - 1];
+            const centerOffset = firstBtn.offsetLeft + ((lastBtn.offsetLeft + lastBtn.clientWidth) - firstBtn.offsetLeft) / 2;
+            yc.scrollTo({ left: centerOffset - yc.clientWidth/2, behavior: 'smooth' });
         }
         
         const mc = document.getElementById('table-months-container');
-        const activeM = mc?.querySelector('.active-month');
-        if (mc && activeM) {
-            mc.scrollTo({ left: activeM.offsetLeft - mc.clientWidth/2 + activeM.clientWidth/2, behavior: 'smooth' });
+        const activeMBtns = mc ? Array.from(mc.querySelectorAll('.active-month')) : [];
+        if (activeMBtns.length > 0 && mc) {
+            const firstBtn = activeMBtns[0];
+            const lastBtn = activeMBtns[activeMBtns.length - 1];
+            const centerOffset = firstBtn.offsetLeft + ((lastBtn.offsetLeft + lastBtn.clientWidth) - firstBtn.offsetLeft) / 2;
+            mc.scrollTo({ left: centerOffset - mc.clientWidth/2, behavior: 'smooth' });
         }
     }, 300);
 };

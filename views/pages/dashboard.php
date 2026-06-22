@@ -509,8 +509,14 @@ function toggleMonth(btn, monthNum) {
     document.getElementById('mo-multi-hint').textContent = selectedMonths.size > 1 ? `(${selectedMonths.size} selected)` : '';
     applyQuickFilter();
 }
-function scrollQuickYears(dir) { const c = document.getElementById('years-container'); c.scrollBy({ left: dir * c.clientWidth, behavior: 'smooth' }); }
-function scrollQuickMonths(dir) { const c = document.getElementById('months-container'); c.scrollBy({ left: dir * c.clientWidth, behavior: 'smooth' }); }
+function scrollQuickYears(dir) { 
+    const c = document.getElementById('years-container'); 
+    if (c) c.scrollBy({ left: dir * (c.clientWidth / 2), behavior: 'smooth' }); 
+}
+function scrollQuickMonths(dir) { 
+    const c = document.getElementById('months-container'); 
+    if (c) c.scrollBy({ left: dir * 150, behavior: 'smooth' }); 
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     const sDate = '<?= $start_date ?>';
@@ -536,19 +542,24 @@ document.addEventListener('DOMContentLoaded', () => {
         if (selectedYears.size > 1)  document.getElementById('yr-multi-hint').textContent = `(${selectedYears.size} selected)`;
         if (selectedMonths.size > 1) document.getElementById('mo-multi-hint').textContent = `(${selectedMonths.size} selected)`;
         setTimeout(() => {
-            // Center the selected year
+            // Center the selected year(s)
             const yc = document.getElementById('years-container');
-            const yBtn = document.querySelector(`.year-btn[data-year="${s.getFullYear()}"]`);
-            if (yBtn && yc) {
-                yc.scrollTo({ left: yBtn.offsetLeft - yc.clientWidth/2 + yBtn.clientWidth/2, behavior: 'smooth' });
+            const activeYBtns = yc ? Array.from(yc.querySelectorAll('.year-btn.shadow-sm')) : [];
+            if (activeYBtns.length > 0 && yc) {
+                const firstBtn = activeYBtns[0];
+                const lastBtn = activeYBtns[activeYBtns.length - 1];
+                const centerOffset = firstBtn.offsetLeft + ((lastBtn.offsetLeft + lastBtn.clientWidth) - firstBtn.offsetLeft) / 2;
+                yc.scrollTo({ left: centerOffset - yc.clientWidth/2, behavior: 'smooth' });
             }
             
-            // Center the selected month
+            // Center the selected month(s)
             const mc = document.getElementById('months-container');
-            const pad = v => String(v).padStart(2,'0');
-            const mBtn = document.querySelector(`.month-btn[data-month="${pad(s.getMonth()+1)}"]`);
-            if (mBtn && mc) {
-                mc.scrollTo({ left: mBtn.offsetLeft - mc.clientWidth/2 + mBtn.clientWidth/2, behavior: 'smooth' });
+            const activeMBtns = mc ? Array.from(mc.querySelectorAll('.month-btn.shadow-sm')) : [];
+            if (activeMBtns.length > 0 && mc) {
+                const firstBtn = activeMBtns[0];
+                const lastBtn = activeMBtns[activeMBtns.length - 1];
+                const centerOffset = firstBtn.offsetLeft + ((lastBtn.offsetLeft + lastBtn.clientWidth) - firstBtn.offsetLeft) / 2;
+                mc.scrollTo({ left: centerOffset - mc.clientWidth/2, behavior: 'smooth' });
             }
         }, 300);
     }
@@ -727,6 +738,57 @@ document.addEventListener('DOMContentLoaded', () => {
 </div>
 
 <?php if ($is_admin): ?>
+<!-- Top Sellers Charts Grid -->
+<?php
+$tc_labels = [];
+$tc_data = [];
+if (!empty($top_stores_ranking)) {
+    $i = 0;
+    foreach($top_stores_ranking as $st) {
+        if ($i >= 5) break;
+        $name = !empty($st['sname']) ? $st['sname'] : $st['store_code'];
+        $tc_labels[] = $st['store_code'] . ' - ' . $name;
+        $tc_data[] = (float)$st['total_sales'];
+        $i++;
+    }
+}
+$tb_labels = [];
+$tb_data = [];
+if (!empty($top_boutique_ranking)) {
+    $i = 0;
+    foreach($top_boutique_ranking as $st) {
+        if ($i >= 5) break;
+        $name = !empty($st['sname']) ? $st['sname'] : $st['store_code'];
+        $tb_labels[] = $st['store_code'] . ' - ' . $name;
+        $tb_data[] = (float)$st['total_sales'];
+        $i++;
+    }
+}
+?>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 mt-8 mb-20 pb-10">
+    <!-- Top Concession Chart -->
+    <div class="glass-panel p-6 border border-white/5 relative overflow-hidden group hover:border-[#3b82f6]/30 transition-all duration-500 animate-slide-in">
+        <div class="absolute -right-4 -top-4 w-32 h-32 bg-[#3b82f6]/10 rounded-full blur-3xl pointer-events-none group-hover:bg-[#3b82f6]/20 transition-all duration-700"></div>
+        <h3 class="text-sm font-bold text-white tracking-wide uppercase flex items-center gap-2 mb-4 relative z-10">
+            <i class="fas fa-chart-pie text-[#3b82f6] group-hover:rotate-12 transition-transform duration-300"></i> Top Concession Sales
+        </h3>
+        <div class="w-full relative h-[300px] z-10">
+            <canvas id="topConcessionChart"></canvas>
+        </div>
+    </div>
+    
+    <!-- Top Boutique Chart -->
+    <div class="glass-panel p-6 border border-white/5 relative overflow-hidden group hover:border-yellow-500/30 transition-all duration-500 animate-slide-in" style="animation-delay: 100ms;">
+        <div class="absolute -left-4 -top-4 w-32 h-32 bg-yellow-500/10 rounded-full blur-3xl pointer-events-none group-hover:bg-yellow-500/20 transition-all duration-700"></div>
+        <h3 class="text-sm font-bold text-white tracking-wide uppercase flex items-center gap-2 mb-4 relative z-10">
+            <i class="fas fa-chart-pie text-yellow-400 group-hover:rotate-12 transition-transform duration-300"></i> Top Boutique Sales
+        </h3>
+        <div class="w-full relative h-[300px] z-10">
+            <canvas id="topBoutiqueChart"></canvas>
+        </div>
+    </div>
+</div>
+
 <!-- Top Sellers Modal -->
 <div id="top-sellers-modal" class="fixed inset-0 z-[105] hidden">
     <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeTopSellersModal()"></div>
@@ -1085,6 +1147,90 @@ document.addEventListener('DOMContentLoaded', function() {
                 history.back();
             }
         }
+    }
+
+    // Top Sellers Doughnut Charts configuration
+    const doughnutOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '70%',
+        animation: {
+            animateScale: true,
+            animateRotate: true,
+            duration: 2500,
+            easing: 'easeOutQuart'
+        },
+        hover: {
+            mode: 'index',
+            intersect: true,
+            animationDuration: 400
+        },
+        plugins: {
+            legend: { 
+                position: 'right', 
+                labels: { 
+                    color: '#94a3b8', 
+                    font: { size: 10, family: 'Outfit', weight: 'bold' }, 
+                    usePointStyle: true, 
+                    padding: 15,
+                    boxWidth: 8
+                } 
+            },
+            tooltip: { 
+                backgroundColor: '#0f172a', 
+                titleFont: { size: 11, family: 'Outfit', weight: 'bold' }, 
+                bodyFont: { size: 13, family: 'Outfit', weight: 'bold' }, 
+                padding: 14, 
+                cornerRadius: 12, 
+                borderColor: 'rgba(255,255,255,0.1)',
+                borderWidth: 1,
+                displayColors: true,
+                boxPadding: 6,
+                callbacks: { 
+                    label: function(c) { return ' ₱ ' + c.parsed.toLocaleString(undefined, {minimumFractionDigits: 2}); } 
+                } 
+            }
+        }
+    };
+
+    const tcLabels = <?= json_encode($tc_labels ?? []) ?>;
+    const tcData = <?= json_encode($tc_data ?? []) ?>;
+    if (tcLabels.length > 0 && document.getElementById('topConcessionChart')) {
+        new Chart(document.getElementById('topConcessionChart').getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: tcLabels,
+                datasets: [{
+                    data: tcData,
+                    backgroundColor: ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981'],
+                    borderWidth: 0,
+                    hoverBorderWidth: 3,
+                    hoverBorderColor: '#ffffff',
+                    hoverOffset: 12
+                }]
+            },
+            options: doughnutOptions
+        });
+    }
+
+    const tbLabels = <?= json_encode($tb_labels ?? []) ?>;
+    const tbData = <?= json_encode($tb_data ?? []) ?>;
+    if (tbLabels.length > 0 && document.getElementById('topBoutiqueChart')) {
+        new Chart(document.getElementById('topBoutiqueChart').getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: tbLabels,
+                datasets: [{
+                    data: tbData,
+                    backgroundColor: ['#facc15', '#f97316', '#ef4444', '#14b8a6', '#0ea5e9'],
+                    borderWidth: 0,
+                    hoverBorderWidth: 3,
+                    hoverBorderColor: '#ffffff',
+                    hoverOffset: 12
+                }]
+            },
+            options: doughnutOptions
+        });
     }
 });
 </script>
