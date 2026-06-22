@@ -382,6 +382,34 @@ window.centerTableQuickFilters = function() {
     }, 300);
 };
 
+window.resetTableQuickYear = function() {
+    window.tableSelectedYears.clear();
+    document.querySelectorAll('.active-year').forEach(btn => {
+        btn.classList.remove(...TABLE_ACTIVE_CLS, TABLE_ACTIVE_TAG);
+        btn.classList.add(...TABLE_INACTIVE_CLS);
+    });
+    const cy = new Date().getFullYear();
+    window.tableSelectedYears.add(cy);
+    const yBtn = document.querySelector(`.table-year-btn[data-year="${cy}"]`);
+    if (yBtn) { yBtn.classList.add(...TABLE_ACTIVE_CLS, TABLE_ACTIVE_TAG); yBtn.classList.remove(...TABLE_INACTIVE_CLS); }
+    window.applyTableQuickFilter();
+    window.centerTableQuickFilters();
+};
+
+window.resetTableQuickMonth = function() {
+    window.tableSelectedMonths.clear();
+    document.querySelectorAll('.active-month').forEach(btn => {
+        btn.classList.remove(...TABLE_ACTIVE_CLS, TABLE_ACTIVE_MTAG);
+        btn.classList.add(...TABLE_INACTIVE_CLS);
+    });
+    const cm = new Date().getMonth() + 1;
+    window.tableSelectedMonths.add(cm);
+    const mBtn = document.querySelector(`.table-month-btn[data-month="${String(cm).padStart(2, '0')}"]`);
+    if (mBtn) { mBtn.classList.add(...TABLE_ACTIVE_CLS, TABLE_ACTIVE_MTAG); mBtn.classList.remove(...TABLE_INACTIVE_CLS); }
+    window.applyTableQuickFilter();
+    window.centerTableQuickFilters();
+};
+
 // Call init on page load
 document.addEventListener('DOMContentLoaded', () => {
     window.initQuickFiltersState();

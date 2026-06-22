@@ -250,7 +250,10 @@ $stores_stmt->close();
 
                 <!-- Quick Year -->
                 <div class="space-y-1 w-full min-w-0">
-                    <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Quick Year <span class="text-purple-400/60" id="yr-multi-hint"></span></label>
+                    <div class="relative w-full">
+                        <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Quick Year <span class="text-purple-400/60" id="yr-multi-hint"></span></label>
+                        <button type="button" onclick="resetLocalQuickYear()" class="absolute right-1 top-0 mt-0 text-gray-500 hover:text-red-400 transition-colors" title="Reset Year"><i class="fas fa-sync-alt text-[9px]"></i></button>
+                    </div>
                     <div class="shrink-0 flex items-center bg-slate-900/80 border border-white/10 rounded-lg shadow-inner h-8 relative z-20 overflow-hidden w-full">
                         <button type="button" onclick="scrollQuickYears(-1)" class="absolute left-0 z-10 h-full px-1.5 bg-gradient-to-r from-slate-900 via-slate-900/90 to-transparent flex items-center justify-start text-gray-400 hover:text-white transition-all"><i class="fas fa-chevron-left text-[8px]"></i></button>
                         <div id="years-container" class="no-scrollbar flex items-center gap-1 overflow-x-auto scroll-smooth w-full px-5">
@@ -269,7 +272,10 @@ $stores_stmt->close();
 
                 <!-- Quick Month -->
                 <div class="space-y-1 w-full min-w-0">
-                    <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Quick Month <span class="text-purple-400/60" id="mo-multi-hint"></span></label>
+                    <div class="relative w-full">
+                        <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Quick Month <span class="text-purple-400/60" id="mo-multi-hint"></span></label>
+                        <button type="button" onclick="resetLocalQuickMonth()" class="absolute right-1 top-0 mt-0 text-gray-500 hover:text-red-400 transition-colors" title="Reset Month"><i class="fas fa-sync-alt text-[9px]"></i></button>
+                    </div>
                     <div class="shrink-0 flex items-center bg-slate-900/80 border border-white/10 rounded-lg shadow-inner h-8 relative z-20 overflow-hidden w-full">
                         <button type="button" onclick="scrollQuickMonths(-1)" class="absolute left-0 z-10 h-full px-1.5 bg-gradient-to-r from-slate-900 via-slate-900/90 to-transparent flex items-center justify-start text-gray-400 hover:text-white transition-all"><i class="fas fa-chevron-left text-[8px]"></i></button>
                         <div id="months-container" class="no-scrollbar flex items-center gap-1 overflow-x-auto scroll-smooth w-full px-5">
@@ -335,6 +341,34 @@ $stores_stmt->close();
 
     window.scrollQuickYears = function(dir) { const c = document.getElementById('years-container'); if(c) c.scrollBy({ left: dir * (c.clientWidth / 2), behavior: 'smooth' }); };
     window.scrollQuickMonths = function(dir) { const c = document.getElementById('months-container'); if(c) c.scrollBy({ left: dir * 150, behavior: 'smooth' }); };
+
+    window.resetLocalQuickYear = function() {
+        selectedYears.clear();
+        document.querySelectorAll('.year-btn').forEach(btn => {
+            btn.classList.remove(...ACTIVE_CLS);
+            btn.classList.add(...INACTIVE_CLS);
+        });
+        const cy = new Date().getFullYear();
+        selectedYears.add(cy);
+        const yBtn = document.querySelector(`.year-btn[data-year="${cy}"]`);
+        if (yBtn) { yBtn.classList.add(...ACTIVE_CLS); yBtn.classList.remove(...INACTIVE_CLS); }
+        document.getElementById('yr-multi-hint').textContent = '';
+        applyQuickFilter();
+    };
+
+    window.resetLocalQuickMonth = function() {
+        selectedMonths.clear();
+        document.querySelectorAll('.month-btn').forEach(btn => {
+            btn.classList.remove(...ACTIVE_CLS);
+            btn.classList.add(...INACTIVE_CLS);
+        });
+        const cm = new Date().getMonth() + 1;
+        selectedMonths.add(cm);
+        const mBtn = document.querySelector(`.month-btn[data-month="${String(cm).padStart(2, '0')}"]`);
+        if (mBtn) { mBtn.classList.add(...ACTIVE_CLS); mBtn.classList.remove(...INACTIVE_CLS); }
+        document.getElementById('mo-multi-hint').textContent = '';
+        applyQuickFilter();
+    };
 
     function initQuickFilters() {
         const sDate = document.querySelector('[name="start_date"]').value;

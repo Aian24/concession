@@ -357,7 +357,10 @@ if (!function_exists('time_elapsed_string')) {
 
             <!-- Quick Year multi-select -->
             <div class="flex flex-col gap-1 flex-1 min-w-0">
-                <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Quick Year <span class="text-purple-400/60" id="yr-multi-hint"></span></label>
+                <div class="relative w-full">
+                    <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Quick Year <span class="text-purple-400/60" id="yr-multi-hint"></span></label>
+                    <button type="button" onclick="resetDashboardQuickYear()" class="absolute right-1 top-0 mt-0 text-gray-500 hover:text-red-400 transition-colors" title="Reset Year"><i class="fas fa-sync-alt text-[9px]"></i></button>
+                </div>
                 <div class="flex items-center bg-slate-900/80 border border-white/10 rounded-xl h-9 relative w-full">
                     <button type="button" onclick="scrollQuickYears(-1)" class="absolute left-0 z-10 h-full px-2 bg-gradient-to-r from-slate-900 via-slate-900/80 to-transparent text-gray-400 hover:text-white transition-all flex-shrink-0"><i class="fas fa-chevron-left text-[9px]"></i></button>
                     <div id="years-container" class="no-scrollbar flex items-center gap-1 overflow-x-auto scroll-smooth w-full px-6" style="scrollbar-width:none;-ms-overflow-style:none;">
@@ -378,7 +381,10 @@ if (!function_exists('time_elapsed_string')) {
 
         <!-- Quick Month multi-select (full width on mobile, flex-1 on desktop) -->
         <div class="flex flex-col gap-1 flex-1 min-w-0">
-            <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Quick Month <span class="text-purple-400/60" id="mo-multi-hint"></span></label>
+            <div class="relative w-full">
+                <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Quick Month <span class="text-purple-400/60" id="mo-multi-hint"></span></label>
+                <button type="button" onclick="resetDashboardQuickMonth()" class="absolute right-1 top-0 mt-0 text-gray-500 hover:text-red-400 transition-colors" title="Reset Month"><i class="fas fa-sync-alt text-[9px]"></i></button>
+            </div>
             <div class="flex items-center bg-slate-900/80 border border-white/10 rounded-xl h-9 relative w-full">
                 <button type="button" onclick="scrollQuickMonths(-1)" class="absolute left-0 z-10 h-full px-2 bg-gradient-to-r from-slate-900 via-slate-900/80 to-transparent text-gray-400 hover:text-white transition-all flex-shrink-0"><i class="fas fa-chevron-left text-[9px]"></i></button>
                 <div id="months-container" class="no-scrollbar flex items-center gap-1 overflow-x-auto scroll-smooth w-full px-6" style="scrollbar-width:none;-ms-overflow-style:none;">
@@ -516,6 +522,34 @@ function scrollQuickYears(dir) {
 function scrollQuickMonths(dir) { 
     const c = document.getElementById('months-container'); 
     if (c) c.scrollBy({ left: dir * 150, behavior: 'smooth' }); 
+}
+
+function resetDashboardQuickYear() {
+    selectedYears.clear();
+    document.querySelectorAll('.year-btn').forEach(btn => {
+        btn.classList.remove(...ACTIVE_CLS);
+        btn.classList.add(...INACTIVE_CLS);
+    });
+    const cy = new Date().getFullYear();
+    selectedYears.add(cy);
+    const yBtn = document.querySelector(`.year-btn[data-year="${cy}"]`);
+    if (yBtn) { yBtn.classList.add(...ACTIVE_CLS); yBtn.classList.remove(...INACTIVE_CLS); }
+    document.getElementById('yr-multi-hint').textContent = '';
+    applyQuickFilter();
+}
+
+function resetDashboardQuickMonth() {
+    selectedMonths.clear();
+    document.querySelectorAll('.month-btn').forEach(btn => {
+        btn.classList.remove(...ACTIVE_CLS);
+        btn.classList.add(...INACTIVE_CLS);
+    });
+    const cm = new Date().getMonth() + 1;
+    selectedMonths.add(cm);
+    const mBtn = document.querySelector(`.month-btn[data-month="${String(cm).padStart(2, '0')}"]`);
+    if (mBtn) { mBtn.classList.add(...ACTIVE_CLS); mBtn.classList.remove(...INACTIVE_CLS); }
+    document.getElementById('mo-multi-hint').textContent = '';
+    applyQuickFilter();
 }
 
 document.addEventListener('DOMContentLoaded', () => {

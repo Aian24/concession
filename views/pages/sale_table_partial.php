@@ -402,7 +402,10 @@ if ($is_single_day && ($is_admin || $is_multi_store_admin) && empty($store_filte
                 $selected_years_count = max(0, $selMaxYr - $selMinYr + 1);
                 $yr_hint = $selected_years_count > 1 ? "($selected_years_count selected)" : "";
                 ?>
-                <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Quick Year <span class="text-purple-400/60" id="table-yr-multi-hint"><?= $yr_hint ?></span></label>
+                <div class="relative w-full">
+                    <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Quick Year <span class="text-purple-400/60" id="table-yr-multi-hint"><?= $yr_hint ?></span></label>
+                    <button type="button" onclick="resetTableQuickYear()" class="absolute right-1 top-0 mt-0 text-gray-500 hover:text-red-400 transition-colors" title="Reset Year"><i class="fas fa-sync-alt text-[9px]"></i></button>
+                </div>
                 <div class="shrink-0 flex items-center bg-slate-900/80 border border-white/10 rounded-lg shadow-inner h-8 relative z-20 overflow-hidden w-full">
                     <button type="button" onclick="scrollTableQuickYears(-1)" class="absolute left-0 z-10 h-full px-1.5 bg-gradient-to-r from-slate-900 via-slate-900/90 to-transparent flex items-center justify-start text-gray-400 hover:text-white transition-all"><i class="fas fa-chevron-left text-[8px]"></i></button>
                     
@@ -428,7 +431,10 @@ if ($is_single_day && ($is_admin || $is_multi_store_admin) && empty($store_filte
                 $selected_months_count = ($selMinM && $selMaxM) ? max(0, (int)$selMaxM - (int)$selMinM + 1) : 0;
                 $mo_hint = $selected_months_count > 1 ? "($selected_months_count selected)" : "";
                 ?>
-                <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Quick Month <span class="text-purple-400/60" id="table-mo-multi-hint"><?= $mo_hint ?></span></label>
+                <div class="relative w-full">
+                    <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Quick Month <span class="text-purple-400/60" id="table-mo-multi-hint"><?= $mo_hint ?></span></label>
+                    <button type="button" onclick="resetTableQuickMonth()" class="absolute right-1 top-0 mt-0 text-gray-500 hover:text-red-400 transition-colors" title="Reset Month"><i class="fas fa-sync-alt text-[9px]"></i></button>
+                </div>
                 <div class="shrink-0 flex items-center bg-slate-900/80 border border-white/10 rounded-lg shadow-inner h-8 relative z-20 overflow-hidden w-full">
                     <button type="button" onclick="scrollTableQuickMonths(-1)" class="absolute left-0 z-10 h-full px-1.5 bg-gradient-to-r from-slate-900 via-slate-900/90 to-transparent flex items-center justify-start text-gray-400 hover:text-white transition-all"><i class="fas fa-chevron-left text-[8px]"></i></button>
                     
