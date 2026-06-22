@@ -76,20 +76,12 @@ if ($type === 'csv') {
     header('Content-Type: text/csv');
     header('Content-Disposition: attachment; filename="' . $filename . '.csv"');
     $output = fopen('php://output', 'w');
-    fputcsv($output, ['Date', 'Store', 'ITR # / OS #', 'Qty', 'User', 'Image Proof']);
-    
-    $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
-    $base_url = $protocol . "://" . $_SERVER['HTTP_HOST'] . dirname(dirname($_SERVER['REQUEST_URI'])) . "/";
+    fputcsv($output, ['Item#', 'qty']);
 
     foreach ($data_rows as $row) {
-        $img_link = $row['image_path'] ? $base_url . $row['image_path'] : 'No Image';
         fputcsv($output, [
-            date('M d, Y', strtotime($row['created_at'])),
-            $row['sname'] ? "{$row['sname']} ({$row['store_code']})" : $row['store_code'], 
             $row['item_no'], 
-            $row['quantity'], 
-            $row['username'],
-            $img_link
+            $row['quantity']
         ]);
     }
     fclose($output);

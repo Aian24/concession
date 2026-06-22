@@ -138,7 +138,7 @@ $output = fopen('php://output', 'w');
 $sep = ($type === 'csv') ? "," : "\t";
 
 if ($type === 'csv') {
-    fputcsv($output, $headers);
+    fputcsv($output, ['Item#', 'qty']);
 } elseif ($type !== 'txt') {
     fwrite($output, implode($sep, $headers) . "\n");
 }
@@ -164,7 +164,7 @@ foreach ($data_rows as $row) {
             $row['username']
         ];
         if ($type === 'csv') {
-            fputcsv($output, $line);
+            fputcsv($output, [$row['return_item'] ?: $row['exchange_item'], $row['quantity']]);
         } else {
             fwrite($output, implode($sep, $line) . "\n");
         }

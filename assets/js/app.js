@@ -41,23 +41,39 @@ function exportTable(type) {
     const table = document.getElementById('dataTable');
     if (!table) return;
 
+    const urlParams = new URLSearchParams(window.location.search);
+    const action = urlParams.get('action');
+
     // Get selected rows
     const checkboxes = table.querySelectorAll('tbody .row-checkbox');
     const selectedRows = [];
     
+    // Check if we need specialized CSV export for Data tabs
+    let isSpecialCsvExport = false;
+    let itemIdx = -1;
+    let qtyIdx = -1;
+
+    if (type === 'csv' && ['sale', 'return', 'receiving', 'pullout'].includes(action)) {
+        isSpecialCsvExport = true;
+        if (action === 'sale') { itemIdx = 1; qtyIdx = 3; }
+        else if (action === 'return') { itemIdx = 1; qtyIdx = 2; }
+        else if (action === 'receiving') { itemIdx = 1; qtyIdx = 2; }
+        else if (action === 'pullout') { itemIdx = 1; qtyIdx = 2; }
+    }
+
     // Grab headers (skip the first column which is checkbox)
     const headers = [];
     table.querySelectorAll('thead th').forEach((th, idx) => {
         if(idx > 0) headers.push(th.innerText.trim()); 
     });
-    selectedRows.push(headers);
+
+    if (!isSpecialCsvExport) {
+        selectedRows.push(headers);
+    }
 
     let targetRows = Array.from(checkboxes).filter(cb => cb.checked);
     if (targetRows.length === 0) {
         // Determine if we should trigger a deep background fetch natively from the API!
-        const urlParams = new URLSearchParams(window.location.search);
-        const action = urlParams.get('action');
-        
         if (action === 'monitoring' && (type === 'csv' || type === 'txt')) {
             let baseUrl = `api/export_sales.php?type=${type}`;
             if(urlParams.get('status')) baseUrl += `&status=${urlParams.get('status')}`;
@@ -89,19 +105,34 @@ function exportTable(type) {
     targetRows.forEach((cb) => {
         const rowData = [];
         const tr = cb.closest('tr');
-        tr.querySelectorAll('td').forEach((td, idx) => {
-            if(idx > 0) {
-                // Flatten multi-line nested divs into one clean string, and escape quotes
-                let cellText = td.innerText.replace(/\s+/g, ' ').trim();
-                if (type === 'csv') {
-                    // Protect CSV structure from being broken by native commas
-                    if (cellText.includes(',') || cellText.includes('"')) {
-                        cellText = `"${cellText.replace(/"/g, '""')}"`;
-                    }
-                }
-                rowData.push(cellText);
+        const tds = tr.querySelectorAll('td');
+        
+        if (isSpecialCsvExport) {
+            let itemText = tds[itemIdx + 1] ? tds[itemIdx + 1].innerText.replace(/\s+/g, ' ').trim() : '';
+            let qtyText = tds[qtyIdx + 1] ? tds[qtyIdx + 1].innerText.replace(/\s+/g, ' ').trim() : '';
+            if (itemText.includes(',') || itemText.includes('"')) {
+                itemText = `"${itemText.replace(/"/g, '""')}"`;
             }
-        });
+            if (qtyText.includes(',') || qtyText.includes('"')) {
+                qtyText = `"${qtyText.replace(/"/g, '""')}"`;
+            }
+            rowData.push(itemText);
+            rowData.push(qtyText);
+        } else {
+            tds.forEach((td, idx) => {
+                if(idx > 0) {
+                    // Flatten multi-line nested divs into one clean string, and escape quotes
+                    let cellText = td.innerText.replace(/\s+/g, ' ').trim();
+                    if (type === 'csv') {
+                        // Protect CSV structure from being broken by native commas
+                        if (cellText.includes(',') || cellText.includes('"')) {
+                            cellText = `"${cellText.replace(/"/g, '""')}"`;
+                        }
+                    }
+                    rowData.push(cellText);
+                }
+            });
+        }
         selectedRows.push(rowData);
     });
 
