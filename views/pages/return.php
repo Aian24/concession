@@ -214,52 +214,49 @@ if (isset($_GET['ajax'])) {
                         }
                     }
 
-                    // Setup custom Flatpickr for Backdate with Cancel/Set buttons
-                    setTimeout(() => {
-                        if (typeof flatpickr !== 'undefined') {
-                            const dateEl = document.getElementById('page_custom_date');
-                            if (dateEl._flatpickr) {
-                                dateEl._flatpickr.destroy();
-                            }
-                            flatpickr(dateEl, {
-                                dateFormat: "Y-m-d",
-                                disableMobile: true,
-                                closeOnSelect: false,
-                                maxDate: "today",
-                                onChange: function(selectedDates, dateStr, instance) {
+                    (function initBackdatePicker() {
+                        if (typeof flatpickr === 'undefined') { setTimeout(initBackdatePicker, 250); return; }
+                        const dateEl = document.getElementById('page_custom_date');
+                        if (!dateEl) return;
+                        if (dateEl._flatpickr) dateEl._flatpickr.destroy();
+                        flatpickr(dateEl, {
+                            dateFormat: "Y-m-d",
+                            disableMobile: true,
+                            closeOnSelect: false,
+                            maxDate: "today",
+                            onChange: function(selectedDates, dateStr, instance) {
+                                instance.close();
+                                updateBackdateText(dateStr);
+                            },
+                            onReady: function(selectedDates, dateStr, instance) {
+                                const btnContainer = document.createElement("div");
+                                btnContainer.className = "flex items-center justify-between p-2 mt-1 border-t border-white/10";
+                                btnContainer.innerHTML = `
+                                    <button type="button" class="px-3 py-1.5 rounded bg-white/5 hover:bg-white/10 text-gray-400 text-[10px] font-bold uppercase transition-all fp-cancel">Cancel</button>
+                                    <button type="button" class="px-3 py-1.5 rounded bg-orange-600 hover:bg-orange-500 text-white text-[10px] font-bold uppercase transition-all fp-set">Today</button>
+                                `;
+                                instance.calendarContainer.appendChild(btnContainer);
+                                
+                                btnContainer.querySelector('.fp-cancel').addEventListener('click', function(e) {
+                                    e.stopPropagation();
                                     instance.close();
-                                    updateBackdateText(dateStr);
-                                },
-                                onReady: function(selectedDates, dateStr, instance) {
-                                    const btnContainer = document.createElement("div");
-                                    btnContainer.className = "flex items-center justify-between p-2 mt-1 border-t border-white/10";
-                                    btnContainer.innerHTML = `
-                                        <button type="button" class="px-3 py-1.5 rounded bg-white/5 hover:bg-white/10 text-gray-400 text-[10px] font-bold uppercase transition-all fp-cancel">Cancel</button>
-                                        <button type="button" class="px-3 py-1.5 rounded bg-orange-600 hover:bg-orange-500 text-white text-[10px] font-bold uppercase transition-all fp-set">Today</button>
-                                    `;
-                                    instance.calendarContainer.appendChild(btnContainer);
-                                    
-                                    btnContainer.querySelector('.fp-cancel').addEventListener('click', function(e) {
-                                        e.stopPropagation();
-                                        instance.close();
-                                        const radio = document.querySelector('input[name="page_date_type"][value="current"]');
-                                        if (radio) {
-                                            radio.checked = true;
-                                            handleDateTypeChange('current');
-                                        }
-                                    });
-                                    btnContainer.querySelector('.fp-set').addEventListener('click', function(e) {
-                                        e.stopPropagation();
-                                        const now = new Date();
-                                        instance.setDate(now, false);
-                                        instance.close();
-                                        const dStr = instance.formatDate(now, "Y-m-d");
-                                        updateBackdateText(dStr);
-                                    });
-                                }
-                            });
-                        }
-                    }, 500);
+                                    const radio = document.querySelector('input[name="page_date_type"][value="current"]');
+                                    if (radio) {
+                                        radio.checked = true;
+                                        handleDateTypeChange('current');
+                                    }
+                                });
+                                btnContainer.querySelector('.fp-set').addEventListener('click', function(e) {
+                                    e.stopPropagation();
+                                    const now = new Date();
+                                    instance.setDate(now, false);
+                                    instance.close();
+                                    const dStr = instance.formatDate(now, "Y-m-d");
+                                    updateBackdateText(dStr);
+                                });
+                            }
+                        });
+                    })();
                 })();
             </script>
 

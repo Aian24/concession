@@ -271,10 +271,21 @@ window.initQuickFiltersState = function() {
 };
 
 window.applyTableQuickFilter = function() {
-    if (window.tableSelectedYears.size === 0 || window.tableSelectedMonths.size === 0) return;
-    const minY = Math.min(...window.tableSelectedYears), maxY = Math.max(...window.tableSelectedYears);
-    const minM = Math.min(...[...window.tableSelectedMonths].map(Number));
-    const maxM = Math.max(...[...window.tableSelectedMonths].map(Number));
+    if (window.tableSelectedYears.size === 0 && window.tableSelectedMonths.size === 0) return;
+    
+    // Auto-default: if only years selected, use Jan-Dec; if only months selected, use current year
+    let useYears = window.tableSelectedYears;
+    let useMonths = window.tableSelectedMonths;
+    if (useYears.size > 0 && useMonths.size === 0) {
+        useMonths = new Set([1,2,3,4,5,6,7,8,9,10,11,12]);
+    }
+    if (useMonths.size > 0 && useYears.size === 0) {
+        useYears = new Set([new Date().getFullYear()]);
+    }
+    
+    const minY = Math.min(...useYears), maxY = Math.max(...useYears);
+    const minM = Math.min(...[...useMonths].map(Number));
+    const maxM = Math.max(...[...useMonths].map(Number));
     const pad = v => String(v).padStart(2,'0');
     const startDate = `${minY}-${pad(minM)}-01`;
     const lastDay   = new Date(maxY, maxM, 0).getDate();
@@ -285,6 +296,12 @@ window.applyTableQuickFilter = function() {
     if (startInput) startInput.value = startDate;
     if (endInput) endInput.value = endDate;
     
+    // Update hint counts
+    const yrHint = document.getElementById('table-yr-multi-hint');
+    const moHint = document.getElementById('table-mo-multi-hint');
+    if (yrHint) yrHint.textContent = window.tableSelectedYears.size > 1 ? `(${window.tableSelectedYears.size} selected)` : '';
+    if (moHint) moHint.textContent = window.tableSelectedMonths.size > 1 ? `(${window.tableSelectedMonths.size} selected)` : '';
+    
     if (typeof window.refreshTable === 'function') window.refreshTable(1);
     else if (typeof window.refreshSaleTable === 'function') window.refreshSaleTable(1);
     else if (typeof window.refreshReturnTable === 'function') window.refreshReturnTable(1);
@@ -292,17 +309,42 @@ window.applyTableQuickFilter = function() {
     else if (typeof window.refreshPulloutTable === 'function') window.refreshPulloutTable(1);
 };
 
+const TABLE_ACTIVE_CLS = ['!bg-purple-500/20','!text-purple-400','shadow-sm','!border-purple-500/50'];
+const TABLE_ACTIVE_TAG = 'active-year';
+const TABLE_ACTIVE_MTAG = 'active-month';
+const TABLE_INACTIVE_CLS = ['text-gray-500','border-transparent'];
+
 window.toggleTableYear = function(btn, year) {
-    if (window.tableSelectedYears.has(year)) { window.tableSelectedYears.delete(year); }
-    else { window.tableSelectedYears.add(year); }
+    if (window.tableSelectedYears.has(year)) {
+        window.tableSelectedYears.delete(year);
+        btn.classList.remove(...TABLE_ACTIVE_CLS, TABLE_ACTIVE_TAG);
+        btn.classList.add(...TABLE_INACTIVE_CLS);
+    } else {
+        window.tableSelectedYears.add(year);
+        btn.classList.add(...TABLE_ACTIVE_CLS, TABLE_ACTIVE_TAG);
+        btn.classList.remove(...TABLE_INACTIVE_CLS);
+    }
     window.applyTableQuickFilter();
 };
 
 window.toggleTableMonth = function(btn, monthNum) {
     const m = parseInt(monthNum);
-    if (window.tableSelectedYears.size === 0) window.tableSelectedYears.add(2026);
-    if (window.tableSelectedMonths.has(m)) { window.tableSelectedMonths.delete(m); }
-    else { window.tableSelectedMonths.add(m); }
+    if (window.tableSelectedMonths.has(m)) {
+        window.tableSelectedMonths.delete(m);
+        btn.classList.remove(...TABLE_ACTIVE_CLS, TABLE_ACTIVE_MTAG);
+        btn.classList.add(...TABLE_INACTIVE_CLS);
+    } else {
+        window.tableSelectedMonths.add(m);
+        btn.classList.add(...TABLE_ACTIVE_CLS, TABLE_ACTIVE_MTAG);
+        btn.classList.remove(...TABLE_INACTIVE_CLS);
+    }
+    if (window.tableSelectedYears.size === 0) {
+        // Auto-select current year and highlight its button
+        const cy = new Date().getFullYear();
+        window.tableSelectedYears.add(cy);
+        const yBtn = document.querySelector(`.table-year-btn[data-year="${cy}"]`);
+        if (yBtn) { yBtn.classList.add(...TABLE_ACTIVE_CLS, TABLE_ACTIVE_TAG); yBtn.classList.remove(...TABLE_INACTIVE_CLS); }
+    }
     window.applyTableQuickFilter();
 };
 
