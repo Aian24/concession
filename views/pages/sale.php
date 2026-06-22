@@ -117,17 +117,12 @@ if (isset($_GET['ajax'])) {
     <?php if ($can_submit): ?>
     <!-- New Sale Form -->
     <div class="glass-panel border border-white/5 shadow-xl mb-10 min-h-[70vh] flex flex-col overflow-hidden">
-        <div class="px-6 py-4 border-b border-white/10 bg-slate-800/40 flex items-center justify-between relative overflow-hidden">
-            <div class="flex items-center gap-4">
-                <div class="w-10 h-10 rounded-xl bg-green-500/10 border border-green-500/20 flex items-center justify-center">
-                    <i class="fas fa-plus-circle text-green-400"></i>
-                </div>
-                <div>
-                    <h3 class="text-sm font-black text-white tracking-wider uppercase">New Sale Entry</h3>
-                    <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">Record current store transactions</p>
-                </div>
+        <div class="px-5 py-2.5 border-b border-white/5 bg-slate-800/25 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <i class="fas fa-plus-circle text-green-400 text-xs"></i>
+                <h3 class="text-xs font-bold text-white tracking-wide uppercase">Sale Entry</h3>
             </div>
-            <span id="entry-count-badge" class="text-[10px] font-black bg-green-500/10 text-green-400 border border-green-500/20 px-3 py-1 rounded-full shadow-lg shadow-green-500/5">1 item</span>
+            <span id="entry-count-badge" class="text-[9px] font-bold bg-green-500/10 text-green-400 border border-green-500/20 px-1.5 py-0.5 rounded">1 item</span>
         </div>
 
         <div class="p-4 flex-grow flex flex-col justify-start gap-4">

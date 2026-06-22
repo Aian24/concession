@@ -214,14 +214,18 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 
     <!-- Filters -->
     <div class="p-4 border-b border-white/5 bg-slate-800/10">
-        <div class="grid grid-cols-2 <?= $is_admin ? 'lg:grid-cols-6' : 'lg:grid-cols-5' ?> gap-4">
-            <div class="relative">
-                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-[10px]"><i class="fas fa-search"></i></span>
-                <input type="text" name="search" value="<?= htmlspecialchars($search) ?>" placeholder="OS, Item, Store or ID..." class="w-full bg-slate-900/50 border border-white/5 rounded-lg pl-9 pr-4 py-2 text-xs text-white focus:outline-none focus:border-cyan-500/30 transition-all">
+        <div class="grid grid-cols-2 <?= $is_admin ? 'lg:grid-cols-6' : 'lg:grid-cols-5' ?> gap-3 bg-white/5 p-3 rounded-xl border border-white/5">
+            <div class="space-y-1">
+                <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Search</label>
+                <div class="relative">
+                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-[10px]"></i>
+                    <input type="text" name="search" value="<?= htmlspecialchars($search) ?>" placeholder="OS, Item, Store or ID..." class="w-full bg-slate-900/80 border border-white/10 rounded-lg pl-8 pr-4 py-1.5 h-8 text-[10px] text-white focus:outline-none focus:border-cyan-500/50 transition-all">
+                </div>
             </div>
 
             <?php if ($is_admin): ?>
-            <div class="relative" id="store-filter-container">
+            <div class="space-y-1 relative" id="store-filter-container">
+                <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Store Filter</label>
                 <?php
                 $q_params = [];
                 $q_types = "";
@@ -270,7 +274,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
                 }
                 ?>
                 <!-- Custom Trigger -->
-                <div id="store-filter-trigger" class="w-full bg-slate-900/50 border border-white/5 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500/30 transition-all cursor-pointer flex items-center justify-between hover:bg-white/5 h-[34px]">
+                <div id="store-filter-trigger" class="w-full bg-slate-900/80 border border-white/10 rounded-lg px-3 py-1.5 h-8 text-[10px] text-white focus:outline-none focus:border-cyan-500/50 transition-all cursor-pointer flex items-center justify-between hover:bg-white/5">
                     <span id="selected-store-label" class="truncate font-bold opacity-80"><?= htmlspecialchars($current_label) ?></span>
                     <i class="fas fa-chevron-down text-[9px] text-gray-500 ml-2"></i>
                 </div>
@@ -278,7 +282,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
                 <!-- Custom Menu -->
                 <div id="store-filter-menu" class="absolute top-[calc(100%+4px)] right-0 min-w-[280px] w-full bg-[#0f172a] border border-white/10 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[100] hidden max-h-64 overflow-y-auto overflow-x-hidden backdrop-blur-xl">
                     <div class="sticky top-0 bg-[#0f172a] p-2 border-b border-white/5 z-20">
-                        <input type="text" id="store-search-filter" class="w-full bg-slate-900 border border-white/10 rounded-lg px-3 py-1.5 text-[10px] text-white focus:outline-none focus:border-cyan-500/30" placeholder="Search store..." autocomplete="off">
+                        <input type="text" id="store-search-filter" class="w-full bg-slate-900 border border-white/10 rounded-lg px-3 py-1.5 text-[10px] text-white focus:outline-none focus:border-cyan-500/50" placeholder="Search store..." autocomplete="off">
                     </div>
                     <div class="store-option px-3 py-2.5 text-[11px] text-white hover:bg-white/5 cursor-pointer flex justify-between items-center transition-all border-b border-white/5 last:border-0 <?= $store_filter === '' ? 'bg-cyan-500/10' : '' ?>" data-value="">
                         <span class="font-bold">All Stores</span>
@@ -314,18 +318,23 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
             </div>
             <?php endif; ?>
 
-            <div class="relative">
-                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-[9px] font-bold uppercase tracking-wider z-10">From Date</span>
-                <input type="date" name="start_date" value="<?= $start_date ?>" onclick="this.showPicker()" placeholder="mm/dd/yyyy" class="w-full bg-slate-900/50 border border-white/5 rounded-lg pl-20 pr-8 py-2 h-[34px] text-xs text-white focus:outline-none focus:border-cyan-500/30 transition-all cursor-pointer">
-                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                    <i class="fas fa-calendar-alt text-gray-500 text-[10px]"></i>
+            <div class="space-y-1">
+                <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">From Date</label>
+                <div class="relative">
+                    <input type="date" name="start_date" value="<?= $start_date ?>" onclick="this.showPicker()" placeholder="mm/dd/yyyy" class="w-full bg-slate-900/80 border border-white/10 rounded-lg pl-3 pr-8 py-1.5 h-8 text-[10px] text-white focus:outline-none focus:border-cyan-500/50 transition-all cursor-pointer">
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                        <i class="fas fa-calendar-alt text-gray-500 text-[10px]"></i>
+                    </div>
                 </div>
             </div>
-            <div class="relative">
-                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-[9px] font-bold uppercase tracking-wider z-10">To Date</span>
-                <input type="date" name="end_date" value="<?= $end_date ?>" onclick="this.showPicker()" placeholder="mm/dd/yyyy" class="w-full bg-slate-900/50 border border-white/5 rounded-lg pl-16 pr-8 py-2 h-[34px] text-xs text-white focus:outline-none focus:border-cyan-500/30 transition-all cursor-pointer">
-                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                    <i class="fas fa-calendar-alt text-gray-500 text-[10px]"></i>
+
+            <div class="space-y-1">
+                <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">To Date</label>
+                <div class="relative">
+                    <input type="date" name="end_date" value="<?= $end_date ?>" onclick="this.showPicker()" placeholder="mm/dd/yyyy" class="w-full bg-slate-900/80 border border-white/10 rounded-lg pl-3 pr-8 py-1.5 h-8 text-[10px] text-white focus:outline-none focus:border-cyan-500/50 transition-all cursor-pointer">
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                        <i class="fas fa-calendar-alt text-gray-500 text-[10px]"></i>
+                    </div>
                 </div>
             </div>
 
@@ -337,7 +346,8 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
                 $selected_years_count = max(0, $selMaxYr - $selMinYr + 1);
                 $yr_hint = $selected_years_count > 1 ? "($selected_years_count selected)" : "";
                 ?>
-                <div class="shrink-0 flex items-center bg-slate-900/50 border border-white/5 rounded-lg shadow-inner h-[34px] relative z-20 overflow-hidden w-full">
+                <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Quick Year <span class="text-cyan-400/60" id="table-yr-multi-hint"><?= $yr_hint ?></span></label>
+                <div class="shrink-0 flex items-center bg-slate-900/80 border border-white/10 rounded-lg shadow-inner h-8 relative z-20 overflow-hidden w-full">
                     <button type="button" onclick="scrollTableQuickYears(-1)" class="absolute left-0 z-10 h-full px-1.5 bg-gradient-to-r from-slate-900 via-slate-900/90 to-transparent flex items-center justify-start text-gray-400 hover:text-white transition-all"><i class="fas fa-chevron-left text-[8px]"></i></button>
                     
                     <div id="table-years-container" class="flex items-center gap-1 overflow-x-auto hide-scrollbar scroll-smooth w-full px-5">
@@ -362,7 +372,8 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
                 $selected_months_count = ($selMinM && $selMaxM) ? max(0, (int)$selMaxM - (int)$selMinM + 1) : 0;
                 $mo_hint = $selected_months_count > 1 ? "($selected_months_count selected)" : "";
                 ?>
-                <div class="shrink-0 flex items-center bg-slate-900/50 border border-white/5 rounded-lg shadow-inner h-[34px] relative z-20 overflow-hidden w-full">
+                <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Quick Month <span class="text-cyan-400/60" id="table-mo-multi-hint"><?= $mo_hint ?></span></label>
+                <div class="shrink-0 flex items-center bg-slate-900/80 border border-white/10 rounded-lg shadow-inner h-8 relative z-20 overflow-hidden w-full">
                     <button type="button" onclick="scrollTableQuickMonths(-1)" class="absolute left-0 z-10 h-full px-1.5 bg-gradient-to-r from-slate-900 via-slate-900/90 to-transparent flex items-center justify-start text-gray-400 hover:text-white transition-all"><i class="fas fa-chevron-left text-[8px]"></i></button>
                     
                     <div id="table-months-container" class="flex items-center gap-1 overflow-x-auto hide-scrollbar scroll-smooth w-full px-5">
@@ -383,11 +394,10 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
             </div>
         </div>
     </div>
-    </div>
 
     <!-- Table -->
-    <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse" id="receiving-history-table">
+    <div class="overflow-x-auto min-h-[300px] w-full">
+        <table class="w-full text-left border-collapse glass-table" id="receiving-history-table">
             <thead>
                 <tr>
                     <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 w-10 text-center">

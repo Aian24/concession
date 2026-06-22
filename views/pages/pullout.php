@@ -117,7 +117,7 @@ if (isset($_GET['ajax'])) {
         <div class="px-5 py-2.5 border-b border-white/5 bg-slate-800/25 flex items-center justify-between">
             <div class="flex items-center gap-2">
                 <i class="fas fa-arrow-right-from-bracket text-amber-400 text-xs"></i>
-                <h3 class="text-xs font-bold text-white tracking-wide uppercase">New Pullout Entry</h3>
+                <h3 class="text-xs font-bold text-white tracking-wide uppercase">Pullout Entry</h3>
             </div>
             <span id="entry-count-badge" class="text-[9px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 px-1.5 py-0.5 rounded">1 item</span>
         </div>
