@@ -17,19 +17,49 @@ function getWmiData() {
         'mem_total' => 0
     ];
     
-    @exec('wmic cpu get loadpercentage 2>&1', $cpu);
-    if (!empty($cpu) && isset($cpu[1])) {
-        $data['cpu'] = intval(trim($cpu[1]));
-    }
-    
-    @exec('wmic OS get FreePhysicalMemory,TotalVisibleMemorySize /Value 2>&1', $mem);
-    if (!empty($mem)) {
-        foreach($mem as $m) {
-            if (strpos($m, 'FreePhysicalMemory') !== false) {
-                $data['mem_free'] = intval(explode('=', $m)[1]);
+    if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+        @exec('wmic cpu get loadpercentage 2>&1', $cpu);
+        if (!empty($cpu) && isset($cpu[1])) {
+            $data['cpu'] = intval(trim($cpu[1]));
+        }
+        
+        @exec('wmic OS get FreePhysicalMemory,TotalVisibleMemorySize /Value 2>&1', $mem);
+        if (!empty($mem)) {
+            foreach($mem as $m) {
+                if (strpos($m, 'FreePhysicalMemory') !== false) {
+                    $data['mem_free'] = intval(explode('=', $m)[1]);
+                }
+                if (strpos($m, 'TotalVisibleMemorySize') !== false) {
+                    $data['mem_total'] = intval(explode('=', $m)[1]);
+                }
             }
-            if (strpos($m, 'TotalVisibleMemorySize') !== false) {
-                $data['mem_total'] = intval(explode('=', $m)[1]);
+        }
+    } else {
+        // Linux CPU
+        $load = sys_getloadavg();
+        if ($load !== false) {
+            @exec("grep -c ^processor /proc/cpuinfo", $cores);
+            $core_count = !empty($cores) ? intval($cores[0]) : 1;
+            if ($core_count == 0) $core_count = 1;
+            $data['cpu'] = min(100, round(($load[0] / $core_count) * 100));
+        }
+
+        // Linux Memory (in KB, same as wmic output)
+        $meminfo = @file_get_contents("/proc/meminfo");
+        if ($meminfo) {
+            preg_match("/MemTotal:\s+(\d+)/", $meminfo, $matches);
+            $data['mem_total'] = isset($matches[1]) ? intval($matches[1]) : 0;
+            preg_match("/MemAvailable:\s+(\d+)/", $meminfo, $matches);
+            if(isset($matches[1])) {
+                $data['mem_free'] = intval($matches[1]);
+            } else {
+                preg_match("/MemFree:\s+(\d+)/", $meminfo, $matches);
+                $free = isset($matches[1]) ? intval($matches[1]) : 0;
+                preg_match("/Buffers:\s+(\d+)/", $meminfo, $matches);
+                $buffers = isset($matches[1]) ? intval($matches[1]) : 0;
+                preg_match("/Cached:\s+(\d+)/", $meminfo, $matches);
+                $cached = isset($matches[1]) ? intval($matches[1]) : 0;
+                $data['mem_free'] = $free + $buffers + $cached;
             }
         }
     }
@@ -38,12 +68,25 @@ function getWmiData() {
 }
 
 function getPhpProcesses() {
-    @exec('tasklist /fi "IMAGENAME eq php.exe" /nh 2>&1', $tasks);
     $count = 0;
-    if (!empty($tasks)) {
-        foreach ($tasks as $task) {
-            if (strpos(strtolower($task), 'php.exe') !== false) {
-                $count++;
+    if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+        @exec('tasklist /fi "IMAGENAME eq php.exe" /nh 2>&1', $tasks);
+        if (!empty($tasks)) {
+            foreach ($tasks as $task) {
+                if (strpos(strtolower($task), 'php.exe') !== false) {
+                    $count++;
+                }
+            }
+        }
+    } else {
+        @exec('ps -C php,php-cgi,php-fpm,lsphp --no-headers | wc -l 2>&1', $tasks);
+        if (!empty($tasks) && intval($tasks[0]) > 0) {
+            $count = intval($tasks[0]);
+        } else {
+            // Fallback for restricted environments
+            @exec('ps aux | grep -E "php|lsphp" | grep -v grep | wc -l 2>&1', $fallback);
+            if (!empty($fallback)) {
+                $count = intval($fallback[0]);
             }
         }
     }
@@ -57,7 +100,8 @@ $mem_free_gb = number_format($wmi['mem_free'] / 1024 / 1024, 2);
 $mem_used_gb = number_format(($wmi['mem_total'] - $wmi['mem_free']) / 1024 / 1024, 2);
 $mem_percent = $wmi['mem_total'] > 0 ? round((($wmi['mem_total'] - $wmi['mem_free']) / $wmi['mem_total']) * 100) : 0;
 
-$disk_path = "C:";
+$is_win = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
+$disk_path = $is_win ? "C:" : "/";
 $disk_total = @disk_total_space($disk_path) ?: 1;
 $disk_free = @disk_free_space($disk_path) ?: 0;
 $disk_used = $disk_total - $disk_free;
