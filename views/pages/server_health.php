@@ -36,12 +36,22 @@ function getWmiData() {
         }
     } else {
         // Linux CPU
-        $load = sys_getloadavg();
-        if ($load !== false) {
-            @exec("grep -c ^processor /proc/cpuinfo", $cores);
-            $core_count = !empty($cores) ? intval($cores[0]) : 1;
-            if ($core_count == 0) $core_count = 1;
-            $data['cpu'] = min(100, round(($load[0] / $core_count) * 100));
+        $cpu_usage = 0;
+        
+        // Try getting instantaneous CPU usage from top
+        @exec("top -bn1 | grep 'Cpu(s)' 2>&1", $top);
+        if (!empty($top) && preg_match('/(\d+\.\d+)\s+id/', $top[0], $matches)) {
+            $idle = floatval($matches[1]);
+            $cpu_usage = 100 - $idle;
+            $data['cpu'] = min(100, max(0, round($cpu_usage)));
+        } else {
+            // Fallback to load average
+            $load = sys_getloadavg();
+            if ($load !== false) {
+                @exec("grep -c ^processor /proc/cpuinfo", $cores);
+                $core_count = (!empty($cores) && intval($cores[0]) > 0) ? intval($cores[0]) : 1;
+                $data['cpu'] = min(100, max(0, round(($load[0] / $core_count) * 100)));
+            }
         }
 
         // Linux Memory (in KB, same as wmic output)
@@ -270,7 +280,7 @@ function getBgColorClass($percent) {
                     <i class="fab fa-php text-2xl"></i>
                 </div>
                 <div>
-                    <h4 class="text-white font-bold">php.exe</h4>
+                    <h4 class="text-white font-bold"><?= $is_win ? 'php.exe' : 'PHP Workers' ?></h4>
                     <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Active CLI Processes</p>
                 </div>
             </div>
