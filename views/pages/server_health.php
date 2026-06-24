@@ -111,7 +111,7 @@ $mem_used_gb = number_format(($wmi['mem_total'] - $wmi['mem_free']) / 1024 / 102
 $mem_percent = $wmi['mem_total'] > 0 ? round((($wmi['mem_total'] - $wmi['mem_free']) / $wmi['mem_total']) * 100) : 0;
 
 $is_win = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
-$disk_path = $is_win ? "C:" : "/";
+$disk_path = $is_win ? "C:" : __DIR__;
 $disk_total = @disk_total_space($disk_path) ?: 1;
 $disk_free = @disk_free_space($disk_path) ?: 0;
 $disk_used = $disk_total - $disk_free;
