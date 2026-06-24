@@ -112,9 +112,37 @@ $mem_percent = $wmi['mem_total'] > 0 ? round((($wmi['mem_total'] - $wmi['mem_fre
 
 $is_win = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
 $disk_path = $is_win ? "C:" : __DIR__;
+
 $disk_total = @disk_total_space($disk_path) ?: 1;
 $disk_free = @disk_free_space($disk_path) ?: 0;
 $disk_used = $disk_total - $disk_free;
+
+// Attempt to get exact cPanel quota on Linux if available
+if (!$is_win) {
+    @exec('quota -u $(whoami) -v 2>&1', $quota_out);
+    if (empty($quota_out)) {
+        @exec('quota -v 2>&1', $quota_out);
+    }
+    if (!empty($quota_out)) {
+        foreach($quota_out as $line) {
+            // Parse typical Linux quota output (blocks used vs limit)
+            // Format: Filesystem  blocks   quota   limit   grace ...
+            // e.g.    /dev/loop0   56000000 102400000 102400000
+            if (preg_match('/^\s*\S+\s+(\d+)\s+(\d+)\s+(\d+)/', $line, $matches)) {
+                $blocks_used = intval($matches[1]);
+                $blocks_limit = intval($matches[2]) > 0 ? intval($matches[2]) : intval($matches[3]);
+                
+                if ($blocks_limit > 0) {
+                    // quota reports in 1KB blocks
+                    $disk_total = $blocks_limit * 1024;
+                    $disk_used = $blocks_used * 1024;
+                    $disk_free = max(0, $disk_total - $disk_used);
+                    break;
+                }
+            }
+        }
+    }
+}
 $disk_total_gb = number_format($disk_total / 1073741824, 2);
 $disk_free_gb = number_format($disk_free / 1073741824, 2);
 $disk_used_gb = number_format($disk_used / 1073741824, 2);
