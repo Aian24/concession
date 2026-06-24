@@ -668,15 +668,14 @@ $all_stores_stmt->close();
         const row = document.querySelector(`.record-checkbox[value="${id}"]`)?.closest('tr');
         if (!row) return;
 
-        const offset = <?= $is_admin ? 1 : 0 ?>;
-        
         document.getElementById('edit-id').value = id;
         document.getElementById('edit-id-label').innerText = `Record ID: ${id}`;
-        document.getElementById('edit-os-no').value      = row.cells[1 + offset].innerText.trim();
-        document.getElementById('edit-qty').value        = row.cells[2 + offset].innerText.trim().replace(',', '');
+        
+        document.getElementById('edit-os-no').value = row.querySelector('[data-label="TF#"]').innerText.trim();
+        document.getElementById('edit-qty').value   = row.querySelector('[data-label="Qty"]').innerText.trim().replace(',', '');
 
-        const dateCell = row.cells[4 + offset];
-        const rawDate = dateCell.getAttribute('data-date') || '';
+        const dateCell = row.querySelector('[data-label="Date Received"]');
+        const rawDate = dateCell ? (dateCell.getAttribute('data-date') || '') : '';
         document.getElementById('edit-date').value = rawDate;
 
         const modal = document.getElementById('edit-receiving-modal');

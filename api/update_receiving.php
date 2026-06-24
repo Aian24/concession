@@ -16,7 +16,6 @@ $data = json_decode(file_get_contents('php://input'), true);
 
 $id         = intval($data['id'] ?? 0);
 $os_no      = trim($data['os_no'] ?? '');
-
 $quantity   = intval($data['quantity'] ?? 0);
 
 $created_at = $data['created_at'] ?? '';

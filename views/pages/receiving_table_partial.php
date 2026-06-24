@@ -415,7 +415,10 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 
                     <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 text-center">TF#</th>
                     <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 text-center">Qty</th>
-
+                    <?php if (!$is_admin): ?>
+                    <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 text-center">Source (From)</th>
+                    <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 text-center">Destination (To)</th>
+                    <?php endif; ?>
                     <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 text-center">Username</th>
                     <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 text-center">Date Received</th>
                     <?php if ($is_full_admin): ?>
@@ -430,7 +433,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
             <tbody id="receiving-tbody" class="divide-y divide-white/5">
                 <?php if (empty($received_items)): ?>
                     <tr>
-                        <td colspan="<?= ($is_admin ? 8 : 7) + ($is_full_admin ? 1 : 0) + ($can_edit ? 1 : 0) ?>" class="px-5 py-12 text-center text-gray-500">
+                        <td colspan="<?= ($is_admin ? 8 : 9) + ($is_full_admin ? 1 : 0) + ($can_edit ? 1 : 0) ?>" class="px-5 py-12 text-center text-gray-500">
                             <div class="flex flex-col items-center gap-2 opacity-20">
                                 <i class="fas fa-inbox text-4xl text-gray-500"></i>
                                 <span class="text-xs font-bold uppercase tracking-[0.2em] text-gray-400">No records found</span>
@@ -462,7 +465,20 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
                         <td class="px-5 py-3.5 text-center" data-label="Qty">
                             <span class="px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 font-black text-[11px]"><?= $r['quantity'] ?></span>
                         </td>
-
+                        <?php if (!$is_admin): ?>
+                        <td class="px-5 py-3.5 text-center" data-label="Source (From)">
+                            <div class="flex flex-col md:items-center">
+                                <span class="text-gray-300 font-bold text-xs uppercase"><?= htmlspecialchars($r['from_store'] ?: 'N/A') ?></span>
+                                <span class="text-[8px] text-gray-600 font-bold uppercase tracking-widest">Source</span>
+                            </div>
+                        </td>
+                        <td class="px-5 py-3.5 text-center" data-label="Destination (To)">
+                            <div class="flex flex-col md:items-center">
+                                <span class="text-cyan-400 font-bold text-xs uppercase"><?= htmlspecialchars($r['to_store'] ?: 'N/A') ?></span>
+                                <span class="text-[8px] text-gray-600 font-bold uppercase tracking-widest">Destination</span>
+                            </div>
+                        </td>
+                        <?php endif; ?>
                         <td class="px-5 py-3.5 text-center" data-label="Username">
                             <div class="flex items-center gap-2 justify-center">
                                 <div class="w-6 h-6 rounded-full bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-[10px] text-cyan-400 font-bold"><?= strtoupper($r['username'][0]) ?></div>
