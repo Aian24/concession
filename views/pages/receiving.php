@@ -96,7 +96,7 @@ $total_pages = max(1, ceil($total_rows / $limit));
 $count_stmt->close();
 
 // Fetch Rows
-$recent_stmt = $db->prepare("SELECT s.*, sc.sname FROM receiving s LEFT JOIN storecode sc ON s.store_code = sc.scode COLLATE utf8mb4_unicode_ci $where ORDER BY s.created_at DESC LIMIT ? OFFSET ?");
+$recent_stmt = $db->prepare("SELECT s.*, sc.sname, fsc.sname as from_sname, tsc.sname as to_sname FROM receiving s LEFT JOIN storecode sc ON s.store_code = sc.scode COLLATE utf8mb4_unicode_ci LEFT JOIN storecode fsc ON s.from_store = fsc.scode COLLATE utf8mb4_unicode_ci LEFT JOIN storecode tsc ON s.to_store = tsc.scode COLLATE utf8mb4_unicode_ci $where ORDER BY s.created_at DESC LIMIT ? OFFSET ?");
 $p_with_limit = array_merge($params, [$limit, $offset]);
 $recent_stmt->bind_param($types . "ii", ...$p_with_limit);
 $recent_stmt->execute();
