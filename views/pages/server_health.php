@@ -124,22 +124,26 @@ if (!$is_win) {
         @exec('quota -v 2>&1', $quota_out);
     }
     if (!empty($quota_out)) {
+        $best_used = -1;
+        $best_limit = -1;
         foreach($quota_out as $line) {
-            // Parse typical Linux quota output (blocks used vs limit)
-            // Format: Filesystem  blocks   quota   limit   grace ...
-            // e.g.    /dev/loop0   56000000 102400000 102400000
-            if (preg_match('/^\s*\S+\s+(\d+)\s+(\d+)\s+(\d+)/', $line, $matches)) {
+            // Strip asterisks which denote over-quota
+            $clean_line = str_replace('*', '', $line);
+            if (preg_match('/^\s*\S+\s+(\d+)\s+(\d+)\s+(\d+)/', $clean_line, $matches)) {
                 $blocks_used = intval($matches[1]);
                 $blocks_limit = intval($matches[2]) > 0 ? intval($matches[2]) : intval($matches[3]);
                 
-                if ($blocks_limit > 0) {
-                    // quota reports in 1KB blocks
-                    $disk_total = $blocks_limit * 1024;
-                    $disk_used = $blocks_used * 1024;
-                    $disk_free = max(0, $disk_total - $disk_used);
-                    break;
+                if ($blocks_limit > 0 && $blocks_used > $best_used) {
+                    $best_used = $blocks_used;
+                    $best_limit = $blocks_limit;
                 }
             }
+        }
+        if ($best_limit > 0) {
+            // quota reports in 1KB blocks
+            $disk_total = $best_limit * 1024;
+            $disk_used = $best_used * 1024;
+            $disk_free = max(0, $disk_total - $disk_used);
         }
     }
 }
