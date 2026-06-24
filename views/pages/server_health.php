@@ -194,11 +194,7 @@ function getBgColorClass($percent) {
 }
 ?>
 
-<div class="mb-8 flex justify-between items-end">
-    <div>
-        <h2 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500 mb-1">Server Health</h2>
-        <p class="text-gray-400">Real-time monitoring of hardware resources, background processes, and database connections.</p>
-    </div>
+<div class="mb-8 flex justify-end items-end">
     <div class="flex items-center gap-3 bg-slate-800/60 p-2 rounded-2xl border border-white/10 shadow-xl">
         <div class="flex items-center gap-2 px-3 text-sm font-semibold text-gray-300">
             <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
