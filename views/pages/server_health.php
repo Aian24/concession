@@ -162,7 +162,8 @@ if ($db_res) {
         $db_stats[$row['Variable_name']] = $row['Value'];
     }
 }
-$db_uptime = isset($db_stats['Uptime']) ? gmdate("H:i:s", $db_stats['Uptime']) : 'N/A';
+$db_uptime_seconds = isset($db_stats['Uptime']) ? intval($db_stats['Uptime']) : 0;
+$db_uptime = $db_uptime_seconds > 0 ? gmdate("H:i:s", $db_uptime_seconds) : 'N/A';
 
 if (isset($_GET['ajax']) && isset($_GET['refresh_data'])) {
     header('Content-Type: application/json');
@@ -177,7 +178,8 @@ if (isset($_GET['ajax']) && isset($_GET['refresh_data'])) {
         'php_procs' => $php_procs,
         'db_connected' => $db_stats['Threads_connected'] ?? 0,
         'db_running' => $db_stats['Threads_running'] ?? 0,
-        'db_uptime' => $db_uptime
+        'db_uptime' => $db_uptime,
+        'db_uptime_seconds' => $db_uptime_seconds
     ]);
     exit;
 }
@@ -206,7 +208,7 @@ function getBgColorClass($percent) {
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
     <!-- CPU Usage -->
     <div class="glass-panel border border-white/5 p-6 rounded-2xl shadow-xl flex flex-col justify-between relative overflow-hidden group">
-        <div class="absolute -right-4 -top-4 w-24 h-24 bg-purple-500/10 rounded-full blur-xl group-hover:bg-purple-500/20 transition-all"></div>
+        <div class="absolute -right-4 -top-4 w-24 h-24 bg-purple-500/10 rounded-full blur-xl group-hover:bg-purple-500/20 transition-all animate-pulse" style="animation-duration: 3s;"></div>
         <div class="flex justify-between items-start mb-4 relative z-10">
             <div>
                 <h3 class="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">CPU Usage</h3>
@@ -225,7 +227,7 @@ function getBgColorClass($percent) {
 
     <!-- Memory Usage -->
     <div class="glass-panel border border-white/5 p-6 rounded-2xl shadow-xl flex flex-col justify-between relative overflow-hidden group">
-        <div class="absolute -right-4 -top-4 w-24 h-24 bg-blue-500/10 rounded-full blur-xl group-hover:bg-blue-500/20 transition-all"></div>
+        <div class="absolute -right-4 -top-4 w-24 h-24 bg-blue-500/10 rounded-full blur-xl group-hover:bg-blue-500/20 transition-all animate-pulse" style="animation-duration: 4s;"></div>
         <div class="flex justify-between items-start mb-4 relative z-10">
             <div>
                 <h3 class="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Memory Usage</h3>
@@ -247,7 +249,7 @@ function getBgColorClass($percent) {
 
     <!-- Storage -->
     <div class="glass-panel border border-white/5 p-6 rounded-2xl shadow-xl flex flex-col justify-between relative overflow-hidden group">
-        <div class="absolute -right-4 -top-4 w-24 h-24 bg-emerald-500/10 rounded-full blur-xl group-hover:bg-emerald-500/20 transition-all"></div>
+        <div class="absolute -right-4 -top-4 w-24 h-24 bg-emerald-500/10 rounded-full blur-xl group-hover:bg-emerald-500/20 transition-all animate-pulse" style="animation-duration: 3.5s;"></div>
         <div class="flex justify-between items-start mb-4 relative z-10">
             <div>
                 <h3 class="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Disk Storage</h3>
@@ -269,7 +271,7 @@ function getBgColorClass($percent) {
 
     <!-- DB Connections -->
     <div class="glass-panel border border-white/5 p-6 rounded-2xl shadow-xl flex flex-col justify-between relative overflow-hidden group">
-        <div class="absolute -right-4 -top-4 w-24 h-24 bg-pink-500/10 rounded-full blur-xl group-hover:bg-pink-500/20 transition-all"></div>
+        <div class="absolute -right-4 -top-4 w-24 h-24 bg-pink-500/10 rounded-full blur-xl group-hover:bg-pink-500/20 transition-all animate-pulse" style="animation-duration: 2.5s;"></div>
         <div class="flex justify-between items-start mb-4 relative z-10">
             <div>
                 <h3 class="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">DB Threads</h3>
@@ -284,7 +286,7 @@ function getBgColorClass($percent) {
                 <i class="fas fa-database text-pink-400 text-lg"></i>
             </div>
         </div>
-        <div class="text-[10px] text-gray-400 uppercase font-bold tracking-widest relative z-10 border-t border-white/5 pt-2 mt-2" id="db-uptime-text">
+        <div class="text-[10px] text-gray-400 uppercase font-bold tracking-widest relative z-10 border-t border-white/5 pt-2 mt-2" id="db-uptime-text" data-seconds="<?= $db_uptime_seconds ?>">
             Uptime: <?= $db_uptime ?>
         </div>
     </div>
@@ -351,6 +353,24 @@ function getBgColorClass($percent) {
 </div>
 
 <script>
+    let currentUptimeSeconds = parseInt(document.getElementById('db-uptime-text').getAttribute('data-seconds')) || 0;
+
+    function formatUptime(seconds) {
+        if (!seconds || seconds <= 0) return 'N/A';
+        const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
+        const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
+        const s = Math.floor(seconds % 60).toString().padStart(2, '0');
+        return h + ':' + m + ':' + s;
+    }
+
+    // Live tick for uptime
+    setInterval(() => {
+        if (currentUptimeSeconds > 0) {
+            currentUptimeSeconds++;
+            document.getElementById('db-uptime-text').innerText = 'Uptime: ' + formatUptime(currentUptimeSeconds);
+        }
+    }, 1000);
+
     function updateServerHealth() {
         fetch('server_health?ajax=1&refresh_data=1')
             .then(res => res.json())
@@ -378,7 +398,12 @@ function getBgColorClass($percent) {
                 // DB
                 document.getElementById('db-val').innerText = data.db_connected;
                 document.getElementById('db-running-text').innerText = data.db_running + ' Running';
-                document.getElementById('db-uptime-text').innerText = 'Uptime: ' + data.db_uptime;
+                
+                // Update uptime tracking variable
+                if (data.db_uptime_seconds) {
+                    currentUptimeSeconds = parseInt(data.db_uptime_seconds);
+                    document.getElementById('db-uptime-text').innerText = 'Uptime: ' + formatUptime(currentUptimeSeconds);
+                }
 
                 // Procs
                 document.getElementById('php-procs-val').innerText = data.php_procs;
