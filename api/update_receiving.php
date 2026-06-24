@@ -16,8 +16,7 @@ $data = json_decode(file_get_contents('php://input'), true);
 
 $id         = intval($data['id'] ?? 0);
 $os_no      = trim($data['os_no'] ?? '');
-$from_store = trim($data['from_store'] ?? '');
-$to_store   = trim($data['to_store'] ?? '');
+
 $quantity   = intval($data['quantity'] ?? 0);
 
 $created_at = $data['created_at'] ?? '';
@@ -39,11 +38,11 @@ if (!empty($created_at)) {
     if (strlen($created_at) === 10) {
         $created_at .= ' ' . $old_time;
     }
-    $stmt = $db->prepare("UPDATE receiving SET os_no = ?, from_store = ?, to_store = ?, quantity = ?, created_at = ? WHERE id = ?");
-    $stmt->bind_param("sssisi", $os_no, $from_store, $to_store, $quantity, $created_at, $id);
+    $stmt = $db->prepare("UPDATE receiving SET os_no = ?, quantity = ?, created_at = ? WHERE id = ?");
+    $stmt->bind_param("sisi", $os_no, $quantity, $created_at, $id);
 } else {
-    $stmt = $db->prepare("UPDATE receiving SET os_no = ?, from_store = ?, to_store = ?, quantity = ? WHERE id = ?");
-    $stmt->bind_param("sssii", $os_no, $from_store, $to_store, $quantity, $id);
+    $stmt = $db->prepare("UPDATE receiving SET os_no = ?, quantity = ? WHERE id = ?");
+    $stmt->bind_param("sii", $os_no, $quantity, $id);
 }
 
 if ($stmt->execute()) {

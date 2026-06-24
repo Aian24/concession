@@ -377,16 +377,7 @@ $all_stores_stmt->close();
                         <input type="number" name="quantity" id="edit-qty" required min="0" max="999" maxlength="3" oninput="this.value = this.value.replace(/[^0-9]/g, '').substring(0, 3);" onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();" class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-500/50 transition-all font-medium" placeholder="0">
                     </div>
                 </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="space-y-1 relative">
-                        <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">From Store</label>
-                        <input type="text" name="from_store" id="edit-from-store" autocomplete="off" class="store-autocomplete w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-500/50 transition-all font-medium" placeholder="Search store...">
-                    </div>
-                    <div class="space-y-1 relative">
-                        <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">To Store</label>
-                        <input type="text" name="to_store" id="edit-to-store" autocomplete="off" class="store-autocomplete w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-500/50 transition-all font-medium" placeholder="Search store...">
-                    </div>
-                </div>
+
                 <div class="space-y-1">
                     <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Transaction Date</label>
                     <input type="date" name="created_at" id="edit-date" required class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-500/50 transition-all font-medium cursor-pointer" onclick="this.showPicker()">
@@ -683,10 +674,8 @@ $all_stores_stmt->close();
         document.getElementById('edit-id-label').innerText = `Record ID: ${id}`;
         document.getElementById('edit-os-no').value      = row.cells[1 + offset].innerText.trim();
         document.getElementById('edit-qty').value        = row.cells[2 + offset].innerText.trim().replace(',', '');
-        document.getElementById('edit-from-store').value = row.cells[3 + offset].innerText.trim();
-        document.getElementById('edit-to-store').value   = row.cells[4 + offset].innerText.trim();
 
-        const dateCell = row.cells[6 + offset];
+        const dateCell = row.cells[4 + offset];
         const rawDate = dateCell.getAttribute('data-date') || '';
         document.getElementById('edit-date').value = rawDate;
 
@@ -707,16 +696,9 @@ $all_stores_stmt->close();
     document.getElementById('edit-receiving-form')?.addEventListener('submit', function(e) {
         e.preventDefault();
         
-        let from = this.from_store.value.trim();
-        let to = this.to_store.value.trim();
-        if (from.includes(' - ')) from = from.split(' - ')[0];
-        if (to.includes(' - ')) to = to.split(' - ')[0];
-
         const data = {
             id: this.id.value,
             os_no: this.os_no.value,
-            from_store: from,
-            to_store: to,
             quantity: this.quantity.value,
             created_at: this.created_at.value
         };
