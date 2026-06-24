@@ -406,6 +406,7 @@
                 'prism_data'      => ['icon' => 'fa-gem', 'title' => 'Manage Prism Data'],
                 'boutique_data'   => ['icon' => 'fa-store', 'title' => 'Manage Boutique Data'],
                 'recent_activity' => ['icon' => 'fa-clock-rotate-left', 'title' => 'Recent Activity'],
+                'server_health'   => ['icon' => 'fa-server', 'title' => 'Server Health'],
             ];
 
             $nav_items = [];
@@ -461,6 +462,7 @@
                     'history'    => 'Track your transactions recorded today',
                     'stores'     => 'Manage store codes and store names',
                     'non_submission' => 'Track stores with missing sales submissions',
+                    'server_health'  => 'Monitor server performance and processes',
                 ];
                 $current_title = $nav_items[$action]['title'] ?? str_replace('_', ' ', $action);
                 $current_sub   = $module_subs[$action] ?? '';

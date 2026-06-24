@@ -114,7 +114,8 @@ $all_modules = [
     'stores' => 'Manage Stores',
     'prism_data' => 'Manage Prism Data',
     'boutique_data' => 'Manage Boutique Data',
-    'recent_activity' => 'Recent Activity'
+    'recent_activity' => 'Recent Activity',
+    'server_health' => 'Server Health'
 ];
 
 // Toast display

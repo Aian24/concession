@@ -201,7 +201,7 @@ $allowed_pages = [
     'receiving', 'create_receiving', 
     'pullout', 'create_pullout', 
     'ros_supplies', 'create_ros_supplies',
-    'submitted'
+    'submitted', 'server_health'
 ];
 
 // Check if the requested action is globally valid, AND if the user has permission to view it
