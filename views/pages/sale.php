@@ -274,23 +274,41 @@ if (isset($_GET['ajax'])) {
                                 <i class="fas fa-trash-alt text-[10px]"></i>
                             </button>
                         </div>
-                        <div class="p-4 grid grid-cols-1 md:grid-cols-4 gap-4">
-                            <div class="relative flex items-stretch">
+                        <div class="p-4 grid grid-cols-1 md:grid-cols-6 gap-4">
+                            <div class="relative flex items-stretch md:col-span-1">
                                 <span class="absolute top-0 -translate-y-1/2 left-3 px-1 bg-[#0d1527] text-[8px] font-black text-green-400/80 uppercase tracking-widest z-10">Item #</span>
                                 <input type="number" name="item_no" min="0" oninput="if(this.value.length > 6) this.value = this.value.slice(0, 6);" onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();" class="bg-slate-900/50 border border-white/10 rounded-l-xl px-4 py-2.5 flex-1 text-xs text-white focus:outline-none focus:border-green-500/50 font-medium" placeholder="100123">
                                 <button type="button" onclick="startBarcodeScanForRow(this)" class="bg-purple-600/20 border border-l-0 border-white/10 px-3 rounded-r-xl text-purple-400 hover:bg-purple-600/30 transition-all flex items-center justify-center">
                                     <i class="fas fa-camera"></i>
                                 </button>
                             </div>
-                            <div class="relative">
-                                <span class="absolute top-0 -translate-y-1/2 left-3 px-1 bg-[#0d1527] text-[8px] font-black text-green-400/80 uppercase tracking-widest z-10">Price (₱)</span>
-                                <input type="number" name="amount_sold" step="0.01" min="0" onkeydown="if(['e','E','+','-'].includes(event.key)) event.preventDefault();" class="bg-slate-900/50 border border-white/10 rounded-xl px-4 py-2.5 w-full text-xs text-white focus:outline-none focus:border-green-500/50 font-medium" placeholder="0.00">
+                            
+                            <div class="grid grid-cols-3 gap-2 md:col-span-2">
+                                <div class="relative">
+                                    <span class="absolute top-0 -translate-y-1/2 left-2 px-1 bg-[#0d1527] text-[7.5px] font-black text-green-400/80 uppercase tracking-widest z-10">Price (₱)</span>
+                                    <input type="text" name="base_price" oninput="formatCurrencyInput(this); if(typeof calculateFinalPrice === 'function') calculateFinalPrice(this.closest('.entry-row'));" class="bg-slate-900/50 border border-white/10 rounded-xl px-2 py-2.5 w-full text-xs text-white focus:outline-none focus:border-green-500/50 font-medium" placeholder="0.00">
+                                </div>
+                                <div class="relative">
+                                    <span class="absolute top-0 -translate-y-1/2 left-2 px-1 bg-[#0d1527] text-[7.5px] font-black text-green-400/80 uppercase tracking-widest z-10">Disc (%)</span>
+                                    <select name="discount" onchange="if(typeof calculateFinalPrice === 'function') calculateFinalPrice(this.closest('.entry-row'));" class="bg-slate-900/50 border border-white/10 rounded-xl px-2 py-2.5 w-full text-xs text-white focus:outline-none focus:border-green-500/50 font-medium appearance-none cursor-pointer">
+                                        <option value="0">0%</option>
+                                        <option value="10">10%</option>
+                                        <option value="20">20%</option>
+                                        <option value="30">30%</option>
+                                    </select>
+                                    <i class="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-[10px] pointer-events-none"></i>
+                                </div>
+                                <div class="relative">
+                                    <span class="absolute top-0 -translate-y-1/2 left-2 px-1 bg-[#0d1527] text-[7.5px] font-black text-green-400/80 uppercase tracking-widest z-10">Final (₱)</span>
+                                    <input type="text" name="amount_sold" oninput="formatCurrencyInput(this); if(typeof calculateFinalPrice === 'function') calculateFinalPrice(this.closest('.entry-row'), true);" class="bg-slate-900/50 border border-white/10 rounded-xl px-2 py-2.5 w-full text-xs text-green-400 focus:outline-none focus:border-green-500/50 font-bold" placeholder="0.00">
+                                </div>
                             </div>
-                            <div class="relative">
+
+                            <div class="relative md:col-span-1">
                                 <span class="absolute top-0 -translate-y-1/2 left-3 px-1 bg-[#0d1527] text-[8px] font-black text-green-400/80 uppercase tracking-widest z-10">Qty</span>
                                 <input type="number" name="quantity" min="0" max="1" maxlength="1" oninput="this.value = this.value.replace(/[^01]/g, '').substring(0, 1);" onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();" class="bg-slate-900/50 border border-white/10 rounded-xl px-4 py-2.5 w-full text-xs text-white focus:outline-none focus:border-green-500/50 font-medium" placeholder="0">
                             </div>
-                            <div class="relative">
+                            <div class="relative md:col-span-2">
                                 <span class="absolute top-0 -translate-y-1/2 left-3 px-1 bg-[#0d1527] text-[8px] font-black text-green-400/80 uppercase tracking-widest z-10">Details</span>
                                 <input type="text" name="item_details" readonly class="bg-slate-900/50 border border-white/10 rounded-xl px-4 py-2.5 w-full text-xs text-gray-400 focus:outline-none font-medium cursor-not-allowed truncate" placeholder="Code | Style | Color | Size">
                             </div>
@@ -435,10 +453,33 @@ if (isset($_GET['ajax'])) {
 
                     <div class="grid grid-cols-2 gap-4">
                         <div class="space-y-2">
-                            <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Sale Price (₱)</label>
+                            <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">SRP (₱)</label>
                             <div class="relative group">
                                 <span class="absolute left-5 top-1/2 -translate-y-1/2 text-gray-500 font-bold group-focus-within:text-blue-400 transition-colors">₱</span>
-                                <input type="number" name="amount_sold" id="edit-amount" step="0.01" required 
+                                <input type="text" name="base_price" id="edit-base" required oninput="formatCurrencyInput(this); calculateEditFinal();"
+                                       class="w-full bg-slate-950/50 border border-white/10 rounded-2xl pl-10 pr-5 py-4 text-sm text-white focus:outline-none focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all font-bold" 
+                                       placeholder="0.00">
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Disc (%)</label>
+                            <div class="relative group">
+                                <i class="fas fa-percent absolute left-5 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-blue-400 transition-colors pointer-events-none"></i>
+                                <select name="discount" id="edit-discount" onchange="calculateEditFinal();"
+                                       class="w-full bg-slate-950/50 border border-white/10 rounded-2xl pl-12 pr-10 py-4 text-sm text-white focus:outline-none focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all font-bold appearance-none cursor-pointer">
+                                    <option value="0">0%</option>
+                                    <option value="10">10%</option>
+                                    <option value="20">20%</option>
+                                    <option value="30">30%</option>
+                                </select>
+                                <i class="fas fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none text-[10px]"></i>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Final Price (₱)</label>
+                            <div class="relative group">
+                                <span class="absolute left-5 top-1/2 -translate-y-1/2 text-gray-500 font-bold group-focus-within:text-blue-400 transition-colors">₱</span>
+                                <input type="text" name="amount_sold" id="edit-amount" required oninput="formatCurrencyInput(this);"
                                        class="w-full bg-slate-950/50 border border-white/10 rounded-2xl pl-10 pr-5 py-4 text-sm text-white focus:outline-none focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all font-bold" 
                                        placeholder="0.00">
                             </div>
@@ -485,6 +526,27 @@ if (isset($_GET['ajax'])) {
 
 <script>
 (function () {
+    // ── Number Formatting Logic ──────────────────────────────
+    window.formatCurrencyInput = function(input) {
+        if (!input.value) return;
+        let val = input.value.replace(/[^0-9.]/g, '');
+        let parts = val.split('.');
+        if (parts.length > 2) {
+            parts = [parts[0], parts.slice(1).join('')];
+        }
+        if (parts[0]) {
+            parts[0] = parseInt(parts[0], 10).toLocaleString('en-US');
+        }
+        input.value = parts.join('.');
+    };
+
+    window.calculateEditFinal = function() {
+        const base = parseFloat(document.getElementById('edit-base').value.replace(/,/g, '')) || 0;
+        const disc = parseFloat(document.getElementById('edit-discount').value) || 0;
+        const final = base - (base * (disc / 100));
+        document.getElementById('edit-amount').value = final.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    };
+
     // ── Form Logic ───────────────────────────────────────────
     function updateBadge() {
         const rows = document.querySelectorAll('.entry-row');
@@ -517,7 +579,8 @@ if (isset($_GET['ajax'])) {
         if (!tpl) return;
         const row = tpl.cloneNode(true);
         row.querySelectorAll('input').forEach(i => i.value = '');
-        row.querySelectorAll('input').forEach(i => i.addEventListener('input', updateSummary));
+        row.querySelectorAll('select').forEach(s => s.value = '0');
+        row.querySelectorAll('input, select').forEach(i => i.addEventListener('input', updateSummary));
         
         const removeBtn = row.querySelector('.remove-btn');
         if (removeBtn) removeBtn.classList.remove('hidden');
@@ -549,6 +612,7 @@ if (isset($_GET['ajax'])) {
                 const rows = document.querySelectorAll('.entry-row');
                 rows.forEach((r, i) => { if (i > 0) r.remove(); });
                 rows[0].querySelectorAll('input').forEach(i => i.value = '');
+                rows[0].querySelectorAll('select').forEach(s => s.value = '0');
                 updateSummary();
                 updateBadge();
             }, 'Clear Form');
@@ -556,6 +620,7 @@ if (isset($_GET['ajax'])) {
             const rows = document.querySelectorAll('.entry-row');
             rows.forEach((r, i) => { if (i > 0) r.remove(); });
             rows[0].querySelectorAll('input').forEach(i => i.value = '');
+            rows[0].querySelectorAll('select').forEach(s => s.value = '0');
             updateSummary();
             updateBadge();
         }
@@ -577,7 +642,9 @@ if (isset($_GET['ajax'])) {
         
         document.querySelectorAll('.entry-row').forEach(row => {
             const item = row.querySelector('[name="item_no"]').value.trim();
-            const amt  = row.querySelector('[name="amount_sold"]').value;
+            const base = row.querySelector('[name="base_price"]').value.replace(/,/g, '');
+            const disc = row.querySelector('[name="discount"]').value;
+            const amt  = row.querySelector('[name="amount_sold"]').value.replace(/,/g, '');
             const qty  = row.querySelector('[name="quantity"]').value;
             
             if (row.querySelector('.item-error-msg')) {
@@ -588,7 +655,7 @@ if (isset($_GET['ajax'])) {
                 if (!item || !amt || !qty) {
                     valid = false;
                 } else {
-                    entries.push({ item_no: item, amount_sold: amt, quantity: qty });
+                    entries.push({ item_no: item, base_price: base, discount: disc, amount_sold: amt, quantity: qty });
                 }
             }
         });
@@ -635,6 +702,7 @@ if (isset($_GET['ajax'])) {
                     const rows = document.querySelectorAll('.entry-row');
                     rows.forEach((r, i) => { if (i > 0) r.remove(); });
                     rows[0].querySelectorAll('input').forEach(i => i.value = '');
+                    rows[0].querySelectorAll('select').forEach(s => s.value = '0');
                     updateSummary();
                     updateBadge();
                     
@@ -703,24 +771,19 @@ if (isset($_GET['ajax'])) {
         const row = document.querySelector(`input[value="${id}"].sale-checkbox`)?.closest('tr');
         if (!row) return;
 
-        // Extract data from row columns (careful with indexing if Store column exists)
-        const offset = <?= $is_admin ? 1 : 0 ?>;
-        const itemNo = row.cells[1 + offset].innerText;
-        const price  = row.cells[2 + offset].innerText.replace('₱', '').replace(',', '');
-        const qty    = row.cells[3 + offset].innerText;
-        
-        // Extract raw date from data-label or find a way to get the machine-readable date
-        // The date cell is at 6 + offset
-        const dateCell = row.cells[6 + offset];
-        // We can use a trick: the original date was formatted, but maybe we can find it in a hidden span or similar.
-        // Actually, let's just use the current value and try to parse it, or better, we can add a data-date attribute in the partial.
-        // For now, I'll add the data-date attribute to the partial in the next step.
-        const rawDate = dateCell.getAttribute('data-date') || '';
+        const itemNo = row.querySelector('[data-label="Item #"]')?.innerText.trim() || '';
+        const srp    = row.querySelector('[data-label="SRP"]')?.innerText.replace('₱', '').replace(/,/g, '').trim() || '';
+        const disc   = row.querySelector('[data-label="Disc %"]')?.innerText.replace('%', '').trim() || '0';
+        const price  = row.querySelector('[data-label="Final Price"]')?.innerText.replace('₱', '').replace(/,/g, '').trim() || '';
+        const qty    = row.querySelector('[data-label="Qty"]')?.innerText.trim() || '';
+        const rawDate = row.querySelector('[data-label="Date"]')?.getAttribute('data-date') || '';
 
         document.getElementById('edit-id').value = id;
         document.getElementById('edit-id-label').innerText = `Record ID: ${id}`;
         document.getElementById('edit-item-no').value = itemNo;
-        document.getElementById('edit-amount').value = price;
+        document.getElementById('edit-base').value = srp ? parseFloat(srp).toLocaleString('en-US', {minimumFractionDigits: 2}) : '';
+        document.getElementById('edit-discount').value = parseFloat(disc) || 0;
+        document.getElementById('edit-amount').value = price ? parseFloat(price).toLocaleString('en-US', {minimumFractionDigits: 2}) : '';
         document.getElementById('edit-qty').value = qty;
         document.getElementById('edit-date').value = rawDate;
         
@@ -760,7 +823,9 @@ if (isset($_GET['ajax'])) {
         const data = {
             id: this.id.value,
             item_no: this.item_no.value,
-            amount_sold: this.amount_sold.value,
+            base_price: this.base_price.value.replace(/,/g, ''),
+            discount: this.discount.value,
+            amount_sold: this.amount_sold.value.replace(/,/g, ''),
             quantity: this.quantity.value,
             created_at: this.created_at.value
         };
@@ -870,7 +935,7 @@ if (isset($_GET['ajax'])) {
         let items = 0, qty = 0, total = 0;
         document.querySelectorAll('.entry-row').forEach(row => {
             const itm = row.querySelector('[name="item_no"]').value.trim();
-            const amt = parseFloat(row.querySelector('[name="amount_sold"]').value) || 0;
+            const amt = parseFloat(row.querySelector('[name="amount_sold"]').value.replace(/,/g, '')) || 0;
             const q   = parseInt(row.querySelector('[name="quantity"]').value) || 0;
             if (itm) items++;
             qty += q;
@@ -901,6 +966,23 @@ if (isset($_GET['ajax'])) {
 
     window.itemValidationTimers = window.itemValidationTimers || new WeakMap();
 
+    window.calculateFinalPrice = function(row, isManualFinal = false) {
+        if (isManualFinal) {
+            window.updateSummary();
+            return;
+        }
+        const basePrice = parseFloat(row.querySelector('[name="base_price"]').value.replace(/,/g, '')) || 0;
+        const discountPct = parseFloat(row.querySelector('[name="discount"]').value) || 0;
+        let finalPrice = basePrice - (basePrice * (discountPct / 100));
+        if (finalPrice < 0) finalPrice = 0;
+        
+        const finalInput = row.querySelector('[name="amount_sold"]');
+        if (row.querySelector('[name="base_price"]').value !== '') {
+            finalInput.value = finalPrice.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        }
+        window.updateSummary();
+    };
+
     window.lookupPrismPrice = function(input) {
         const item_no = input.value.trim();
         
@@ -913,9 +995,11 @@ if (isset($_GET['ajax'])) {
 
         const row = input.closest('.entry-row');
         const amountInput = row ? row.querySelector('[name="amount_sold"]') : null;
+        const baseInput = row ? row.querySelector('[name="base_price"]') : null;
         const detailsInput = row ? row.querySelector('[name="item_details"]') : null;
 
         if (item_no.length === 0) {
+            if (baseInput) baseInput.value = '';
             if (amountInput) { amountInput.value = ''; window.updateSummary(); }
             if (detailsInput) detailsInput.value = '';
             return;
@@ -924,6 +1008,7 @@ if (isset($_GET['ajax'])) {
         if (item_no === '0') {
             window.removeItemError(input);
             input.classList.add('border-green-500/50');
+            if (baseInput) baseInput.value = '0';
             if (amountInput) {
                 amountInput.value = '0';
                 window.updateSummary();
@@ -945,9 +1030,10 @@ if (isset($_GET['ajax'])) {
                 if (res.success) {
                     window.removeItemError(input);
                     input.classList.add('border-green-500/50');
+                    if (baseInput) baseInput.value = res.srp ? parseFloat(res.srp).toLocaleString('en-US', {minimumFractionDigits: 2}) : '';
                     if (amountInput) {
-                        amountInput.value = res.srp;
-                        window.updateSummary();
+                        amountInput.value = res.srp ? parseFloat(res.srp).toLocaleString('en-US', {minimumFractionDigits: 2}) : '';
+                        window.calculateFinalPrice(row);
                         amountInput.classList.add('ring-2', 'ring-green-500/50');
                         setTimeout(() => amountInput.classList.remove('ring-2', 'ring-green-500/50'), 1000);
                     }
@@ -961,6 +1047,7 @@ if (isset($_GET['ajax'])) {
                     }
                 } else {
                     window.showItemError(input, 'Item # not found');
+                    if (baseInput) baseInput.value = '';
                     if (amountInput) {
                         amountInput.value = '';
                         window.updateSummary();
@@ -971,6 +1058,7 @@ if (isset($_GET['ajax'])) {
             return;
         }
 
+        if (baseInput) baseInput.value = '';
         if (amountInput) { amountInput.value = ''; window.updateSummary(); }
         if (detailsInput) detailsInput.value = '';
         

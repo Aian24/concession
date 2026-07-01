@@ -27,8 +27,8 @@ if (empty($entries) || !is_array($entries)) {
 
 $db   = db_connect();
 $stmt = $db->prepare(
-    "INSERT INTO sales (username, store_code, item_no, amount_sold, quantity, line_total, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?)"
+    "INSERT INTO sales (username, store_code, item_no, base_price, discount, amount_sold, quantity, line_total, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
 );
 
 $saved  = 0;
@@ -36,6 +36,8 @@ $errors = [];
 
 foreach ($entries as $entry) {
     $item_no     = trim($entry['item_no']     ?? '');
+    $base_price  = floatval($entry['base_price'] ?? 0);
+    $discount    = floatval($entry['discount']   ?? 0);
     $amount_sold = floatval($entry['amount_sold'] ?? 0);
     $quantity    = intval($entry['quantity']   ?? 0);
     $line_total  = $amount_sold * $quantity;
@@ -46,7 +48,7 @@ foreach ($entries as $entry) {
     }
 
     $created_at = $req_date . ' ' . date('H:i:s');
-    $stmt->bind_param("sssdids", $username, $store_code, $item_no, $amount_sold, $quantity, $line_total, $created_at);
+    $stmt->bind_param("sssddidds", $username, $store_code, $item_no, $base_price, $discount, $amount_sold, $quantity, $line_total, $created_at);
 
     if ($stmt->execute()) {
         $saved++;

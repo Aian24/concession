@@ -468,7 +468,9 @@ if ($is_single_day && ($is_admin || $is_multi_store_admin) && empty($store_filte
                         <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Store</th>
                     <?php endif; ?>
                     <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Item #</th>
-                    <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Amount Sold</th>
+                    <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">SRP</th>
+                    <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Disc %</th>
+                    <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Final Price</th>
                     <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Qty</th>
                     <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Line Total</th>
                     <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Submitted By</th>
@@ -485,7 +487,7 @@ if ($is_single_day && ($is_admin || $is_multi_store_admin) && empty($store_filte
             <tbody id="submitted-tbody" class="text-sm">
                 <?php if (empty($submitted_sales)): ?>
                 <tr>
-                    <td colspan="<?= ($is_admin ? 8 : 7) + ($is_full_admin ? 1 : 0) + ($can_edit ? 1 : 0) ?>" class="px-5 py-12 text-center text-gray-500">
+                    <td colspan="<?= ($is_admin ? 10 : 9) + ($is_full_admin ? 1 : 0) + ($can_edit ? 1 : 0) ?>" class="px-5 py-12 text-center text-gray-500">
                         <div class="flex flex-col items-center gap-2 opacity-20">
                             <i class="fas fa-inbox text-4xl text-gray-500"></i>
                             <span class="text-xs font-bold uppercase tracking-[0.2em] text-gray-400">No records found</span>
@@ -517,7 +519,9 @@ if ($is_single_day && ($is_admin || $is_multi_store_admin) && empty($store_filte
                         <td class="px-5 py-3.5 font-bold text-purple-300 tracking-wide text-center" data-label="Item #">
                             <?= htmlspecialchars($s['item_no']) ?>
                         </td>
-                        <td class="px-5 py-3.5 text-emerald-400 font-black text-center" data-label="Amount Sold">₱<?= number_format($s['amount_sold'], 2) ?></td>
+                        <td class="px-5 py-3.5 text-gray-300 font-bold text-center" data-label="SRP">₱<?= number_format($s['base_price'] ?? 0, 2) ?></td>
+                        <td class="px-5 py-3.5 text-gray-300 font-bold text-center" data-label="Disc %"><?= floatval($s['discount'] ?? 0) ?>%</td>
+                        <td class="px-5 py-3.5 text-emerald-400 font-black text-center" data-label="Final Price">₱<?= number_format($s['amount_sold'], 2) ?></td>
                         <td class="px-5 py-3.5 text-gray-300 font-bold text-center" data-label="Qty"><?= $s['quantity'] ?></td>
                         <td class="px-5 py-3.5 text-emerald-300 font-black text-center" data-label="Line Total">₱<?= number_format($s['line_total'], 2) ?></td>
                         <td class="px-5 py-3.5 text-center" data-label="Submitted By">

@@ -14,10 +14,12 @@ $db = db_connect();
 
 $data = json_decode(file_get_contents('php://input'), true);
 
-$id      = $data['id'] ?? 0;
-$item_no = trim($data['item_no'] ?? '');
-$amount  = floatval($data['amount_sold'] ?? 0);
-$qty     = intval($data['quantity'] ?? 0);
+$id         = $data['id'] ?? 0;
+$item_no    = trim($data['item_no'] ?? '');
+$amount     = floatval($data['amount_sold'] ?? 0);
+$qty        = intval($data['quantity'] ?? 0);
+$base_price = floatval($data['base_price'] ?? 0);
+$discount   = floatval($data['discount'] ?? 0);
 $store_code_new = trim($data['store_code'] ?? '');
 
 $created_at = $data['created_at'] ?? '';
@@ -44,19 +46,19 @@ if (!empty($created_at)) {
     }
     
     if ($store_code_new !== '') {
-        $stmt = $db->prepare("UPDATE sales SET item_no = ?, amount_sold = ?, quantity = ?, line_total = ?, created_at = ?, store_code = ? WHERE id = ?");
-        $stmt->bind_param("sdidssi", $item_no, $amount, $qty, $line_total, $created_at, $store_code_new, $id);
+        $stmt = $db->prepare("UPDATE sales SET item_no = ?, base_price = ?, discount = ?, amount_sold = ?, quantity = ?, line_total = ?, created_at = ?, store_code = ? WHERE id = ?");
+        $stmt->bind_param("sdddidssi", $item_no, $base_price, $discount, $amount, $qty, $line_total, $created_at, $store_code_new, $id);
     } else {
-        $stmt = $db->prepare("UPDATE sales SET item_no = ?, amount_sold = ?, quantity = ?, line_total = ?, created_at = ? WHERE id = ?");
-        $stmt->bind_param("sdidsi", $item_no, $amount, $qty, $line_total, $created_at, $id);
+        $stmt = $db->prepare("UPDATE sales SET item_no = ?, base_price = ?, discount = ?, amount_sold = ?, quantity = ?, line_total = ?, created_at = ? WHERE id = ?");
+        $stmt->bind_param("sdddidsi", $item_no, $base_price, $discount, $amount, $qty, $line_total, $created_at, $id);
     }
 } else {
     if ($store_code_new !== '') {
-        $stmt = $db->prepare("UPDATE sales SET item_no = ?, amount_sold = ?, quantity = ?, line_total = ?, store_code = ? WHERE id = ?");
-        $stmt->bind_param("sdidsi", $item_no, $amount, $qty, $line_total, $store_code_new, $id);
+        $stmt = $db->prepare("UPDATE sales SET item_no = ?, base_price = ?, discount = ?, amount_sold = ?, quantity = ?, line_total = ?, store_code = ? WHERE id = ?");
+        $stmt->bind_param("sdddidsi", $item_no, $base_price, $discount, $amount, $qty, $line_total, $store_code_new, $id);
     } else {
-        $stmt = $db->prepare("UPDATE sales SET item_no = ?, amount_sold = ?, quantity = ?, line_total = ? WHERE id = ?");
-        $stmt->bind_param("sdidi", $item_no, $amount, $qty, $line_total, $id);
+        $stmt = $db->prepare("UPDATE sales SET item_no = ?, base_price = ?, discount = ?, amount_sold = ?, quantity = ?, line_total = ? WHERE id = ?");
+        $stmt->bind_param("sdddidi", $item_no, $base_price, $discount, $amount, $qty, $line_total, $id);
     }
 }
 

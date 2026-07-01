@@ -457,7 +457,7 @@
         <!-- Header -->
         <header class="h-20 flex items-center justify-between px-4 sm:px-8 border-b border-white/5 bg-slate-900/50 backdrop-blur-xl sticky top-0 z-30">
             <div class="flex items-center gap-4">
-                <button class="lg:hidden text-gray-400 hover:text-white p-2 rounded-lg hover:bg-white/5 transition-colors" onclick="toggleSidebar()">
+                <button class="<?= (empty($is_admin) && empty($is_multi_store_admin)) ? 'hidden lg:hidden' : 'lg:hidden' ?> text-gray-400 hover:text-white p-2 rounded-lg hover:bg-white/5 transition-colors" onclick="toggleSidebar()">
                     <i class="fas fa-bars text-xl"></i>
                 </button>
                 <?php
@@ -1237,7 +1237,7 @@
     </button>
 
     <!-- Theme Customizer Panel -->
-    <div id="theme-panel" class="fixed top-0 right-0 w-80 h-full z-[95] translate-x-full transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]">
+    <div id="theme-panel" class="fixed top-0 right-0 w-80 h-full z-[120] translate-x-full transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]">
         <div class="absolute inset-0 bg-[#0c1322]/95 backdrop-blur-2xl border-l border-white/10 shadow-[-20px_0_60px_rgba(0,0,0,0.5)]"></div>
         <div class="relative h-full flex flex-col overflow-hidden">
             <!-- Header -->
@@ -1495,7 +1495,7 @@
         </div>
     </div>
     <!-- Theme Panel Overlay -->
-    <div id="theme-panel-overlay" class="fixed inset-0 bg-black/30 backdrop-blur-sm z-[94] hidden opacity-0 transition-opacity duration-300" onclick="toggleThemePanel()"></div>
+    <div id="theme-panel-overlay" class="fixed inset-0 bg-black/30 backdrop-blur-sm z-[115] hidden opacity-0 transition-opacity duration-300" onclick="toggleThemePanel()"></div>
 
     <script>
     // ── Theme Engine ────────────────────────────────────────
@@ -1947,6 +1947,78 @@
         navigator.serviceWorker.register('service-worker.js').catch(() => {});
     }
     </script>
+    
+    <?php if (empty($is_admin) && empty($is_multi_store_admin)): ?>
+    <!-- Mobile Bottom Navigation (User Side Only) -->
+    
+    <!-- Centered Floating Sale Button -->
+    <div class="fixed bottom-4 left-1/2 -translate-x-1/2 z-[110] md:hidden flex flex-col items-center">
+        <a href="create_sale" class="flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-tr from-green-500 to-emerald-400 text-white shadow-[0_10px_20px_rgba(16,185,129,0.4)] hover:scale-105 transition-transform border-4 border-[#0f172a] <?= (isset($action) && $action === 'create_sale') ? 'ring-2 ring-emerald-400 ring-offset-2 ring-offset-slate-900' : '' ?>">
+            <i class="fas fa-cart-plus text-xl"></i>
+        </a>
+        <span class="text-[9px] font-black text-white uppercase tracking-tighter whitespace-nowrap mt-1 drop-shadow-md">Sale</span>
+    </div>
+
+    <!-- Bottom Nav Bar Container -->
+    <div class="fixed bottom-0 left-0 right-0 z-[100] bg-slate-900/95 backdrop-blur-xl border-t border-white/10 px-1 pb-safe md:hidden shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
+        <div class="flex items-center justify-between h-16 w-full">
+            
+            <!-- Left Side Group -->
+            <div class="flex flex-1 justify-around h-full">
+                <!-- Transact -->
+                <a href="history" class="flex flex-col items-center justify-center h-full w-14 transition-all group">
+                    <div class="flex items-center justify-center w-10 h-10 rounded-full transition-all <?= (isset($action) && $action === 'history') ? 'bg-purple-500/20 border border-purple-500/50 shadow-[0_0_15px_rgba(168,85,247,0.4)]' : 'group-hover:bg-purple-500/10' ?>">
+                        <i class="fas fa-history text-lg text-purple-400" style="color: #c084fc !important;"></i>
+                    </div>
+                    <span class="text-[8px] font-bold uppercase tracking-tighter text-center leading-tight mt-1" <?= (isset($action) && $action === 'history') ? 'style="color: #c084fc !important; text-shadow: 0 0 8px rgba(168,85,247,0.5);"' : 'style="color: #a855f7 !important; opacity: 0.7;"' ?>>Transact</span>
+                </a>
+                
+                <!-- Return -->
+                <a href="create_return" class="flex flex-col items-center justify-center h-full w-14 transition-all group">
+                    <div class="flex items-center justify-center w-10 h-10 rounded-full transition-all <?= (isset($action) && $action === 'create_return') ? 'bg-rose-500/20 border border-rose-500/50 shadow-[0_0_15px_rgba(244,63,94,0.4)]' : 'group-hover:bg-rose-500/10' ?>">
+                        <i class="fas fa-undo text-lg text-rose-400" style="color: #fb7185 !important;"></i>
+                    </div>
+                    <span class="text-[8px] font-bold uppercase tracking-tighter text-center leading-tight mt-1" <?= (isset($action) && $action === 'create_return') ? 'style="color: #fb7185 !important; text-shadow: 0 0 8px rgba(244,63,94,0.5);"' : 'style="color: #f43f5e !important; opacity: 0.7;"' ?>>Return</span>
+                </a>
+            </div>
+
+            <!-- Spacer for the center button -->
+            <div class="w-16 shrink-0 h-full"></div>
+            
+            <!-- Right Side Group -->
+            <div class="flex flex-1 justify-around h-full">
+                <!-- Receiving -->
+                <a href="create_receiving" class="flex flex-col items-center justify-center h-full w-14 transition-all group">
+                    <div class="flex items-center justify-center w-10 h-10 rounded-full transition-all <?= (isset($action) && $action === 'create_receiving') ? 'bg-blue-500/20 border border-blue-500/50 shadow-[0_0_15px_rgba(59,130,246,0.4)]' : 'group-hover:bg-blue-500/10' ?>">
+                        <i class="fas fa-box-open text-lg text-blue-400" style="color: #60a5fa !important;"></i>
+                    </div>
+                    <span class="text-[8px] font-bold uppercase tracking-tighter text-center leading-tight mt-1" <?= (isset($action) && $action === 'create_receiving') ? 'style="color: #60a5fa !important; text-shadow: 0 0 8px rgba(59,130,246,0.5);"' : 'style="color: #3b82f6 !important; opacity: 0.7;"' ?>>Receive</span>
+                </a>
+
+                <!-- Theme / Logout Grouping -->
+                <!-- Theme -->
+                <button onclick="toggleThemePanel()" class="flex flex-col items-center justify-center h-full w-12 text-gray-400 hover:text-amber-400 transition-colors">
+                    <i class="fas fa-palette text-lg mb-1 text-amber-400"></i>
+                    <span class="text-[8px] font-bold uppercase tracking-tighter text-center leading-tight">Theme</span>
+                </button>
+
+                <!-- Logout -->
+                <button onclick="showLogoutModal()" class="flex flex-col items-center justify-center h-full w-12 text-gray-400 hover:text-red-500 transition-colors">
+                    <i class="fas fa-sign-out-alt text-lg mb-1 text-red-500"></i>
+                    <span class="text-[8px] font-bold uppercase tracking-tighter text-center leading-tight">Logout</span>
+                </button>
+            </div>
+
+        </div>
+    </div>
+    <style>
+        @media (max-width: 768px) {
+            .flex-1.overflow-y-auto {
+                padding-bottom: 7rem !important;
+            }
+        }
+    </style>
+    <?php endif; ?>
 </body>
 </html>
 
