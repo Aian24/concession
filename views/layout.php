@@ -1231,7 +1231,7 @@
 
     <!-- Theme Customizer Toggle Button -->
     <button id="theme-toggle-btn" onclick="toggleThemePanel()" 
-        class="fixed bottom-6 right-6 z-[90] w-12 h-12 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white flex items-center justify-center shadow-lg shadow-purple-500/30 hover:scale-110 hover:shadow-xl hover:shadow-purple-500/40 active:scale-95 transition-all duration-300 group"
+        class="hidden md:flex fixed bottom-6 right-6 z-[90] w-12 h-12 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white items-center justify-center shadow-lg shadow-purple-500/30 hover:scale-110 hover:shadow-xl hover:shadow-purple-500/40 active:scale-95 transition-all duration-300 group"
         title="Customize Theme">
         <i class="fas fa-palette text-lg group-hover:rotate-12 transition-transform"></i>
     </button>
