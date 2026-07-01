@@ -23,7 +23,7 @@ $store_filter = $_GET['store_filter'] ?? '';
 $my_store     = $_SESSION['store_code'] ?? '';
 
 // Build Query
-$sql = "SELECT s.id, s.item_no, s.amount_sold, s.quantity, s.line_total, s.username, s.store_code, s.created_at, s.is_exported, sc.sname 
+$sql = "SELECT s.id, s.item_no, s.base_price, s.discount, s.amount_sold, s.quantity, s.line_total, s.username, s.store_code, s.created_at, s.is_exported, sc.sname 
         FROM sales s
         LEFT JOIN storecode sc ON s.store_code = sc.scode COLLATE utf8mb4_unicode_ci
         WHERE 1=1";
@@ -87,7 +87,7 @@ $result = $stmt->get_result();
 $filename = $_GET['filename'] ?? ("submitted_sales_" . date('Ymd_His'));
 // Sanitize filename: allow alphanumeric, underscore, and dash
 $filename = preg_replace('/[^a-zA-Z0-9_\-]/', '_', $filename);
-$headers  = ['Date', 'Store', 'Item #', 'Amount Sold', 'Quantity', 'Username'];
+$headers  = ['Date', 'Store', 'Item #', 'SRP', 'Disc %', 'Final Price', 'Quantity', 'Username'];
 
 // Mark records as exported
 if ($result->num_rows > 0) {
@@ -120,6 +120,8 @@ if ($type === 'xls') {
             date('M d, Y', strtotime($row['created_at'])),
             $row['sname'] ? "{$row['sname']} ({$row['store_code']})" : $row['store_code'],
             $row['item_no'],
+            (float)$row['base_price'],
+            (float)$row['discount'],
             (float)$row['amount_sold'],
             (int)$row['quantity'],
             $row['username']
