@@ -303,6 +303,13 @@ if (!function_exists('time_elapsed_string')) {
     input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
     .no-scrollbar::-webkit-scrollbar { display: none !important; }
     .no-scrollbar { -ms-overflow-style: none !important; scrollbar-width: none !important; }
+    /* Dashboard mobile card title fix */
+    @media (max-width: 639px) {
+        .dash-card-title { font-size: 9px !important; letter-spacing: 0.05em !important; }
+        .dash-card-value { font-size: 1.1rem !important; }
+        .dash-card-icon { width: 36px !important; height: 36px !important; }
+        .dash-card-icon i { font-size: 0.875rem !important; }
+    }
 </style>
 
 <!-- Date Range Filter -->
@@ -403,33 +410,33 @@ if (!function_exists('time_elapsed_string')) {
         </div>
 
         <!-- Mobile row B: Start Date + End Date + Store Filter -->
-        <div class="flex items-end gap-3 w-full lg:contents">
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-end gap-3 w-full lg:contents">
 
             <!-- Manual Date Inputs -->
-            <form id="dashboard-filter-form" method="GET" class="flex gap-3 items-end flex-1 lg:flex-[2]">
+            <form id="dashboard-filter-form" method="GET" class="grid grid-cols-2 gap-3 items-end w-full sm:flex sm:flex-1 lg:flex-[2]">
                 <input type="hidden" name="action" value="dashboard">
                 <?php if ($show_concession): ?><input type="hidden" name="source_concession" value="1"><?php endif; ?>
                 <?php if ($show_boutique): ?><input type="hidden" name="source_boutique" value="1"><?php endif; ?>
                 <?php if ($filter_store_code): ?><input type="hidden" name="store_code" value="<?= htmlspecialchars($filter_store_code) ?>"><?php endif; ?>
-                <div class="flex flex-col gap-1 flex-1">
+                <div class="flex flex-col gap-1 min-w-0 sm:flex-1">
                     <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Start Date</label>
                     <div class="relative">
                         <i class="fas fa-calendar-day absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-600 pointer-events-none"></i>
-                        <input type="date" name="start_date" id="manual-start" value="<?= $start_date ?>" onchange="this.form.submit()" onclick="this.showPicker()" class="w-full bg-slate-900/80 border border-white/10 rounded-xl pl-8 pr-3 py-2 h-9 text-xs text-white focus:outline-none focus:border-purple-500/50 cursor-pointer transition-all">
+                        <input type="date" name="start_date" id="manual-start" value="<?= $start_date ?>" onchange="this.form.submit()" onclick="this.showPicker()" class="w-full bg-slate-900/80 border border-white/10 rounded-xl pl-8 pr-2 py-2 h-9 text-[11px] sm:text-xs text-white focus:outline-none focus:border-purple-500/50 cursor-pointer transition-all" style="min-width: 0;">
                     </div>
                 </div>
-                <div class="flex flex-col gap-1 flex-1">
+                <div class="flex flex-col gap-1 min-w-0 sm:flex-1">
                     <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">End Date</label>
                     <div class="relative">
                         <i class="fas fa-calendar-check absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-600 pointer-events-none"></i>
-                        <input type="date" name="end_date" id="manual-end" value="<?= $end_date ?>" onchange="this.form.submit()" onclick="this.showPicker()" class="w-full bg-slate-900/80 border border-white/10 rounded-xl pl-8 pr-3 py-2 h-9 text-xs text-white focus:outline-none focus:border-pink-500/50 cursor-pointer transition-all">
+                        <input type="date" name="end_date" id="manual-end" value="<?= $end_date ?>" onchange="this.form.submit()" onclick="this.showPicker()" class="w-full bg-slate-900/80 border border-white/10 rounded-xl pl-8 pr-2 py-2 h-9 text-[11px] sm:text-xs text-white focus:outline-none focus:border-pink-500/50 cursor-pointer transition-all" style="min-width: 0;">
                     </div>
                 </div>
             </form>
 
             <!-- Store Filter -->
             <?php if ($is_admin): ?>
-            <div class="flex flex-col gap-1 flex-shrink-0">
+            <div class="flex flex-col gap-1 w-full sm:w-auto sm:flex-shrink-0">
                 <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Store Filter</label>
                 <div class="relative" id="store-filter-container">
                     <i class="fas fa-store absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-600 pointer-events-none z-10"></i>
@@ -444,7 +451,7 @@ if (!function_exists('time_elapsed_string')) {
                         }
                     }
                     ?>
-                    <div id="store-filter-trigger" class="w-40 sm:w-48 bg-slate-900/80 border border-white/10 rounded-xl pl-9 pr-4 py-2 h-9 text-xs text-white flex items-center justify-between cursor-pointer hover:bg-white/5 transition-all">
+                    <div id="store-filter-trigger" class="w-full sm:w-48 bg-slate-900/80 border border-white/10 rounded-xl pl-9 pr-4 py-2 h-9 text-xs text-white flex items-center justify-between cursor-pointer hover:bg-white/5 transition-all">
                         <span id="selected-store-label" class="truncate font-bold opacity-80 uppercase tracking-tight text-[10px]"><?= htmlspecialchars($current_store_label) ?></span>
                         <i class="fas fa-chevron-down text-[9px] text-gray-500 ml-2"></i>
                     </div>
@@ -607,24 +614,24 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
-<div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8">
+<div class="grid grid-cols-1 min-[400px]:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-8">
     <!-- Stats Cards -->
     <?php if ($is_admin): ?>
     <div onclick="openTopSellersModal()" class="glass-panel p-4 sm:p-5 xl:p-6 border border-white/5 relative overflow-hidden group hover:border-[#3b82f6]/30 transition-all duration-500 cursor-pointer z-50 flex flex-col h-full">
         <div class="absolute -right-4 -top-4 w-24 h-24 bg-[#3b82f6]/10 rounded-full blur-2xl group-hover:bg-[#3b82f6]/20 transition-all"></div>
         <div class="flex items-center justify-between gap-2 mb-3 sm:mb-4 relative z-10">
-            <div class="flex items-center gap-3 sm:gap-4">
-                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-[#3b82f6]/10 flex items-center justify-center text-[#3b82f6] border border-[#3b82f6]/20 shadow-lg shadow-[#3b82f6]/5 shrink-0">
+            <div class="flex items-center gap-2 sm:gap-4 min-w-0">
+                <div class="dash-card-icon w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-[#3b82f6]/10 flex items-center justify-center text-[#3b82f6] border border-[#3b82f6]/20 shadow-lg shadow-[#3b82f6]/5 shrink-0">
                     <i class="fas fa-trophy text-lg sm:text-xl"></i>
                 </div>
-                <h3 class="text-[10px] sm:text-xs font-black text-gray-500 uppercase tracking-widest sm:tracking-[0.2em] truncate" title="Top Sellers Concession">Top Sellers Concession</h3>
+                <h3 class="dash-card-title text-[9px] sm:text-xs font-black text-gray-500 uppercase tracking-wider sm:tracking-[0.2em]" title="Top Sellers Concession">Top Sellers Con.</h3>
             </div>
-            <div class="opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0 flex items-center gap-1.5 bg-[#3b82f6]/10 border border-[#3b82f6]/20 px-2 sm:px-2.5 py-1 rounded-lg shrink-0">
-                <span class="text-[8px] font-bold text-[#3b82f6] uppercase tracking-widest whitespace-nowrap hidden sm:inline-block">View Details</span>
+            <div class="opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0 flex items-center gap-1.5 bg-[#3b82f6]/10 border border-[#3b82f6]/20 px-2 sm:px-2.5 py-1 rounded-lg shrink-0 hidden sm:flex">
+                <span class="text-[8px] font-bold text-[#3b82f6] uppercase tracking-widest whitespace-nowrap">View Details</span>
                 <i class="fas fa-external-link-alt text-[#3b82f6] text-[9px]"></i>
             </div>
         </div>
-        <p class="text-lg sm:text-xl min-[1400px]:text-lg xl:text-xl 2xl:text-2xl font-bold text-white mb-1 truncate" title="<?= htmlspecialchars($top_store_name) ?>"><?= htmlspecialchars($top_store_name) ?></p>
+        <p class="dash-card-value text-lg sm:text-xl min-[1400px]:text-lg xl:text-xl 2xl:text-2xl font-bold text-white mb-1 truncate" title="<?= htmlspecialchars($top_store_name) ?>"><?= htmlspecialchars($top_store_name) ?></p>
         <div class="mt-auto">
             <?php if ($top_store_name !== 'N/A'): ?>
             <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1 mt-2">Overall Total</p>
@@ -638,18 +645,18 @@ document.addEventListener('DOMContentLoaded', () => {
     <div onclick="openTopBoutiqueModal()" class="glass-panel p-4 sm:p-5 xl:p-6 border border-white/5 relative overflow-hidden group hover:border-yellow-500/30 transition-all duration-500 cursor-pointer z-50 flex flex-col h-full">
         <div class="absolute -right-4 -top-4 w-24 h-24 bg-yellow-500/10 rounded-full blur-2xl group-hover:bg-yellow-500/20 transition-all"></div>
         <div class="flex items-center justify-between gap-2 mb-3 sm:mb-4 relative z-10">
-            <div class="flex items-center gap-3 sm:gap-4">
-                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-yellow-500/10 flex items-center justify-center text-yellow-400 border border-yellow-500/20 shadow-lg shadow-yellow-500/5 shrink-0">
+            <div class="flex items-center gap-2 sm:gap-4 min-w-0">
+                <div class="dash-card-icon w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-yellow-500/10 flex items-center justify-center text-yellow-400 border border-yellow-500/20 shadow-lg shadow-yellow-500/5 shrink-0">
                     <i class="fas fa-crown text-lg sm:text-xl"></i>
                 </div>
-                <h3 class="text-[10px] sm:text-xs font-black text-gray-500 uppercase tracking-widest sm:tracking-[0.2em] truncate" title="Top Sellers Boutique">Top Sellers Boutique</h3>
+                <h3 class="dash-card-title text-[9px] sm:text-xs font-black text-gray-500 uppercase tracking-wider sm:tracking-[0.2em]" title="Top Sellers Boutique">Top Sellers Bout.</h3>
             </div>
-            <div class="opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0 flex items-center gap-1.5 bg-yellow-500/10 border border-yellow-500/20 px-2 sm:px-2.5 py-1 rounded-lg shrink-0">
-                <span class="text-[8px] font-bold text-yellow-400 uppercase tracking-widest whitespace-nowrap hidden sm:inline-block">View Details</span>
+            <div class="opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0 flex items-center gap-1.5 bg-yellow-500/10 border border-yellow-500/20 px-2 sm:px-2.5 py-1 rounded-lg shrink-0 hidden sm:flex">
+                <span class="text-[8px] font-bold text-yellow-400 uppercase tracking-widest whitespace-nowrap">View Details</span>
                 <i class="fas fa-external-link-alt text-yellow-400 text-[9px]"></i>
             </div>
         </div>
-        <p class="text-lg sm:text-xl min-[1400px]:text-lg xl:text-xl 2xl:text-2xl font-bold text-white mb-1 truncate" title="<?= htmlspecialchars($top_boutique_name) ?>"><?= htmlspecialchars($top_boutique_name) ?></p>
+        <p class="dash-card-value text-lg sm:text-xl min-[1400px]:text-lg xl:text-xl 2xl:text-2xl font-bold text-white mb-1 truncate" title="<?= htmlspecialchars($top_boutique_name) ?>"><?= htmlspecialchars($top_boutique_name) ?></p>
         <div class="mt-auto">
             <?php if ($top_boutique_name !== 'N/A'): ?>
             <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1 mt-2">Overall Total</p>
@@ -663,11 +670,11 @@ document.addEventListener('DOMContentLoaded', () => {
     <?php endif; ?>
     <div class="glass-panel p-4 sm:p-5 xl:p-6 border border-white/5 relative overflow-hidden group hover:border-purple-500/30 transition-all duration-500 flex flex-col h-full">
         <div class="absolute -right-4 -top-4 w-24 h-24 bg-purple-500/10 rounded-full blur-2xl group-hover:bg-purple-500/20 transition-all"></div>
-        <div class="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
-            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-400 border border-purple-500/20 shadow-lg shadow-purple-500/5">
+        <div class="flex items-center gap-2 sm:gap-4 mb-3 sm:mb-4">
+            <div class="dash-card-icon w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-400 border border-purple-500/20 shadow-lg shadow-purple-500/5">
                 <i class="fas fa-shopping-bag text-lg sm:text-xl"></i>
             </div>
-            <h3 class="text-[10px] sm:text-xs font-black text-gray-500 uppercase tracking-widest sm:tracking-[0.2em] truncate" title="Sales">Sales</h3>
+            <h3 class="dash-card-title text-[10px] sm:text-xs font-black text-gray-500 uppercase tracking-widest sm:tracking-[0.2em]" title="Sales">Sales</h3>
         </div>
         <p class="text-lg sm:text-xl min-[1400px]:text-lg xl:text-xl 2xl:text-2xl font-bold text-white mb-1 truncate" title="₱<?= number_format($total_sales, 2) ?>">₱<?= number_format($total_sales, 2) ?></p>
         <div class="flex items-center gap-2 mt-auto pt-2">
@@ -677,11 +684,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     <div class="glass-panel p-4 sm:p-5 xl:p-6 border border-white/5 relative overflow-hidden group hover:border-pink-500/30 transition-all duration-500 flex flex-col h-full">
         <div class="absolute -right-4 -top-4 w-24 h-24 bg-pink-500/10 rounded-full blur-2xl group-hover:bg-pink-500/20 transition-all"></div>
-        <div class="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
-            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-pink-500/10 flex items-center justify-center text-pink-400 border border-pink-500/20 shadow-lg shadow-pink-500/5">
+        <div class="flex items-center gap-2 sm:gap-4 mb-3 sm:mb-4">
+            <div class="dash-card-icon w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-pink-500/10 flex items-center justify-center text-pink-400 border border-pink-500/20 shadow-lg shadow-pink-500/5">
                 <i class="fas fa-box text-lg sm:text-xl"></i>
             </div>
-            <h3 class="text-[10px] sm:text-xs font-black text-gray-500 uppercase tracking-widest sm:tracking-[0.2em] truncate" title="Total Qty">Total Qty</h3>
+            <h3 class="dash-card-title text-[10px] sm:text-xs font-black text-gray-500 uppercase tracking-widest sm:tracking-[0.2em]" title="Total Qty">Total Qty</h3>
         </div>
         <p class="text-lg sm:text-xl min-[1400px]:text-lg xl:text-xl 2xl:text-2xl font-bold text-white mb-1 truncate" title="<?= number_format($total_sales_qty) ?>"><?= number_format($total_sales_qty) ?></p>
         <div class="flex items-center gap-2 mt-auto pt-2">
@@ -691,11 +698,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     <div class="glass-panel p-4 sm:p-5 xl:p-6 border border-white/5 relative overflow-hidden group hover:border-blue-500/30 transition-all duration-500 flex flex-col h-full">
         <div class="absolute -right-4 -top-4 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-all"></div>
-        <div class="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
-            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-400 border border-blue-500/20 shadow-lg shadow-blue-500/5">
+        <div class="flex items-center gap-2 sm:gap-4 mb-3 sm:mb-4">
+            <div class="dash-card-icon w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-400 border border-blue-500/20 shadow-lg shadow-blue-500/5">
                 <i class="fas fa-undo-alt text-lg sm:text-xl"></i>
             </div>
-            <h3 class="text-[10px] sm:text-xs font-black text-gray-500 uppercase tracking-widest sm:tracking-[0.2em] truncate" title="Returns">Returns</h3>
+            <h3 class="dash-card-title text-[10px] sm:text-xs font-black text-gray-500 uppercase tracking-widest sm:tracking-[0.2em]" title="Returns">Returns</h3>
         </div>
         <p class="text-lg sm:text-xl min-[1400px]:text-lg xl:text-xl 2xl:text-2xl font-bold text-white mb-1 truncate" title="<?= number_format($total_returns_count) ?>"><?= number_format($total_returns_count) ?></p>
         <div class="flex items-center gap-2 mt-auto pt-2">
@@ -705,11 +712,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     <div class="glass-panel p-4 sm:p-5 xl:p-6 border border-white/5 relative overflow-hidden group hover:border-emerald-500/30 transition-all duration-500 flex flex-col h-full">
         <div class="absolute -right-4 -top-4 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition-all"></div>
-        <div class="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
-            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 border border-emerald-500/20 shadow-lg shadow-emerald-500/5">
+        <div class="flex items-center gap-2 sm:gap-4 mb-3 sm:mb-4">
+            <div class="dash-card-icon w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 border border-emerald-500/20 shadow-lg shadow-emerald-500/5">
                 <i class="fas fa-truck-loading text-lg sm:text-xl"></i>
             </div>
-            <h3 class="text-[10px] sm:text-xs font-black text-gray-500 uppercase tracking-widest sm:tracking-[0.2em] truncate" title="Received">Received</h3>
+            <h3 class="dash-card-title text-[10px] sm:text-xs font-black text-gray-500 uppercase tracking-widest sm:tracking-[0.2em]" title="Received">Received</h3>
         </div>
         <p class="text-lg sm:text-xl min-[1400px]:text-lg xl:text-xl 2xl:text-2xl font-bold text-white mb-1 truncate" title="<?= number_format($total_received_qty) ?>"><?= number_format($total_received_qty) ?></p>
         <div class="flex items-center gap-2 mt-auto pt-2">
@@ -719,11 +726,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     <div class="glass-panel p-4 sm:p-5 xl:p-6 border border-white/5 relative overflow-hidden group hover:border-amber-500/30 transition-all duration-500 flex flex-col h-full">
         <div class="absolute -right-4 -top-4 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl group-hover:bg-amber-500/20 transition-all"></div>
-        <div class="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
-            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-400 border border-amber-500/20 shadow-lg shadow-amber-500/5">
+        <div class="flex items-center gap-2 sm:gap-4 mb-3 sm:mb-4">
+            <div class="dash-card-icon w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-400 border border-amber-500/20 shadow-lg shadow-amber-500/5">
                 <i class="fas fa-store text-lg sm:text-xl"></i>
             </div>
-            <h3 class="text-[10px] sm:text-xs font-black text-gray-500 uppercase tracking-widest sm:tracking-[0.2em] truncate" title="Stores">Stores</h3>
+            <h3 class="dash-card-title text-[10px] sm:text-xs font-black text-gray-500 uppercase tracking-widest sm:tracking-[0.2em]" title="Stores">Stores</h3>
         </div>
         <p class="text-lg sm:text-xl min-[1400px]:text-lg xl:text-xl 2xl:text-2xl font-bold text-white mb-1 truncate" title="<?= number_format($total_stores) ?>"><?= number_format($total_stores) ?></p>
         <div class="flex items-center gap-2 mt-auto pt-2">
@@ -733,11 +740,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     <div class="glass-panel p-4 sm:p-5 xl:p-6 border border-white/5 relative overflow-hidden group hover:border-orange-500/30 transition-all duration-500 flex flex-col h-full">
         <div class="absolute -right-4 -top-4 w-24 h-24 bg-orange-500/10 rounded-full blur-2xl group-hover:bg-orange-500/20 transition-all"></div>
-        <div class="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
-            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-orange-500/10 flex items-center justify-center text-orange-400 border border-orange-500/20 shadow-lg shadow-orange-500/5">
+        <div class="flex items-center gap-2 sm:gap-4 mb-3 sm:mb-4">
+            <div class="dash-card-icon w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-orange-500/10 flex items-center justify-center text-orange-400 border border-orange-500/20 shadow-lg shadow-orange-500/5">
                 <i class="fas fa-signal text-lg sm:text-xl"></i>
             </div>
-            <h3 class="text-[10px] sm:text-xs font-black text-gray-500 uppercase tracking-widest sm:tracking-[0.2em] truncate" title="Activity">Activity</h3>
+            <h3 class="dash-card-title text-[10px] sm:text-xs font-black text-gray-500 uppercase tracking-widest sm:tracking-[0.2em]" title="Activity">Activity</h3>
         </div>
         <p class="text-lg sm:text-xl min-[1400px]:text-lg xl:text-xl 2xl:text-2xl font-bold text-white mb-1 truncate" title="<?= number_format($active_stores_count) ?>/<?= number_format($total_stores) ?>"><?= number_format($active_stores_count) ?><span class="text-sm text-gray-500 font-medium">/<?= number_format($total_stores) ?></span></p>
         <div class="flex items-center gap-2 mt-auto pt-2">
@@ -748,7 +755,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 <div class="w-full">
     <!-- Chart Section -->
-    <div class="glass-panel p-8 border border-white/5">
+    <div class="glass-panel p-4 sm:p-8 border border-white/5">
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8">
             <div class="flex-1">
                 <h3 class="text-lg font-bold text-white tracking-wide uppercase flex items-center gap-2">
@@ -765,7 +772,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         </div>
         
-        <div class="w-full relative h-[400px]">
+        <div class="w-full relative h-[280px] sm:h-[400px]">
             <canvas id="monthlyActivityChart"></canvas>
         </div>
     </div>
