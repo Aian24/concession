@@ -284,7 +284,7 @@ $all_stores_stmt->close();
                         <div class="p-4 grid grid-cols-1 md:grid-cols-4 gap-4">
                             <div class="relative">
                                 <span class="absolute top-0 -translate-y-1/2 left-3 px-1 bg-[#0d1527] text-[8px] font-black text-cyan-400/80 uppercase tracking-widest z-10">TF #</span>
-                                <input type="number" name="os_no" min="0" oninput="if(this.value.length > 6) this.value = this.value.slice(0, 6);" onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();" class="bg-slate-900/50 border border-white/10 rounded-xl px-4 py-2.5 w-full text-xs text-white focus:outline-none focus:border-cyan-500/50 font-medium" placeholder="1001">
+                                <input type="number" name="os_no" min="0" oninput="if(this.value.length > 6) this.value = this.value.slice(0, 6);" onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();" class="bg-slate-900/50 border border-white/10 rounded-xl px-4 py-2.5 w-full text-xs text-white focus:outline-none focus:border-cyan-500/50 font-medium focus:text-base md:focus:text-xs focus:tracking-widest md:focus:tracking-normal transition-all" placeholder="1001">
                             </div>
                             <div class="relative">
                                 <span class="absolute top-0 -translate-y-1/2 left-3 px-1 bg-[#0d1527] text-[8px] font-black text-cyan-400/80 uppercase tracking-widest z-10">From (Store)</span>
@@ -370,7 +370,7 @@ $all_stores_stmt->close();
                 <div class="grid grid-cols-2 gap-4">
                     <div class="space-y-1">
                         <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">TF #</label>
-                        <input type="number" name="os_no" id="edit-os-no" required min="0" oninput="if(this.value.length > 6) this.value = this.value.slice(0, 6);" onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();" class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-500/50 transition-all font-medium" placeholder="1001">
+                        <input type="number" name="os_no" id="edit-os-no" required min="0" oninput="if(this.value.length > 6) this.value = this.value.slice(0, 6);" onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();" class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-500/50 transition-all font-medium focus:text-base md:focus:text-xs focus:tracking-widest md:focus:tracking-normal" placeholder="1001">
                     </div>
                     <div class="space-y-1">
                         <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Quantity</label>

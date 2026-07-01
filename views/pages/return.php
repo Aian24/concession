@@ -341,7 +341,7 @@ if (isset($_GET['ajax'])) {
                         <div class="grid grid-cols-2 gap-3">
                             <div class="space-y-1">
                                 <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Item #</label>
-                                <input type="number" name="return_item" id="edit-return-item" min="0" oninput="if(this.value.length > 6) this.value = this.value.slice(0, 6);" onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();" class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500/50 transition-all font-medium" placeholder="100123">
+                                <input type="number" name="return_item" id="edit-return-item" min="0" oninput="if(this.value.length > 6) this.value = this.value.slice(0, 6);" onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();" class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500/50 transition-all font-medium focus:text-base md:focus:text-xs focus:tracking-widest md:focus:tracking-normal" placeholder="100123">
                             </div>
                             <div class="space-y-1">
                                 <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Qty</label>
@@ -371,7 +371,7 @@ if (isset($_GET['ajax'])) {
                         <div class="grid grid-cols-2 gap-3">
                             <div class="space-y-1">
                                 <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Item #</label>
-                                <input type="number" name="exchange_item" id="edit-ex-item" min="0" oninput="if(this.value.length > 6) this.value = this.value.slice(0, 6);" onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();" class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500/50 transition-all font-medium" placeholder="100123">
+                                <input type="number" name="exchange_item" id="edit-ex-item" min="0" oninput="if(this.value.length > 6) this.value = this.value.slice(0, 6);" onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();" class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500/50 transition-all font-medium focus:text-base md:focus:text-xs focus:tracking-widest md:focus:tracking-normal" placeholder="100123">
                             </div>
                             <div class="space-y-1">
                                 <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Qty</label>
@@ -430,7 +430,7 @@ if (isset($_GET['ajax'])) {
                     <div class="grid grid-cols-2 gap-3">
                         <div class="relative mt-2">
                             <span class="absolute top-0 -translate-y-1/2 left-3 px-1 bg-[#0d1527] text-[8px] font-black text-orange-400/80 uppercase tracking-widest z-10">Item #</span>
-                            <input type="number" min="0" oninput="if(this.value.length > 6) this.value = this.value.slice(0, 6); lookupPrismPrice(this, '.entry-amt');" onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();" class="entry-item bg-slate-900 border border-white/10 rounded-lg px-3 py-2 w-full text-xs text-white focus:outline-none focus:border-orange-500/50" placeholder="100123">
+                            <input type="number" min="0" oninput="if(this.value.length > 6) this.value = this.value.slice(0, 6); lookupPrismPrice(this, '.entry-amt');" onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();" class="entry-item bg-slate-900 border border-white/10 rounded-lg px-3 py-2 w-full text-xs text-white focus:outline-none focus:border-orange-500/50 focus:text-base md:focus:text-xs focus:tracking-widest md:focus:tracking-normal transition-all" placeholder="100123">
                         </div>
                         <div class="relative mt-2">
                             <span class="absolute top-0 -translate-y-1/2 left-3 px-1 bg-[#0d1527] text-[8px] font-black text-orange-400/80 uppercase tracking-widest z-10">Qty</span>
@@ -468,7 +468,7 @@ if (isset($_GET['ajax'])) {
                         <div class="grid grid-cols-3 gap-3">
                             <div class="relative mt-2">
                                 <span class="absolute top-0 -translate-y-1/2 left-3 px-1 bg-[#0d1527] text-[8px] font-black text-blue-400/80 uppercase tracking-widest z-10">Item #</span>
-                                <input type="number" min="0" oninput="if(this.value.length > 6) this.value = this.value.slice(0, 6); lookupPrismPrice(this, '.entry-ex-amt');" onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();" class="entry-ex-item bg-slate-900 border border-white/10 rounded-lg px-3 py-2 w-full text-xs text-white focus:outline-none focus:border-blue-500/50" placeholder="100123">
+                                <input type="number" min="0" oninput="if(this.value.length > 6) this.value = this.value.slice(0, 6); lookupPrismPrice(this, '.entry-ex-amt');" onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();" class="entry-ex-item bg-slate-900 border border-white/10 rounded-lg px-3 py-2 w-full text-xs text-white focus:outline-none focus:border-blue-500/50 focus:text-base md:focus:text-xs focus:tracking-widest md:focus:tracking-normal transition-all" placeholder="100123">
                             </div>
                             <div class="relative mt-2">
                                 <span class="absolute top-0 -translate-y-1/2 left-3 px-1 bg-[#0d1527] text-[8px] font-black text-blue-400/80 uppercase tracking-widest z-10">Qty</span>

@@ -277,7 +277,7 @@ if (isset($_GET['ajax'])) {
                         <div class="p-4 grid grid-cols-1 md:grid-cols-6 gap-4">
                             <div class="relative flex items-stretch md:col-span-1">
                                 <span class="absolute top-0 -translate-y-1/2 left-3 px-1 bg-[#0d1527] text-[8px] font-black text-green-400/80 uppercase tracking-widest z-10">Item #</span>
-                                <input type="number" name="item_no" min="0" oninput="if(this.value.length > 6) this.value = this.value.slice(0, 6);" onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();" class="bg-slate-900/50 border border-white/10 rounded-l-xl px-4 py-2.5 flex-1 text-xs text-white focus:outline-none focus:border-green-500/50 font-medium" placeholder="100123">
+                                <input type="number" name="item_no" min="0" oninput="if(this.value.length > 6) this.value = this.value.slice(0, 6);" onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();" class="bg-slate-900/50 border border-white/10 rounded-l-xl px-4 py-2.5 flex-1 text-xs text-white focus:outline-none focus:border-green-500/50 font-medium focus:text-base md:focus:text-xs focus:tracking-widest md:focus:tracking-normal transition-all" placeholder="100123">
                                 <button type="button" onclick="startBarcodeScanForRow(this)" class="bg-purple-600/20 border border-l-0 border-white/10 px-3 rounded-r-xl text-purple-400 hover:bg-purple-600/30 transition-all flex items-center justify-center">
                                     <i class="fas fa-camera"></i>
                                 </button>
@@ -401,7 +401,7 @@ if (isset($_GET['ajax'])) {
                             <i class="fas fa-barcode absolute left-5 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-blue-400 transition-colors"></i>
                             <input type="number" name="item_no" id="edit-item-no" required min="0" 
                                    oninput="if(this.value.length > 6) this.value = this.value.slice(0, 6);" 
-                                   class="w-full bg-slate-950/50 border border-white/10 rounded-2xl pl-12 pr-5 py-4 text-sm text-white focus:outline-none focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all font-bold" 
+                                   class="w-full bg-slate-950/50 border border-white/10 rounded-2xl pl-12 pr-5 py-4 text-sm text-white focus:outline-none focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all font-bold focus:text-lg md:focus:text-sm focus:tracking-widest md:focus:tracking-normal" 
                                    placeholder="100123">
                         </div>
                     </div>

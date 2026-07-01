@@ -274,7 +274,7 @@ if (isset($_GET['ajax'])) {
                         <div class="relative">
                             <span class="absolute top-0 -translate-y-1/2 left-3 px-1 bg-[#0d1527] text-[8px] font-black text-amber-400/80 uppercase tracking-widest z-10">ITR # / OS #</span>
                             <div class="relative">
-                                <input type="text" name="item_no[]" required maxlength="8" class="bg-slate-900/50 border border-white/10 rounded-xl px-4 py-2.5 w-full text-xs text-white focus:outline-none focus:border-amber-500/50 font-medium uppercase" placeholder="10012345">
+                                <input type="text" name="item_no[]" required maxlength="8" class="bg-slate-900/50 border border-white/10 rounded-xl px-4 py-2.5 w-full text-xs text-white focus:outline-none focus:border-amber-500/50 font-medium uppercase focus:text-base md:focus:text-xs focus:tracking-widest md:focus:tracking-normal transition-all" placeholder="10012345">
                             </div>
                         </div>
                         <div class="relative">
@@ -365,7 +365,7 @@ if (isset($_GET['ajax'])) {
                     <input type="hidden" name="id" id="edit-id">
                     <div class="space-y-1">
                         <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">ITR # / OS #</label>
-                        <input type="text" name="item_no" id="edit-item-no" required maxlength="8" class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500/50 transition-all font-medium uppercase" placeholder="10012345">
+                        <input type="text" name="item_no" id="edit-item-no" required maxlength="8" class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500/50 transition-all font-medium uppercase focus:text-base md:focus:text-xs focus:tracking-widest md:focus:tracking-normal" placeholder="10012345">
                     </div>
                     <div class="space-y-1">
                         <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Quantity</label>

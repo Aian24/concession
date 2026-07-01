@@ -242,3 +242,16 @@ input[type="date"].input-modern::-webkit-calendar-picker-indicator {
         box-shadow: inset 0px 0px 0px 40px #10b981;
     }
 }
+
+/* Mobile Input Focus Zoom Effect */
+@media (max-width: 767px) {
+    input[type="number"]:not([readonly]):focus,
+    input[type="text"]:not([readonly]):focus {
+        font-size: 1.15rem !important; 
+        letter-spacing: 0.05em !important;
+        line-height: 1.4 !important;
+        padding-top: 0.5rem !important;
+        padding-bottom: 0.5rem !important;
+        transition: all 0.2s ease-in-out;
+    }
+}
