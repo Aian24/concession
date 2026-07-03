@@ -74,6 +74,19 @@ function db_connect(): mysqli {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
     }
 
+    // Ensure user_logs table exists
+    $hasUserLogsTable = $conn->query("SHOW TABLES LIKE 'user_logs'");
+    if ($hasUserLogsTable && $hasUserLogsTable->num_rows === 0) {
+        $conn->query("CREATE TABLE IF NOT EXISTS user_logs (
+            id          INT             AUTO_INCREMENT PRIMARY KEY,
+            user_id     INT             NOT NULL,
+            username    VARCHAR(100)    NOT NULL,
+            ip_address  VARCHAR(50)     NOT NULL,
+            login_time  TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_login_time (login_time)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
+    }
+
     // Ensure role column is VARCHAR (not ENUM) to support dynamic custom roles
     $col_res = $conn->query("SHOW COLUMNS FROM users LIKE 'role'");
     if ($col_res && $col_res->num_rows > 0) {
@@ -183,3 +196,29 @@ function log_activity(mysqli $db, string $username, string $action_type, string 
     return $ok;
 }
 
+/**
+ * Log user login event
+ */
+function log_user_login(mysqli $db, int $user_id, string $username, string $ip_address): bool {
+    $stmt = $db->prepare("INSERT INTO user_logs (user_id, username, ip_address) VALUES (?, ?, ?)");
+    if (!$stmt) return false;
+    $stmt->bind_param("iss", $user_id, $username, $ip_address);
+    $ok = $stmt->execute();
+    $stmt->close();
+    return $ok;
+}
+
+/**
+ * Auto-delete logs older than 7 days
+ */
+function delete_old_logs(mysqli $db): void {
+    // Delete from user_logs
+    $db->query("DELETE FROM user_logs WHERE login_time < (NOW() - INTERVAL 7 DAY)");
+    
+    // Delete from activity_log
+    // First, check if created_at column exists in activity_log
+    $res = $db->query("SHOW COLUMNS FROM activity_log LIKE 'created_at'");
+    if ($res && $res->num_rows > 0) {
+        $db->query("DELETE FROM activity_log WHERE created_at < (NOW() - INTERVAL 7 DAY)");
+    }
+}

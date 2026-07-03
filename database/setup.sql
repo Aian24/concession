@@ -42,6 +42,18 @@ CREATE TABLE IF NOT EXISTS sales (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ─────────────────────────────────────────────
+-- USER LOGS TABLE
+-- ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS user_logs (
+    id          INT             AUTO_INCREMENT PRIMARY KEY,
+    user_id     INT             NOT NULL,
+    username    VARCHAR(100)    NOT NULL,
+    ip_address  VARCHAR(50)     NOT NULL,
+    login_time  TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_login_time (login_time)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ─────────────────────────────────────────────
 -- DEFAULT ADMIN ACCOUNT
 -- Password: admin123  (change after first login!)
 -- ─────────────────────────────────────────────

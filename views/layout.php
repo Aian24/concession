@@ -416,6 +416,7 @@
                 'prism_data'      => ['icon' => 'fa-gem', 'title' => 'Manage Prism Data'],
                 'boutique_data'   => ['icon' => 'fa-store', 'title' => 'Manage Boutique Data'],
                 'recent_activity' => ['icon' => 'fa-clock-rotate-left', 'title' => 'Recent Activity'],
+                'user_logs'       => ['icon' => 'fa-users-viewfinder', 'title' => 'User Logs'],
                 'server_health'   => ['icon' => 'fa-server', 'title' => 'Server Health'],
             ];
 

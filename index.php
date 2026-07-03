@@ -79,6 +79,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                 $_SESSION['assigned_stores_data'] = [];
             }
 
+            // ── Log User Login & Clean Old Logs ───────────────
+            $ip_address = $_SERVER['REMOTE_ADDR'] ?? 'Unknown';
+            log_user_login($db, $user['id'], $uname, $ip_address);
+            delete_old_logs($db);
+
             // ── Remember Me ───────────────────────────────────
             if (!empty($_POST['remember_me'])) {
                 $cookie_expire = time() + (30 * 24 * 60 * 60); // 30 days
@@ -163,6 +168,9 @@ if ($_role_row) {
     $can_delete = $_SESSION['can_delete'] ?? ($is_full_admin || $role === 'admin_view');
 }
 
+if ($is_full_admin && !in_array('user_logs', $user_permissions)) {
+    $user_permissions[] = 'user_logs';
+}
 // ── Guard ─────────────────────────────────────────────────────
 if (!isset($_SESSION['user'])) {
     require 'views/login.php';
@@ -195,7 +203,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $allowed_pages = [
-    'dashboard', 'monitoring', 'history', 'admin', 'stores', 'roles', 'recent_activity', 'prism_data', 'boutique_data', 'non_submission',
+    'dashboard', 'monitoring', 'history', 'admin', 'stores', 'roles', 'recent_activity', 'prism_data', 'boutique_data', 'non_submission', 'user_logs',
     'sale', 'create_sale', 
     'return', 'create_return', 
     'receiving', 'create_receiving', 
