@@ -284,24 +284,36 @@ $(document).ready(function() {
 .dataTables_wrapper .dataTables_processing, 
 .dataTables_wrapper .dataTables_paginate {
     color: #9ca3af !important; 
-    font-size: 0.875rem; 
+    font-size: 0.75rem !important; 
     margin-top: 1rem;
     margin-bottom: 1rem;
     padding: 0 1.5rem;
-    font-weight: 600;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 .dataTables_wrapper .dataTables_length select, 
 .dataTables_wrapper .dataTables_filter input {
-    background-color: rgba(15, 23, 42, 0.5) !important; 
+    background-color: rgba(15, 23, 42, 0.6) !important; 
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
     color: white !important;
-    border-radius: 0.5rem;
-    padding: 0.25rem 0.5rem;
+    border-radius: 0.75rem;
+    padding: 0.5rem 1rem;
     margin-left: 0.5rem;
     outline: none;
+    transition: all 0.3s ease;
+    font-size: 0.75rem !important;
+    font-weight: 600;
+}
+.dataTables_wrapper .dataTables_length select option {
+    background-color: #0f172a !important; 
+    color: white !important;
+    font-size: 0.75rem !important;
 }
 .dataTables_wrapper .dataTables_filter input:focus {
     border-color: #a855f7 !important;
+    background-color: rgba(15, 23, 42, 0.9) !important;
+    box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.2);
 }
 .dataTables_wrapper .dataTables_paginate .paginate_button {
     color: #9ca3af !important;
@@ -331,10 +343,24 @@ table.dataTable thead th, table.dataTable thead td {
 .dataTables_wrapper .dataTables_filter {
     text-align: right;
 }
+.dataTables_wrapper .dataTables_filter label {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+.dataTables_wrapper .dataTables_length label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
 @media (max-width: 768px) {
     .dataTables_wrapper .dataTables_filter, .dataTables_wrapper .dataTables_length {
         text-align: left;
         padding: 0 1rem;
+    }
+    .dataTables_wrapper .dataTables_filter label {
+        justify-content: flex-start;
     }
 }
 </style>
