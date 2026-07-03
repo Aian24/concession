@@ -109,42 +109,29 @@ $logs = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-white/5">
-                    <?php if (empty($logs)): ?>
-                        <tr>
-                            <td colspan="3" class="px-6 py-20 text-center">
-                                <div class="flex flex-col items-center">
-                                    <div class="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center mb-4 border border-white/5">
-                                        <i class="fas fa-user-slash text-gray-600 text-xl"></i>
-                                    </div>
-                                    <p class="text-gray-500 font-bold uppercase tracking-widest text-xs">No user logs found</p>
+                    <?php foreach ($logs as $log): 
+                        $date = new DateTime($log['login_time']);
+                    ?>
+                        <tr class="hover:bg-white/[0.02] transition-colors group">
+                            <td class="px-6 py-4" data-label="Timestamp">
+                                <div class="flex flex-col">
+                                    <span class="text-white font-bold text-xs"><?= $date->format('M d, Y') ?></span>
+                                    <span class="text-[10px] text-gray-500 font-medium tracking-tighter uppercase"><?= $date->format('h:i:s A') ?></span>
                                 </div>
                             </td>
+                            <td class="px-6 py-4" data-label="User">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-7 h-7 rounded-full bg-slate-800 border border-white/10 flex items-center justify-center text-[10px] font-black text-purple-300">
+                                        <?= strtoupper(substr($log['username'], 0, 1)) ?>
+                                    </div>
+                                    <span class="text-xs font-bold text-gray-300 group-hover:text-white transition-colors"><?= htmlspecialchars($log['username']) ?></span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4" data-label="IP Address">
+                                <span class="text-xs font-mono text-purple-300/80"><?= htmlspecialchars($log['ip_address']) ?></span>
+                            </td>
                         </tr>
-                    <?php else: ?>
-                        <?php foreach ($logs as $log): 
-                            $date = new DateTime($log['login_time']);
-                        ?>
-                            <tr class="hover:bg-white/[0.02] transition-colors group">
-                                <td class="px-6 py-4" data-label="Timestamp">
-                                    <div class="flex flex-col">
-                                        <span class="text-white font-bold text-xs"><?= $date->format('M d, Y') ?></span>
-                                        <span class="text-[10px] text-gray-500 font-medium tracking-tighter uppercase"><?= $date->format('h:i:s A') ?></span>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4" data-label="User">
-                                    <div class="flex items-center gap-2">
-                                        <div class="w-7 h-7 rounded-full bg-slate-800 border border-white/10 flex items-center justify-center text-[10px] font-black text-purple-300">
-                                            <?= strtoupper(substr($log['username'], 0, 1)) ?>
-                                        </div>
-                                        <span class="text-xs font-bold text-gray-300 group-hover:text-white transition-colors"><?= htmlspecialchars($log['username']) ?></span>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4" data-label="IP Address">
-                                    <span class="text-xs font-mono text-purple-300/80"><?= htmlspecialchars($log['ip_address']) ?></span>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
+                    <?php endforeach; ?>
                 </tbody>
             </table>
         </div>
@@ -170,7 +157,13 @@ $(document).ready(function() {
         language: {
             search: "_INPUT_",
             searchPlaceholder: "Search logs...",
-            lengthMenu: "Show _MENU_ entries"
+            lengthMenu: "Show _MENU_ entries",
+            emptyTable: `<div class="flex flex-col items-center py-10">
+                            <div class="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center mb-4 border border-white/5">
+                                <i class="fas fa-user-slash text-gray-600 text-xl"></i>
+                            </div>
+                            <p class="text-gray-500 font-bold uppercase tracking-widest text-xs">No user logs found</p>
+                        </div>`
         },
         initComplete: function() {
             $('#user-logs-table').removeClass('hidden').hide().fadeIn(300);

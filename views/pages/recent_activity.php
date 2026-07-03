@@ -176,77 +176,64 @@ while ($row = $stores_res->fetch_assoc()) {
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-white/5">
-                    <?php if (empty($activities)): ?>
-                        <tr>
-                            <td colspan="7" class="px-6 py-20 text-center">
-                                <div class="flex flex-col items-center">
-                                    <div class="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center mb-4 border border-white/5">
-                                        <i class="fas fa-history text-gray-600 text-xl"></i>
-                                    </div>
-                                    <p class="text-gray-500 font-bold uppercase tracking-widest text-xs">No activity found in the last 7 days</p>
+                    <?php foreach ($activities as $act): 
+                        $type_color = [
+                            'Sale'      => 'bg-green-500/10 text-green-400 border-green-500/20',
+                            'Return'    => 'bg-red-500/10 text-red-400 border-red-500/20',
+                            'Receiving' => 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
+                            'Pullout'   => 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                        ][$act['type']] ?? 'bg-slate-500/10 text-slate-400 border-slate-500/20';
+
+                        $action_badge = [
+                            'create' => 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+                            'edit'   => 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+                            'delete' => 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                        ][$act['action_type']] ?? 'bg-slate-500/10 text-slate-400 border-slate-500/20';
+
+                        $date = new DateTime($act['created_at']);
+                    ?>
+                        <tr class="hover:bg-white/[0.02] transition-colors group">
+                            <td class="px-6 py-4" data-label="Timestamp">
+                                <div class="flex flex-col">
+                                    <span class="text-white font-bold text-xs"><?= $date->format('M d, Y') ?></span>
+                                    <span class="text-[10px] text-gray-500 font-medium tracking-tighter uppercase"><?= $date->format('h:i A') ?></span>
                                 </div>
                             </td>
+                            <td class="px-6 py-4" data-label="User">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-7 h-7 rounded-full bg-slate-800 border border-white/10 flex items-center justify-center text-[10px] font-black text-purple-300">
+                                        <?= strtoupper(substr($act['username'], 0, 1)) ?>
+                                    </div>
+                                    <span class="text-xs font-bold text-gray-300 group-hover:text-white transition-colors"><?= htmlspecialchars($act['username']) ?></span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4" data-label="Store">
+                                <div class="flex flex-col">
+                                    <span class="text-xs font-bold text-white"><?= htmlspecialchars($store_map[$act['store_code']] ?? 'Unknown Store') ?></span>
+                                    <span class="text-[9px] text-gray-500 font-black tracking-widest"><?= htmlspecialchars($act['store_code']) ?></span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4" data-label="Action / Module">
+                                <div class="flex flex-col gap-1 items-start">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border <?= $type_color ?>">
+                                        <?= $act['type'] ?>
+                                    </span>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border <?= $action_badge ?>">
+                                        <?= $act['action_type'] ?>
+                                    </span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4" data-label="Reference">
+                                <span class="text-xs font-mono text-purple-300/80"><?= htmlspecialchars($act['reference']) ?></span>
+                            </td>
+                            <td class="px-6 py-4" data-label="Details">
+                                <span class="text-xs text-gray-300 font-medium whitespace-normal break-words inline-block max-w-xs"><?= htmlspecialchars($act['details'] ?: 'Transaction recorded') ?></span>
+                            </td>
+                            <td class="px-6 py-4 text-right" data-label="Qty">
+                                <span class="text-xs font-black text-white"><?= number_format($act['quantity']) ?></span>
+                            </td>
                         </tr>
-                    <?php else: ?>
-                        <?php foreach ($activities as $act): 
-                            $type_color = [
-                                'Sale'      => 'bg-green-500/10 text-green-400 border-green-500/20',
-                                'Return'    => 'bg-red-500/10 text-red-400 border-red-500/20',
-                                'Receiving' => 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
-                                'Pullout'   => 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                            ][$act['type']] ?? 'bg-slate-500/10 text-slate-400 border-slate-500/20';
-
-                            $action_badge = [
-                                'create' => 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-                                'edit'   => 'bg-amber-500/10 text-amber-400 border-amber-500/20',
-                                'delete' => 'bg-rose-500/10 text-rose-400 border-rose-500/20'
-                            ][$act['action_type']] ?? 'bg-slate-500/10 text-slate-400 border-slate-500/20';
-
-                            $date = new DateTime($act['created_at']);
-                        ?>
-                            <tr class="hover:bg-white/[0.02] transition-colors group">
-                                <td class="px-6 py-4" data-label="Timestamp">
-                                    <div class="flex flex-col">
-                                        <span class="text-white font-bold text-xs"><?= $date->format('M d, Y') ?></span>
-                                        <span class="text-[10px] text-gray-500 font-medium tracking-tighter uppercase"><?= $date->format('h:i A') ?></span>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4" data-label="User">
-                                    <div class="flex items-center gap-2">
-                                        <div class="w-7 h-7 rounded-full bg-slate-800 border border-white/10 flex items-center justify-center text-[10px] font-black text-purple-300">
-                                            <?= strtoupper(substr($act['username'], 0, 1)) ?>
-                                        </div>
-                                        <span class="text-xs font-bold text-gray-300 group-hover:text-white transition-colors"><?= htmlspecialchars($act['username']) ?></span>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4" data-label="Store">
-                                    <div class="flex flex-col">
-                                        <span class="text-xs font-bold text-white"><?= htmlspecialchars($store_map[$act['store_code']] ?? 'Unknown Store') ?></span>
-                                        <span class="text-[9px] text-gray-500 font-black tracking-widest"><?= htmlspecialchars($act['store_code']) ?></span>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4" data-label="Action / Module">
-                                    <div class="flex flex-col gap-1 items-start">
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border <?= $type_color ?>">
-                                            <?= $act['type'] ?>
-                                        </span>
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border <?= $action_badge ?>">
-                                            <?= $act['action_type'] ?>
-                                        </span>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4" data-label="Reference">
-                                    <span class="text-xs font-mono text-purple-300/80"><?= htmlspecialchars($act['reference']) ?></span>
-                                </td>
-                                <td class="px-6 py-4" data-label="Details">
-                                    <span class="text-xs text-gray-300 font-medium whitespace-normal break-words inline-block max-w-xs"><?= htmlspecialchars($act['details'] ?: 'Transaction recorded') ?></span>
-                                </td>
-                                <td class="px-6 py-4 text-right" data-label="Qty">
-                                    <span class="text-xs font-black text-white"><?= number_format($act['quantity']) ?></span>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
+                    <?php endforeach; ?>
                 </tbody>
             </table>
         </div>
@@ -272,7 +259,13 @@ $(document).ready(function() {
         language: {
             search: "_INPUT_",
             searchPlaceholder: "Search activities...",
-            lengthMenu: "Show _MENU_ entries"
+            lengthMenu: "Show _MENU_ entries",
+            emptyTable: `<div class="flex flex-col items-center py-10">
+                            <div class="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center mb-4 border border-white/5">
+                                <i class="fas fa-history text-gray-600 text-xl"></i>
+                            </div>
+                            <p class="text-gray-500 font-bold uppercase tracking-widest text-xs">No activity found in the last 7 days</p>
+                        </div>`
         },
         initComplete: function() {
             $('#recent-activity-table').removeClass('hidden').hide().fadeIn(300);
