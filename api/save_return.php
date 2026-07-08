@@ -55,7 +55,7 @@ foreach ($entries as $data) {
     $v_reason = ($reason !== '') ? $reason : null;
     $created_at = $req_date . ' ' . date('H:i:s');
 
-    $stmt->bind_param("sssidissidis", 
+    $stmt->bind_param("sssidsissids", 
         $username, 
         $store_code, 
         $v_item, 

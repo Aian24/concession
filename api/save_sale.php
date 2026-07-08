@@ -48,7 +48,7 @@ foreach ($entries as $entry) {
     }
 
     $created_at = $req_date . ' ' . date('H:i:s');
-    $stmt->bind_param("sssddidds", $username, $store_code, $item_no, $base_price, $discount, $amount_sold, $quantity, $line_total, $created_at);
+    $stmt->bind_param("sssdddids", $username, $store_code, $item_no, $base_price, $discount, $amount_sold, $quantity, $line_total, $created_at);
 
     if ($stmt->execute()) {
         $saved++;
