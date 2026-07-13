@@ -747,12 +747,12 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             <h3 class="dash-card-title text-[10px] sm:text-xs font-black text-gray-500 uppercase tracking-widest sm:tracking-[0.2em]" title="Returns">Returns</h3>
         </div>
-        <p class="text-lg sm:text-xl min-[1400px]:text-lg xl:text-xl 2xl:text-2xl font-bold text-white mb-1 truncate" title="<?= number_format($total_returns_count) ?>"><?= number_format($total_returns_count) ?></p>
+        <p class="text-lg sm:text-xl min-[1400px]:text-lg xl:text-xl 2xl:text-2xl font-bold text-white mb-1 truncate" title="₱<?= number_format($total_returns, 2) ?>">₱<?= number_format($total_returns, 2) ?></p>
         <div class="w-full relative flex-1 min-h-[150px] my-2 z-10">
             <canvas id="returnsChart"></canvas>
         </div>
         <div class="flex items-center gap-2 mt-auto pt-2 relative z-10">
-            <span class="text-[10px] font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full uppercase truncate">₱<?= number_format($total_returns, 0) ?></span>
+            <span class="text-[10px] font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full uppercase truncate"><?= number_format($total_returns_count) ?> Total Returns</span>
         </div>
     </div>
 
@@ -1239,10 +1239,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         callbacks: {
                             label: function(context) {
                                 let val = context.parsed.y;
+                                let isNegative = yAxisLabel === 'Returns (₱)' && val !== 0;
+                                let sign = isNegative ? '-' : '';
                                 if (yAxisLabel.includes('₱')) {
-                                    return '₱ ' + val.toLocaleString(undefined, {minimumFractionDigits: 2});
+                                    return sign + '₱ ' + val.toLocaleString(undefined, {minimumFractionDigits: 2});
                                 }
-                                return val.toLocaleString();
+                                return sign + val.toLocaleString();
                             }
                         }
                     }
@@ -1256,8 +1258,10 @@ document.addEventListener('DOMContentLoaded', function() {
                             color: '#64748b',
                             font: { size: 8, family: 'Outfit' },
                             callback: function(value) {
-                                if (value >= 1000) return (yAxisLabel.includes('₱') ? '₱' : '') + (value/1000) + 'k';
-                                return (yAxisLabel.includes('₱') ? '₱' : '') + value;
+                                let isNegative = yAxisLabel === 'Returns (₱)' && value !== 0;
+                                let sign = isNegative ? '-' : '';
+                                if (value >= 1000) return sign + (yAxisLabel.includes('₱') ? '₱' : '') + (value/1000) + 'k';
+                                return sign + (yAxisLabel.includes('₱') ? '₱' : '') + value;
                             }
                         }
                     },
