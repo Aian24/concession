@@ -1316,7 +1316,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const chartQtyData = <?= json_encode(array_values($chart_qty_values ?? [])) ?: '[]' ?>;
 
     createMiniLineChart('totalQtyChart', chartLabels, chartQtyData, '#ec4899', 'Quantity Sold');
-    createMiniLineChart('returnsChart', chartLabels, returnsData, '#3b82f6', 'Returns (₱)');
+    createMiniLineChart('returnsChart', chartLabels, returnsData.map(v => Math.abs(v)), '#3b82f6', 'Returns (₱)');
     createMiniLineChart('receivedChart', chartLabels, receivedData, '#10b981', 'Received');
     createMiniLineChart('storesChart', chartLabels, txnData, '#f59e0b', 'Daily Transactions');
     
