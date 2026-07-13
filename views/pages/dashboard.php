@@ -229,6 +229,9 @@ $active_stores_count = count($active_stores_array);
 $chart_labels = [];
 $chart_sales_values = [];
 $chart_qty_values = [];
+$chart_returns_values = [];
+$chart_received_values = [];
+$chart_txn_values = [];
 
 $current = new DateTime($start_date);
 $end = new DateTime($end_date);
@@ -241,15 +244,19 @@ foreach ($period as $date) {
     $chart_labels[$d] = $date->format('M d');
     $chart_sales_values[$d] = 0;
     $chart_qty_values[$d] = 0;
+    $chart_returns_values[$d] = 0;
+    $chart_received_values[$d] = 0;
+    $chart_txn_values[$d] = 0;
 }
 
 if ($show_concession) {
-    $chart_res = $db->query("SELECT DATE(created_at) as d, SUM(line_total) as total, SUM(quantity) as qty FROM sales WHERE (created_at BETWEEN '$start_date 00:00:00' AND '$end_date 23:59:59') $store_clause GROUP BY DATE(created_at)");
+    $chart_res = $db->query("SELECT DATE(created_at) as d, SUM(line_total) as total, SUM(quantity) as qty, COUNT(id) as txn_count FROM sales WHERE (created_at BETWEEN '$start_date 00:00:00' AND '$end_date 23:59:59') $store_clause GROUP BY DATE(created_at)");
     if ($chart_res) {
         while($row = $chart_res->fetch_assoc()) {
             if (isset($chart_sales_values[$row['d']])) {
                 $chart_sales_values[$row['d']] += (float)$row['total'];
                 $chart_qty_values[$row['d']] += (int)$row['qty'];
+                $chart_txn_values[$row['d']] += (int)$row['txn_count'];
             }
         }
     }
@@ -258,14 +265,33 @@ if ($show_concession) {
 if ($show_boutique) {
     $check_table = $db->query("SHOW TABLES LIKE 'boutique'");
     if ($check_table && $check_table->num_rows > 0) {
-        $chart_res2 = $db->query("SELECT date as d, SUM(amount) as total, SUM(qty_sold) as qty FROM boutique WHERE (date BETWEEN '$start_date' AND '$end_date') $store_clause GROUP BY date");
+        $chart_res2 = $db->query("SELECT date as d, SUM(amount) as total, SUM(qty_sold) as qty, COUNT(id) as txn_count FROM boutique WHERE (date BETWEEN '$start_date' AND '$end_date') $store_clause GROUP BY date");
         if ($chart_res2) {
             while($row = $chart_res2->fetch_assoc()) {
                 if (isset($chart_sales_values[$row['d']])) {
                     $chart_sales_values[$row['d']] += (float)$row['total'];
                     $chart_qty_values[$row['d']] += (int)$row['qty'];
+                    $chart_txn_values[$row['d']] += (int)$row['txn_count'];
                 }
             }
+        }
+    }
+}
+
+$ret_chart_res = $db->query("SELECT DATE(created_at) as d, SUM(return_amount) as total FROM returns WHERE (created_at BETWEEN '$start_date 00:00:00' AND '$end_date 23:59:59') $store_clause GROUP BY DATE(created_at)");
+if ($ret_chart_res) {
+    while($row = $ret_chart_res->fetch_assoc()) {
+        if (isset($chart_returns_values[$row['d']])) {
+            $chart_returns_values[$row['d']] += (float)$row['total'];
+        }
+    }
+}
+
+$rec_chart_res = $db->query("SELECT DATE(created_at) as d, SUM(quantity) as total FROM receiving WHERE (created_at BETWEEN '$start_date 00:00:00' AND '$end_date 23:59:59') $store_clause GROUP BY DATE(created_at)");
+if ($rec_chart_res) {
+    while($row = $rec_chart_res->fetch_assoc()) {
+        if (isset($chart_received_values[$row['d']])) {
+            $chart_received_values[$row['d']] += (int)$row['total'];
         }
     }
 }
@@ -614,10 +640,10 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
-<div class="grid grid-cols-1 min-[400px]:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-8">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 lg:gap-6 mb-8">
     <!-- Stats Cards -->
     <?php if ($is_admin): ?>
-    <div onclick="openTopSellersModal()" class="glass-panel p-4 sm:p-5 xl:p-6 border border-white/5 relative overflow-hidden group hover:border-[#3b82f6]/30 transition-all duration-500 cursor-pointer z-50 flex flex-col h-full">
+    <div onclick="openTopSellersModal()" class="glass-panel p-4 sm:p-5 xl:p-6 border border-white/5 relative overflow-hidden group hover:border-[#3b82f6]/30 transition-all duration-500 cursor-pointer z-50 flex flex-col h-[420px]">
         <div class="absolute -right-4 -top-4 w-24 h-24 bg-[#3b82f6]/10 rounded-full blur-2xl group-hover:bg-[#3b82f6]/20 transition-all"></div>
         <div class="flex items-center justify-between gap-2 mb-3 sm:mb-4 relative z-10">
             <div class="flex items-center gap-2 sm:gap-4 min-w-0">
@@ -632,17 +658,22 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         </div>
         <p class="dash-card-value text-lg sm:text-xl min-[1400px]:text-lg xl:text-xl 2xl:text-2xl font-bold text-white mb-1 truncate" title="<?= htmlspecialchars($top_store_name) ?>"><?= htmlspecialchars($top_store_name) ?></p>
-        <div class="mt-auto">
+        
+        <div class="w-full relative flex-1 min-h-[150px] my-2 z-10">
+            <canvas id="topConcessionChart"></canvas>
+        </div>
+
+        <div class="mt-auto relative z-10">
             <?php if ($top_store_name !== 'N/A'): ?>
             <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1 mt-2">Overall Total</p>
-            <div class="flex items-center gap-1.5 flex-wrap relative z-10">
+            <div class="flex items-center gap-1.5 flex-wrap">
                 <span class="text-sm sm:text-base lg:text-lg font-bold text-white bg-white/10 px-2.5 py-0.5 rounded-full uppercase truncate">Qty: <?= number_format($top_store_qty) ?></span>
                 <span class="text-sm sm:text-base lg:text-lg font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full uppercase truncate">₱<?= number_format($top_store_amount, 2) ?></span>
             </div>
             <?php endif; ?>
         </div>
     </div>
-    <div onclick="openTopBoutiqueModal()" class="glass-panel p-4 sm:p-5 xl:p-6 border border-white/5 relative overflow-hidden group hover:border-yellow-500/30 transition-all duration-500 cursor-pointer z-50 flex flex-col h-full">
+    <div onclick="openTopBoutiqueModal()" class="glass-panel p-4 sm:p-5 xl:p-6 border border-white/5 relative overflow-hidden group hover:border-yellow-500/30 transition-all duration-500 cursor-pointer z-50 flex flex-col h-[420px]">
         <div class="absolute -right-4 -top-4 w-24 h-24 bg-yellow-500/10 rounded-full blur-2xl group-hover:bg-yellow-500/20 transition-all"></div>
         <div class="flex items-center justify-between gap-2 mb-3 sm:mb-4 relative z-10">
             <div class="flex items-center gap-2 sm:gap-4 min-w-0">
@@ -657,10 +688,15 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         </div>
         <p class="dash-card-value text-lg sm:text-xl min-[1400px]:text-lg xl:text-xl 2xl:text-2xl font-bold text-white mb-1 truncate" title="<?= htmlspecialchars($top_boutique_name) ?>"><?= htmlspecialchars($top_boutique_name) ?></p>
-        <div class="mt-auto">
+        
+        <div class="w-full relative flex-1 min-h-[150px] my-2 z-10">
+            <canvas id="topBoutiqueChart"></canvas>
+        </div>
+
+        <div class="mt-auto relative z-10">
             <?php if ($top_boutique_name !== 'N/A'): ?>
             <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1 mt-2">Overall Total</p>
-            <div class="flex items-center gap-1.5 flex-wrap relative z-10">
+            <div class="flex items-center gap-1.5 flex-wrap">
                 <span class="text-sm sm:text-base lg:text-lg font-bold text-white bg-white/10 px-2.5 py-0.5 rounded-full uppercase truncate">Qty: <?= number_format($top_boutique_qty) ?></span>
                 <span class="text-sm sm:text-base lg:text-lg font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full uppercase truncate">₱<?= number_format($top_boutique_amount, 2) ?></span>
             </div>
@@ -668,7 +704,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
     </div>
     <?php endif; ?>
-    <div class="glass-panel p-4 sm:p-5 xl:p-6 border border-white/5 relative overflow-hidden group hover:border-purple-500/30 transition-all duration-500 flex flex-col h-full">
+    <div class="glass-panel p-4 sm:p-5 xl:p-6 border border-white/5 relative overflow-hidden group hover:border-purple-500/30 transition-all duration-500 flex flex-col h-[420px]">
         <div class="absolute -right-4 -top-4 w-24 h-24 bg-purple-500/10 rounded-full blur-2xl group-hover:bg-purple-500/20 transition-all"></div>
         <div class="flex items-center gap-2 sm:gap-4 mb-3 sm:mb-4">
             <div class="dash-card-icon w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-400 border border-purple-500/20 shadow-lg shadow-purple-500/5">
@@ -677,12 +713,16 @@ document.addEventListener('DOMContentLoaded', () => {
             <h3 class="dash-card-title text-[10px] sm:text-xs font-black text-gray-500 uppercase tracking-widest sm:tracking-[0.2em]" title="Sales">Sales</h3>
         </div>
         <p class="text-lg sm:text-xl min-[1400px]:text-lg xl:text-xl 2xl:text-2xl font-bold text-white mb-1 truncate" title="₱<?= number_format($total_sales, 2) ?>">₱<?= number_format($total_sales, 2) ?></p>
-        <div class="flex items-center gap-2 mt-auto pt-2">
+        <div class="w-full relative flex-1 min-h-[150px] my-2 z-10">
+            <canvas id="monthlyActivityChart"></canvas>
+        </div>
+
+        <div class="flex items-center gap-2 mt-auto pt-2 relative z-10">
             <span class="text-[10px] font-bold text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-full uppercase truncate">Total Amount</span>
         </div>
     </div>
 
-    <div class="glass-panel p-4 sm:p-5 xl:p-6 border border-white/5 relative overflow-hidden group hover:border-pink-500/30 transition-all duration-500 flex flex-col h-full">
+    <div class="glass-panel p-4 sm:p-5 xl:p-6 border border-white/5 relative overflow-hidden group hover:border-pink-500/30 transition-all duration-500 flex flex-col h-[420px]">
         <div class="absolute -right-4 -top-4 w-24 h-24 bg-pink-500/10 rounded-full blur-2xl group-hover:bg-pink-500/20 transition-all"></div>
         <div class="flex items-center gap-2 sm:gap-4 mb-3 sm:mb-4">
             <div class="dash-card-icon w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-pink-500/10 flex items-center justify-center text-pink-400 border border-pink-500/20 shadow-lg shadow-pink-500/5">
@@ -691,12 +731,15 @@ document.addEventListener('DOMContentLoaded', () => {
             <h3 class="dash-card-title text-[10px] sm:text-xs font-black text-gray-500 uppercase tracking-widest sm:tracking-[0.2em]" title="Total Qty">Total Qty</h3>
         </div>
         <p class="text-lg sm:text-xl min-[1400px]:text-lg xl:text-xl 2xl:text-2xl font-bold text-white mb-1 truncate" title="<?= number_format($total_sales_qty) ?>"><?= number_format($total_sales_qty) ?></p>
-        <div class="flex items-center gap-2 mt-auto pt-2">
+        <div class="w-full relative flex-1 min-h-[150px] my-2 z-10">
+            <canvas id="totalQtyChart"></canvas>
+        </div>
+        <div class="flex items-center gap-2 mt-auto pt-2 relative z-10">
             <span class="text-[10px] font-bold text-pink-400 bg-pink-500/10 px-2 py-0.5 rounded-full uppercase truncate">Quantity Sold</span>
         </div>
     </div>
 
-    <div class="glass-panel p-4 sm:p-5 xl:p-6 border border-white/5 relative overflow-hidden group hover:border-blue-500/30 transition-all duration-500 flex flex-col h-full">
+    <div class="glass-panel p-4 sm:p-5 xl:p-6 border border-white/5 relative overflow-hidden group hover:border-blue-500/30 transition-all duration-500 flex flex-col h-[420px]">
         <div class="absolute -right-4 -top-4 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-all"></div>
         <div class="flex items-center gap-2 sm:gap-4 mb-3 sm:mb-4">
             <div class="dash-card-icon w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-400 border border-blue-500/20 shadow-lg shadow-blue-500/5">
@@ -705,12 +748,15 @@ document.addEventListener('DOMContentLoaded', () => {
             <h3 class="dash-card-title text-[10px] sm:text-xs font-black text-gray-500 uppercase tracking-widest sm:tracking-[0.2em]" title="Returns">Returns</h3>
         </div>
         <p class="text-lg sm:text-xl min-[1400px]:text-lg xl:text-xl 2xl:text-2xl font-bold text-white mb-1 truncate" title="<?= number_format($total_returns_count) ?>"><?= number_format($total_returns_count) ?></p>
-        <div class="flex items-center gap-2 mt-auto pt-2">
+        <div class="w-full relative flex-1 min-h-[150px] my-2 z-10">
+            <canvas id="returnsChart"></canvas>
+        </div>
+        <div class="flex items-center gap-2 mt-auto pt-2 relative z-10">
             <span class="text-[10px] font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full uppercase truncate">₱<?= number_format($total_returns, 0) ?></span>
         </div>
     </div>
 
-    <div class="glass-panel p-4 sm:p-5 xl:p-6 border border-white/5 relative overflow-hidden group hover:border-emerald-500/30 transition-all duration-500 flex flex-col h-full">
+    <div class="glass-panel p-4 sm:p-5 xl:p-6 border border-white/5 relative overflow-hidden group hover:border-emerald-500/30 transition-all duration-500 flex flex-col h-[420px]">
         <div class="absolute -right-4 -top-4 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition-all"></div>
         <div class="flex items-center gap-2 sm:gap-4 mb-3 sm:mb-4">
             <div class="dash-card-icon w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 border border-emerald-500/20 shadow-lg shadow-emerald-500/5">
@@ -719,12 +765,15 @@ document.addEventListener('DOMContentLoaded', () => {
             <h3 class="dash-card-title text-[10px] sm:text-xs font-black text-gray-500 uppercase tracking-widest sm:tracking-[0.2em]" title="Received">Received</h3>
         </div>
         <p class="text-lg sm:text-xl min-[1400px]:text-lg xl:text-xl 2xl:text-2xl font-bold text-white mb-1 truncate" title="<?= number_format($total_received_qty) ?>"><?= number_format($total_received_qty) ?></p>
-        <div class="flex items-center gap-2 mt-auto pt-2">
+        <div class="w-full relative flex-1 min-h-[150px] my-2 z-10">
+            <canvas id="receivedChart"></canvas>
+        </div>
+        <div class="flex items-center gap-2 mt-auto pt-2 relative z-10">
             <span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full uppercase truncate"><?= number_format($receiving_count) ?> Batch</span>
         </div>
     </div>
 
-    <div class="glass-panel p-4 sm:p-5 xl:p-6 border border-white/5 relative overflow-hidden group hover:border-amber-500/30 transition-all duration-500 flex flex-col h-full">
+    <div class="glass-panel p-4 sm:p-5 xl:p-6 border border-white/5 relative overflow-hidden group hover:border-amber-500/30 transition-all duration-500 flex flex-col h-[420px]">
         <div class="absolute -right-4 -top-4 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl group-hover:bg-amber-500/20 transition-all"></div>
         <div class="flex items-center gap-2 sm:gap-4 mb-3 sm:mb-4">
             <div class="dash-card-icon w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-400 border border-amber-500/20 shadow-lg shadow-amber-500/5">
@@ -733,12 +782,15 @@ document.addEventListener('DOMContentLoaded', () => {
             <h3 class="dash-card-title text-[10px] sm:text-xs font-black text-gray-500 uppercase tracking-widest sm:tracking-[0.2em]" title="Stores">Stores</h3>
         </div>
         <p class="text-lg sm:text-xl min-[1400px]:text-lg xl:text-xl 2xl:text-2xl font-bold text-white mb-1 truncate" title="<?= number_format($total_stores) ?>"><?= number_format($total_stores) ?></p>
-        <div class="flex items-center gap-2 mt-auto pt-2">
+        <div class="w-full relative flex-1 min-h-[150px] my-2 z-10">
+            <canvas id="storesChart"></canvas>
+        </div>
+        <div class="flex items-center gap-2 mt-auto pt-2 relative z-10">
             <span class="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full uppercase truncate">Total</span>
         </div>
     </div>
 
-    <div class="glass-panel p-4 sm:p-5 xl:p-6 border border-white/5 relative overflow-hidden group hover:border-orange-500/30 transition-all duration-500 flex flex-col h-full">
+    <div class="glass-panel p-4 sm:p-5 xl:p-6 border border-white/5 relative overflow-hidden group hover:border-orange-500/30 transition-all duration-500 flex flex-col h-[420px]">
         <div class="absolute -right-4 -top-4 w-24 h-24 bg-orange-500/10 rounded-full blur-2xl group-hover:bg-orange-500/20 transition-all"></div>
         <div class="flex items-center gap-2 sm:gap-4 mb-3 sm:mb-4">
             <div class="dash-card-icon w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-orange-500/10 flex items-center justify-center text-orange-400 border border-orange-500/20 shadow-lg shadow-orange-500/5">
@@ -747,36 +799,16 @@ document.addEventListener('DOMContentLoaded', () => {
             <h3 class="dash-card-title text-[10px] sm:text-xs font-black text-gray-500 uppercase tracking-widest sm:tracking-[0.2em]" title="Activity">Activity</h3>
         </div>
         <p class="text-lg sm:text-xl min-[1400px]:text-lg xl:text-xl 2xl:text-2xl font-bold text-white mb-1 truncate" title="<?= number_format($active_stores_count) ?>/<?= number_format($total_stores) ?>"><?= number_format($active_stores_count) ?><span class="text-sm text-gray-500 font-medium">/<?= number_format($total_stores) ?></span></p>
-        <div class="flex items-center gap-2 mt-auto pt-2">
+        <div class="w-full relative flex-1 min-h-[150px] my-2 z-10">
+            <canvas id="activityChart"></canvas>
+        </div>
+        <div class="flex items-center gap-2 mt-auto pt-2 relative z-10">
             <span class="text-[10px] font-bold text-orange-400 bg-orange-500/10 px-2 py-0.5 rounded-full uppercase truncate">Active vs Total</span>
         </div>
     </div>
 </div>
 
-<div class="w-full">
-    <!-- Chart Section -->
-    <div class="glass-panel p-4 sm:p-8 border border-white/5">
-        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8">
-            <div class="flex-1">
-                <h3 class="text-lg font-bold text-white tracking-wide uppercase flex items-center gap-2">
-                    <i class="fas fa-chart-line text-purple-400"></i> Performance Activity
-                </h3>
-                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">Daily sales line graph overview</p>
-            </div>
-            
-            <div class="flex items-center gap-4">
-                <div class="flex items-center gap-2 px-3 py-1 bg-purple-500/10 rounded-lg border border-purple-500/20">
-                    <div class="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></div>
-                    <span class="text-[9px] font-black uppercase text-purple-400 tracking-tighter">Live Data View</span>
-                </div>
-            </div>
-        </div>
-        
-        <div class="w-full relative h-[280px] sm:h-[400px]">
-            <canvas id="monthlyActivityChart"></canvas>
-        </div>
-    </div>
-</div>
+
 
 <?php if ($is_admin): ?>
 <!-- Top Sellers Charts Grid -->
@@ -806,29 +838,7 @@ if (!empty($top_boutique_ranking)) {
     }
 }
 ?>
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 mt-8 mb-20 pb-10">
-    <!-- Top Concession Chart -->
-    <div class="glass-panel p-6 border border-white/5 relative overflow-hidden group hover:border-[#3b82f6]/30 transition-all duration-500 animate-slide-in">
-        <div class="absolute -right-4 -top-4 w-32 h-32 bg-[#3b82f6]/10 rounded-full blur-3xl pointer-events-none group-hover:bg-[#3b82f6]/20 transition-all duration-700"></div>
-        <h3 class="text-sm font-bold text-white tracking-wide uppercase flex items-center gap-2 mb-4 relative z-10">
-            <i class="fas fa-chart-pie text-[#3b82f6] group-hover:rotate-12 transition-transform duration-300"></i> Top Concession Sales
-        </h3>
-        <div class="w-full relative h-[300px] z-10">
-            <canvas id="topConcessionChart"></canvas>
-        </div>
-    </div>
-    
-    <!-- Top Boutique Chart -->
-    <div class="glass-panel p-6 border border-white/5 relative overflow-hidden group hover:border-yellow-500/30 transition-all duration-500 animate-slide-in" style="animation-delay: 100ms;">
-        <div class="absolute -left-4 -top-4 w-32 h-32 bg-yellow-500/10 rounded-full blur-3xl pointer-events-none group-hover:bg-yellow-500/20 transition-all duration-700"></div>
-        <h3 class="text-sm font-bold text-white tracking-wide uppercase flex items-center gap-2 mb-4 relative z-10">
-            <i class="fas fa-chart-pie text-yellow-400 group-hover:rotate-12 transition-transform duration-300"></i> Top Boutique Sales
-        </h3>
-        <div class="w-full relative h-[300px] z-10">
-            <canvas id="topBoutiqueChart"></canvas>
-        </div>
-    </div>
-</div>
+
 
 <!-- Top Sellers Modal -->
 <div id="top-sellers-modal" class="fixed inset-0 z-[105] hidden">
@@ -1011,164 +1021,306 @@ window.addEventListener('popstate', function(event) {
 });
 
 document.addEventListener('DOMContentLoaded', function() {
-    const ctx = document.getElementById('monthlyActivityChart').getContext('2d');
-    
-    // Gradient Background
-    const gradient = ctx.createLinearGradient(0, 0, 0, 350);
-    gradient.addColorStop(0, 'rgba(168, 85, 247, 0.4)');
-    gradient.addColorStop(1, 'rgba(168, 85, 247, 0.0)');
 
-    const labels = <?= json_encode(array_values($chart_labels)) ?>;
-    const salesData = <?= json_encode(array_values($chart_sales_values)) ?>;
-    const qtyData = <?= json_encode(array_values($chart_qty_values)) ?>;
 
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [
-                {
-                    label: 'Daily Sales (₱)',
-                    data: salesData,
-                    borderColor: '#a855f7',
-                    borderWidth: 4,
-                    backgroundColor: gradient,
-                    fill: true,
-                    tension: 0.45,
-                    yAxisID: 'y',
-                    pointBackgroundColor: '#fff',
-                    pointBorderColor: '#a855f7',
-                    pointBorderWidth: 2,
-                    pointRadius: (labels.length > 31) ? 0 : 3,
-                    pointHoverRadius: 6,
-                    pointHoverBackgroundColor: '#a855f7',
-                    pointHoverBorderColor: '#fff',
-                    pointHoverBorderWidth: 2
-                },
-                {
-                    label: 'Daily Quantity',
-                    data: qtyData,
-                    borderColor: '#ec4899',
-                    borderWidth: 3,
-                    borderDash: [5, 5],
-                    borderDashOffset: 0,
-                    backgroundColor: 'transparent',
-                    fill: false,
-                    tension: 0.45,
-                    yAxisID: 'y1',
-                    pointBackgroundColor: '#fff',
-                    pointBorderColor: '#ec4899',
-                    pointBorderWidth: 2,
-                    pointRadius: (labels.length > 31) ? 0 : 3,
-                    pointHoverRadius: 6,
-                    pointHoverBackgroundColor: '#ec4899',
-                    pointHoverBorderColor: '#fff',
-                    pointHoverBorderWidth: 2
-                }
-            ]
-        },
-        options: {
-            animations: {
-                borderDashOffset: {
-                    animation: true,
-                    duration: 2000,
-                    easing: 'linear',
-                    from: 20,
-                    to: 0,
-                    loop: true
-                }
-            },
-            animation: {
-                delay: (context) => {
-                    let delay = 0;
-                    if (context.type === 'data' && context.mode === 'default' && !context.dropped) {
-                        delay = context.dataIndex * 40;
-                        context.dropped = true;
+    const ctx = document.getElementById('monthlyActivityChart');
+    if (ctx) {
+        const ctx2d = ctx.getContext('2d');
+        // Gradient Background
+        const gradient = ctx2d.createLinearGradient(0, 0, 0, 350);
+        gradient.addColorStop(0, 'rgba(168, 85, 247, 0.4)');
+        gradient.addColorStop(1, 'rgba(168, 85, 247, 0.0)');
+
+        const labels = <?= json_encode(array_values($chart_labels ?? [])) ?>;
+        const salesData = <?= json_encode(array_values($chart_sales_values ?? [])) ?>;
+        const qtyData = <?= json_encode(array_values($chart_qty_values ?? [])) ?>;
+
+        new Chart(ctx2d, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Daily Sales (₱)',
+                        data: salesData,
+                        borderColor: '#a855f7',
+                        borderWidth: 4,
+                        backgroundColor: gradient,
+                        fill: true,
+                        tension: 0.45,
+                        yAxisID: 'y',
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#a855f7',
+                        pointBorderWidth: 2,
+                        pointRadius: (labels.length > 31) ? 0 : 3,
+                        pointHoverRadius: 6,
+                        pointHoverBackgroundColor: '#a855f7',
+                        pointHoverBorderColor: '#fff',
+                        pointHoverBorderWidth: 2
+                    },
+                    {
+                        label: 'Daily Quantity',
+                        data: qtyData,
+                        borderColor: '#ec4899',
+                        borderWidth: 3,
+                        borderDash: [5, 5],
+                        borderDashOffset: 0,
+                        backgroundColor: 'transparent',
+                        fill: false,
+                        tension: 0.45,
+                        yAxisID: 'y1',
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#ec4899',
+                        pointBorderWidth: 2,
+                        pointRadius: (labels.length > 31) ? 0 : 3,
+                        pointHoverRadius: 6,
+                        pointHoverBackgroundColor: '#ec4899',
+                        pointHoverBorderColor: '#fff',
+                        pointHoverBorderWidth: 2
                     }
-                    return delay;
-                },
-                duration: 1500,
-                easing: 'easeOutQuart'
+                ]
             },
-            responsive: true,
-            maintainAspectRatio: false,
-            interaction: {
-                intersect: false,
-                mode: 'index'
-            },
-            plugins: {
-                legend: { 
-                    display: true,
-                    labels: {
-                        color: '#64748b',
-                        font: { size: 10, family: 'Outfit', weight: 'bold' },
-                        usePointStyle: true,
-                        padding: 20
+            options: {
+                animations: {
+                    borderDashOffset: {
+                        animation: true,
+                        duration: 2000,
+                        easing: 'linear',
+                        from: 20,
+                        to: 0,
+                        loop: true
                     }
                 },
-                tooltip: {
-                    backgroundColor: '#0f172a',
-                    titleFont: { size: 10, family: 'Outfit', weight: 'bold' },
-                    bodyFont: { size: 12, family: 'Outfit', weight: 'bold' },
-                    padding: 12,
-                    cornerRadius: 12,
-                    displayColors: true,
-                    callbacks: {
-                        label: function(context) {
-                            let label = context.dataset.label || '';
-                            if (label) {
-                                label += ': ';
+                animation: {
+                    delay: (context) => {
+                        let delay = 0;
+                        if (context.type === 'data' && context.mode === 'default' && !context.dropped) {
+                            delay = context.dataIndex * 40;
+                            context.dropped = true;
+                        }
+                        return delay;
+                    },
+                    duration: 1500,
+                    easing: 'easeOutQuart'
+                },
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                plugins: {
+                    legend: { 
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: '#0f172a',
+                        titleFont: { size: 10, family: 'Outfit', weight: 'bold' },
+                        bodyFont: { size: 12, family: 'Outfit', weight: 'bold' },
+                        padding: 12,
+                        cornerRadius: 12,
+                        displayColors: true,
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.datasetIndex === 0) {
+                                    label += '₱ ' + context.parsed.y.toLocaleString(undefined, {minimumFractionDigits: 2});
+                                } else {
+                                    label += context.parsed.y.toLocaleString();
+                                }
+                                return label;
                             }
-                            if (context.datasetIndex === 0) {
-                                label += '₱ ' + context.parsed.y.toLocaleString(undefined, {minimumFractionDigits: 2});
-                            } else {
-                                label += context.parsed.y.toLocaleString();
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        position: 'left',
+                        grid: { color: 'rgba(255, 255, 255, 0.03)', drawBorder: false },
+                        ticks: {
+                            color: '#64748b',
+                            font: { size: 9, family: 'Outfit' },
+                            callback: function(value) {
+                                if (value >= 1000) return '₱' + (value/1000) + 'k';
+                                return '₱' + value;
                             }
-                            return label;
                         }
-                    }
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    position: 'left',
-                    grid: { color: 'rgba(255, 255, 255, 0.03)', drawBorder: false },
-                    ticks: {
-                        color: '#64748b',
-                        font: { size: 10, family: 'Outfit' },
-                        callback: function(value) {
-                            if (value >= 1000) return '₱' + (value/1000) + 'k';
-                            return '₱' + value;
+                    },
+                    y1: {
+                        beginAtZero: true,
+                        position: 'right',
+                        grid: { display: false },
+                        ticks: {
+                            color: '#ec4899',
+                            font: { size: 9, family: 'Outfit' },
+                            callback: function(value) {
+                                return value;
+                            }
                         }
-                    }
-                },
-                y1: {
-                    beginAtZero: true,
-                    position: 'right',
-                    grid: { display: false },
-                    ticks: {
-                        color: '#ec4899',
-                        font: { size: 10, family: 'Outfit' },
-                        callback: function(value) {
-                            return value + ' qty';
+                    },
+                    x: {
+                        grid: { display: false, drawBorder: false },
+                        ticks: {
+                            color: '#64748b',
+                            font: { size: 8, family: 'Outfit', weight: 'bold' },
+                            maxRotation: 45,
+                            minRotation: 45,
+                            autoSkip: true,
+                            maxTicksLimit: 8
                         }
-                    }
-                },
-                x: {
-                    grid: { display: false, drawBorder: false },
-                    ticks: {
-                        color: '#64748b',
-                        font: { size: 9, family: 'Outfit', weight: 'bold' },
-                        maxRotation: 45,
-                        minRotation: 45,
-                        autoSkip: true,
-                        maxTicksLimit: 15
                     }
                 }
             }
-        }
-    });
+        });
+    }
+
+    // New Data Arrays from PHP
+    const returnsData = <?= json_encode(array_values($chart_returns_values ?? [])) ?: '[]' ?>;
+    const receivedData = <?= json_encode(array_values($chart_received_values ?? [])) ?: '[]' ?>;
+    const txnData = <?= json_encode(array_values($chart_txn_values ?? [])) ?: '[]' ?>;
+    const activeStoresCount = <?= (int)$active_stores_count ?>;
+    const totalStoresCount = <?= (int)$total_stores ?>;
+
+    // Reusable function for Mini Line Charts
+    function createMiniLineChart(canvasId, labels, data, colorHex, yAxisLabel) {
+        const ctx = document.getElementById(canvasId);
+        if (!ctx) return;
+        const ctx2d = ctx.getContext('2d');
+        
+        const hex2rgb = (hex) => {
+            let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '168, 85, 247';
+        };
+        const rgb = hex2rgb(colorHex);
+        
+        const gradient = ctx2d.createLinearGradient(0, 0, 0, 150);
+        gradient.addColorStop(0, `rgba(${rgb}, 0.4)`);
+        gradient.addColorStop(1, `rgba(${rgb}, 0.0)`);
+
+        new Chart(ctx2d, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: yAxisLabel,
+                    data: data,
+                    borderColor: colorHex,
+                    borderWidth: 3,
+                    backgroundColor: gradient,
+                    fill: true,
+                    tension: 0.45,
+                    pointBackgroundColor: '#fff',
+                    pointBorderColor: colorHex,
+                    pointBorderWidth: 2,
+                    pointRadius: (labels.length > 31) ? 0 : 2,
+                    pointHoverRadius: 5,
+                    pointHoverBackgroundColor: colorHex,
+                    pointHoverBorderColor: '#fff',
+                    pointHoverBorderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { intersect: false, mode: 'index' },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#0f172a',
+                        titleFont: { size: 9, family: 'Outfit', weight: 'bold' },
+                        bodyFont: { size: 11, family: 'Outfit', weight: 'bold' },
+                        padding: 8,
+                        cornerRadius: 8,
+                        displayColors: false,
+                        callbacks: {
+                            label: function(context) {
+                                let val = context.parsed.y;
+                                if (yAxisLabel.includes('₱')) {
+                                    return '₱ ' + val.toLocaleString(undefined, {minimumFractionDigits: 2});
+                                }
+                                return val.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        position: 'left',
+                        grid: { color: 'rgba(255, 255, 255, 0.03)', drawBorder: false },
+                        ticks: {
+                            color: '#64748b',
+                            font: { size: 8, family: 'Outfit' },
+                            callback: function(value) {
+                                if (value >= 1000) return (yAxisLabel.includes('₱') ? '₱' : '') + (value/1000) + 'k';
+                                return (yAxisLabel.includes('₱') ? '₱' : '') + value;
+                            }
+                        }
+                    },
+                    x: {
+                        grid: { display: false, drawBorder: false },
+                        ticks: {
+                            color: '#64748b',
+                            font: { size: 8, family: 'Outfit', weight: 'bold' },
+                            maxRotation: 45,
+                            minRotation: 45,
+                            autoSkip: true,
+                            maxTicksLimit: 6
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Reusable function for Mini Doughnut Charts
+    function createMiniDoughnutChart(canvasId, labels, data, colors) {
+        const ctx = document.getElementById(canvasId);
+        if (!ctx) return;
+        new Chart(ctx.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: colors,
+                    borderWidth: 0,
+                    hoverBorderWidth: 2,
+                    hoverBorderColor: '#ffffff',
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '75%',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#0f172a',
+                        bodyFont: { size: 11, family: 'Outfit', weight: 'bold' },
+                        padding: 8,
+                        cornerRadius: 8,
+                        displayColors: true
+                    }
+                }
+            }
+        });
+    }
+
+    const chartLabels = <?= json_encode(array_values($chart_labels ?? [])) ?: '[]' ?>;
+    const chartQtyData = <?= json_encode(array_values($chart_qty_values ?? [])) ?: '[]' ?>;
+
+    createMiniLineChart('totalQtyChart', chartLabels, chartQtyData, '#ec4899', 'Quantity Sold');
+    createMiniLineChart('returnsChart', chartLabels, returnsData, '#3b82f6', 'Returns (₱)');
+    createMiniLineChart('receivedChart', chartLabels, receivedData, '#10b981', 'Received');
+    createMiniLineChart('storesChart', chartLabels, txnData, '#f59e0b', 'Daily Transactions');
+    
+    createMiniDoughnutChart('activityChart', ['Active', 'Inactive'], [activeStoresCount, Math.max(0, totalStoresCount - activeStoresCount)], ['#f97316', 'rgba(255,255,255,0.1)']);
 
     window.openTopBoutiqueModal = function() {
         const m = document.getElementById('top-boutique-modal');
