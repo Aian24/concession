@@ -109,6 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
             foreach ($filters as $f) {
                 unset($_SESSION[$f]);
             }
+            $_SESSION['last_page'] = ''; // Reset last page tracking after login
             
             // Redirect to first available page based on permissions
             $perm = $_SESSION['user_permissions'];
@@ -171,6 +172,10 @@ if ($_role_row) {
 if ($is_full_admin && !in_array('user_logs', $user_permissions)) {
     $user_permissions[] = 'user_logs';
 }
+
+if ($is_full_admin && !in_array('navigation_logs', $user_permissions)) {
+    $user_permissions[] = 'navigation_logs';
+}
 // ── Guard ─────────────────────────────────────────────────────
 if (!isset($_SESSION['user'])) {
     require 'views/login.php';
@@ -203,11 +208,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $allowed_pages = [
-    'dashboard', 'monitoring', 'history', 'admin', 'stores', 'roles', 'recent_activity', 'prism_data', 'boutique_data', 'non_submission', 'user_logs',
-    'sale', 'create_sale', 
-    'return', 'create_return', 
-    'receiving', 'create_receiving', 
-    'pullout', 'create_pullout', 
+    'dashboard', 'monitoring', 'history', 'admin', 'stores', 'roles', 'recent_activity', 'prism_data', 'boutique_data', 'non_submission', 'user_logs', 'navigation_logs',
+    'sale', 'create_sale',
+    'return', 'create_return',
+    'receiving', 'create_receiving',
+    'pullout', 'create_pullout',
     'ros_supplies', 'create_ros_supplies',
     'submitted', 'server_health'
 ];
@@ -219,6 +224,18 @@ if (!$has_access) {
     if (in_array('dashboard', $user_permissions)) $action = 'dashboard';
     else if (in_array('history', $user_permissions)) $action = 'history';
     else $action = $user_permissions[0] ?? 'dashboard';
+}
+
+// Log page navigation (skip for login, logout, and AJAX requests)
+if (!isset($_GET['ajax']) && $action !== 'login' && $action !== 'logout' && isset($_SESSION['user_id'])) {
+    $page_url = $_SERVER['REQUEST_URI'] ?? '';
+    $last_page = $_SESSION['last_page'] ?? '';
+    
+    // Only log if this is a different page than the last one (skip refreshes and same-page visits)
+    if ($page_url !== $last_page) {
+        log_page_navigation($db, $_SESSION['user_id'], $_SESSION['user'], $action, $page_url);
+        $_SESSION['last_page'] = $page_url;
+    }
 }
 
 // Map virtual create_* actions to their base files

@@ -87,6 +87,24 @@ function db_connect(): mysqli {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
     }
 
+    // Ensure page_navigation_logs table exists
+    $hasNavLogsTable = $conn->query("SHOW TABLES LIKE 'page_navigation_logs'");
+    if ($hasNavLogsTable && $hasNavLogsTable->num_rows === 0) {
+        $conn->query("CREATE TABLE IF NOT EXISTS page_navigation_logs (
+            id          INT             AUTO_INCREMENT PRIMARY KEY,
+            user_id     INT             NOT NULL,
+            username    VARCHAR(100)    NOT NULL,
+            page_name   VARCHAR(100)    NOT NULL,
+            page_url    VARCHAR(255)    NOT NULL,
+            ip_address  VARCHAR(50)     NOT NULL,
+            visit_time  TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_user_id (user_id),
+            INDEX idx_username (username),
+            INDEX idx_page_name (page_name),
+            INDEX idx_visit_time (visit_time)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
+    }
+
     // Ensure role column is VARCHAR (not ENUM) to support dynamic custom roles
     $col_res = $conn->query("SHOW COLUMNS FROM users LIKE 'role'");
     if ($col_res && $col_res->num_rows > 0) {
@@ -221,4 +239,20 @@ function delete_old_logs(mysqli $db): void {
     if ($res && $res->num_rows > 0) {
         $db->query("DELETE FROM activity_log WHERE created_at < (NOW() - INTERVAL 7 DAY)");
     }
+
+    // Delete from page_navigation_logs
+    $db->query("DELETE FROM page_navigation_logs WHERE visit_time < (NOW() - INTERVAL 7 DAY)");
+}
+
+/**
+ * Log page navigation event
+ */
+function log_page_navigation(mysqli $db, int $user_id, string $username, string $page_name, string $page_url): bool {
+    $ip_address = $_SERVER['REMOTE_ADDR'] ?? 'Unknown';
+    $stmt = $db->prepare("INSERT INTO page_navigation_logs (user_id, username, page_name, page_url, ip_address) VALUES (?, ?, ?, ?, ?)");
+    if (!$stmt) return false;
+    $stmt->bind_param("issss", $user_id, $username, $page_name, $page_url, $ip_address);
+    $ok = $stmt->execute();
+    $stmt->close();
+    return $ok;
 }
