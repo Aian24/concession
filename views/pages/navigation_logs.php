@@ -14,22 +14,28 @@ require_once 'includes/db.php';
 $db = db_connect();
 
 // Fetch navigation logs grouped by user and date
-$query = "
-    SELECT 
-        username,
-        DATE(visit_time) as visit_date,
-        GROUP_CONCAT(DISTINCT page_name ORDER BY visit_time ASC SEPARATOR ', ') as pages_visited,
-        GROUP_CONCAT(DISTINCT ip_address ORDER BY visit_time ASC SEPARATOR ', ') as ip_addresses,
-        MIN(visit_time) as first_visit,
-        MAX(visit_time) as last_visit,
-        COUNT(*) as total_visits
-    FROM page_navigation_logs 
-    GROUP BY username, DATE(visit_time)
-    ORDER BY visit_date DESC, username ASC
-";
+try {
+    $query = "
+        SELECT 
+            username,
+            DATE(visit_time) as visit_date,
+            GROUP_CONCAT(DISTINCT page_name ORDER BY visit_time ASC SEPARATOR ', ') as pages_visited,
+            GROUP_CONCAT(DISTINCT ip_address ORDER BY visit_time ASC SEPARATOR ', ') as ip_addresses,
+            MIN(visit_time) as first_visit,
+            MAX(visit_time) as last_visit,
+            COUNT(*) as total_visits
+        FROM page_navigation_logs 
+        GROUP BY username, DATE(visit_time)
+        ORDER BY visit_date DESC, username ASC
+    ";
 
-$result = $db->query($query);
-$logs = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
+    $result = $db->query($query);
+    $logs = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
+} catch (Exception $e) {
+    // Handle database errors gracefully
+    $logs = [];
+    error_log('Navigation logs query error: ' . $e->getMessage());
+}
 ?>
 <style>
     @media (max-width: 768px) {

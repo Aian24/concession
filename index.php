@@ -228,13 +228,18 @@ if (!$has_access) {
 
 // Log page navigation (skip for login, logout, and AJAX requests)
 if (!isset($_GET['ajax']) && $action !== 'login' && $action !== 'logout' && isset($_SESSION['user_id'])) {
-    $page_url = $_SERVER['REQUEST_URI'] ?? '';
-    $last_page = $_SESSION['last_page'] ?? '';
-    
-    // Only log if this is a different page than the last one (skip refreshes and same-page visits)
-    if ($page_url !== $last_page) {
-        log_page_navigation($db, $_SESSION['user_id'], $_SESSION['user'], $action, $page_url);
-        $_SESSION['last_page'] = $page_url;
+    try {
+        $page_url = $_SERVER['REQUEST_URI'] ?? '';
+        $last_page = $_SESSION['last_page'] ?? '';
+        
+        // Only log if this is a different page than the last one (skip refreshes and same-page visits)
+        if ($page_url !== $last_page) {
+            log_page_navigation($db, $_SESSION['user_id'], $_SESSION['user'], $action, $page_url);
+            $_SESSION['last_page'] = $page_url;
+        }
+    } catch (Exception $e) {
+        // Silently ignore logging errors to prevent page crashes
+        error_log('Navigation logging error: ' . $e->getMessage());
     }
 }
 
