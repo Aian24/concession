@@ -405,26 +405,26 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     <div class="overflow-x-auto min-h-[300px] w-full">
         <table class="w-full text-left border-collapse glass-table" id="receiving-history-table">
             <thead>
-                <tr>
-                    <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 w-10 text-center">
+                <tr style="border-bottom: 2px solid rgba(255, 255, 255, 0.2); background-color: rgba(255, 255, 255, 0.05);">
+                    <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b-2 border-white/20 w-10 text-center">
                         <input type="checkbox" id="select-all" class="rounded border-white/10 bg-slate-900 text-cyan-500 focus:ring-cyan-500/20">
                     </th>
                     <?php if ($is_admin): ?>
-                        <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 text-center">Store</th>
+                        <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b-2 border-white/20 text-center">Store</th>
                     <?php endif; ?>
 
-                    <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 text-center">TF#</th>
-                    <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 text-center">Qty</th>
-                    <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 text-center">Source (From)</th>
-                    <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 text-center">Destination (To)</th>
-                    <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 text-center">Username</th>
-                    <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 text-center">Date Received</th>
+                    <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b-2 border-white/20 text-center">TF#</th>
+                    <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b-2 border-white/20 text-center">Qty</th>
+                    <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b-2 border-white/20 text-center">Source (From)</th>
+                    <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b-2 border-white/20 text-center">Destination (To)</th>
+                    <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b-2 border-white/20 text-center">Username</th>
+                    <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b-2 border-white/20 text-center">Date Received</th>
                     <?php if ($is_full_admin): ?>
-                        <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 text-center">Timestamp</th>
+                        <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b-2 border-white/20 text-center">Timestamp</th>
                     <?php endif; ?>
-                    <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 text-center">Status</th>
+                    <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b-2 border-white/20 text-center">Status</th>
                     <?php if ($can_edit): ?>
-                        <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5 text-center min-w-[100px]">Actions</th>
+                        <th class="px-5 py-3 text-[9px] font-black text-gray-500 uppercase tracking-widest border-b-2 border-white/20 text-center min-w-[100px]">Actions</th>
                     <?php endif; ?>
                 </tr>
             </thead>

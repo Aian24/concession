@@ -34,16 +34,16 @@
     <div class="overflow-x-auto">
         <table id="dataTable" class="w-full text-left border-collapse glass-table whitespace-nowrap">
             <thead>
-                <tr>
-                    <th class="p-4 w-12 text-center">
+                <tr style="border-bottom: 2px solid rgba(255, 255, 255, 0.2); background-color: rgba(255, 255, 255, 0.05);">
+                    <th class="p-4 w-12 text-center border-b-2 border-white/20">
                         <input type="checkbox" class="custom-checkbox" onclick="toggleAllRows(this)">
                     </th>
-                    <th class="p-4 font-semibold text-gray-400 text-sm tracking-wider uppercase">Transaction ID</th>
-                    <th class="p-4 font-semibold text-gray-400 text-sm tracking-wider uppercase">Type</th>
-                    <th class="p-4 font-semibold text-gray-400 text-sm tracking-wider uppercase">Amount</th>
-                    <th class="p-4 font-semibold text-gray-400 text-sm tracking-wider uppercase">Date</th>
-                    <th class="p-4 font-semibold text-gray-400 text-sm tracking-wider uppercase">Store Code</th>
-                    <th class="p-4 font-semibold text-gray-400 text-sm tracking-wider uppercase">Status</th>
+                    <th class="p-4 font-semibold text-gray-400 text-sm tracking-wider uppercase border-b-2 border-white/20">Transaction ID</th>
+                    <th class="p-4 font-semibold text-gray-400 text-sm tracking-wider uppercase border-b-2 border-white/20">Type</th>
+                    <th class="p-4 font-semibold text-gray-400 text-sm tracking-wider uppercase border-b-2 border-white/20">Amount</th>
+                    <th class="p-4 font-semibold text-gray-400 text-sm tracking-wider uppercase border-b-2 border-white/20">Date</th>
+                    <th class="p-4 font-semibold text-gray-400 text-sm tracking-wider uppercase border-b-2 border-white/20">Store Code</th>
+                    <th class="p-4 font-semibold text-gray-400 text-sm tracking-wider uppercase border-b-2 border-white/20">Status</th>
                 </tr>
             </thead>
             <tbody class="text-sm">

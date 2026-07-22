@@ -460,27 +460,27 @@ if ($is_single_day && ($is_admin || $is_multi_store_admin) && empty($store_filte
     <div class="overflow-x-auto min-h-[300px]">
         <table class="w-full text-left border-collapse glass-table whitespace-nowrap" id="submitted-history-table">
             <thead>
-                <tr>
-                    <th class="px-5 py-3 w-10 text-center">
+                <tr style="border-bottom: 2px solid rgba(255, 255, 255, 0.2); background-color: rgba(255, 255, 255, 0.05);">
+                    <th class="px-5 py-3 w-10 text-center border-b-2 border-white/20">
                         <input type="checkbox" id="selectAll" class="rounded border-white/20 bg-slate-900 text-green-500 focus:ring-offset-slate-900">
                     </th>
                     <?php if ($is_admin): ?>
-                        <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Store</th>
+                        <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center border-b-2 border-white/20">Store</th>
                     <?php endif; ?>
-                    <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Item #</th>
-                    <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">SRP</th>
-                    <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Disc %</th>
-                    <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Final Price</th>
-                    <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Qty</th>
-                    <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Line Total</th>
-                    <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Submitted By</th>
-                    <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Date</th>
+                    <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center border-b-2 border-white/20">Item #</th>
+                    <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center border-b-2 border-white/20">SRP</th>
+                    <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center border-b-2 border-white/20">Disc %</th>
+                    <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center border-b-2 border-white/20">Final Price</th>
+                    <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center border-b-2 border-white/20">Qty</th>
+                    <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center border-b-2 border-white/20">Line Total</th>
+                    <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center border-b-2 border-white/20">Submitted By</th>
+                    <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center border-b-2 border-white/20">Date</th>
                     <?php if ($is_full_admin): ?>
-                        <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Timestamp</th>
+                        <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center border-b-2 border-white/20">Timestamp</th>
                     <?php endif; ?>
-                    <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center">Status</th>
+                    <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center border-b-2 border-white/20">Status</th>
                     <?php if ($can_edit): ?>
-                        <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center min-w-[100px]">Actions</th>
+                        <th class="px-5 py-3 font-bold text-gray-500 text-[10px] tracking-widest uppercase text-center min-w-[100px] border-b-2 border-white/20">Actions</th>
                     <?php endif; ?>
                 </tr>
             </thead>
