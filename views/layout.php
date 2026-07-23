@@ -348,7 +348,7 @@
     <!-- Sidebar -->
     <aside id="sidebar" class="sidebar-glass w-64 h-[100dvh] lg:h-screen fixed lg:relative z-50 flex flex-col transition-transform duration-300 transform -translate-x-full lg:translate-x-0 overflow-hidden">
         <div class="p-6 flex flex-col items-center justify-center relative">
-            <img src="images/logo.png" alt="Concession Logo" class="h-16 lg:h-24 w-auto object-contain transition-all">
+            <img src="images/logo.png?v=<?= time() ?>" alt="Concession Logo" class="h-16 lg:h-24 w-auto object-contain transition-all">
             <button class="lg:hidden text-gray-400 hover:text-white transition-colors absolute right-6 top-1/2 -translate-y-1/2" onclick="toggleSidebar()">
                 <i class="fas fa-times text-xl"></i>
             </button>
