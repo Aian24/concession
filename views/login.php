@@ -71,7 +71,7 @@
 
     <div class="login-card glass-panel p-6 sm:p-8 md:p-12 w-full max-w-md relative z-10 mx-4 my-6">
         <div class="text-center mb-6 md:mb-8">
-            <img src="assets/images/concession.webp" alt="Concession Logo" class="login-logo h-24 sm:h-32 mx-auto mb-3 md:mb-4 object-contain">
+            <img src="images/logo.png" alt="Concession Logo" class="login-logo h-24 sm:h-32 mx-auto mb-3 md:mb-4 object-contain">
             <p class="login-subtitle text-gray-400 text-sm md:text-base">Sign in to your account</p>
         </div>
 
