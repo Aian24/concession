@@ -9,7 +9,7 @@ require_once 'includes/db.php';
 $settings = get_system_settings();
 ?>
 
-<div class="glass-panel border border-white/10 p-6 md:p-8 rounded-2xl max-w-4xl mx-auto shadow-2xl relative overflow-hidden">
+<div class="glass-panel border border-white/10 p-6 md:p-8 rounded-2xl w-full shadow-2xl relative overflow-hidden">
     <!-- Animated background glowing orb -->
     <div class="absolute top-[-10%] right-[-10%] w-64 h-64 bg-purple-600 rounded-full mix-blend-multiply filter blur-[80px] opacity-20 pointer-events-none"></div>
 
@@ -109,9 +109,9 @@ $settings = get_system_settings();
                                class="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-pink-500">
                     </div>
                     
-                    <div class="mt-4 p-4 border border-white/10 rounded-xl bg-slate-900 flex items-center justify-center h-40">
-                        <div class="text-center">
-                            <p class="text-[10px] text-gray-500 uppercase tracking-widest mb-3">Live Preview</p>
+                    <div class="mt-4 p-4 border border-white/10 rounded-xl bg-slate-900 flex items-center justify-center min-h-[260px]">
+                        <div class="text-center w-full flex flex-col items-center justify-center">
+                            <p class="text-[10px] text-gray-500 uppercase tracking-widest mb-4">Live Preview</p>
                             <img id="live-preview" src="<?= htmlspecialchars($settings['logo_path']) ?>?v=<?= time() ?>" 
                                  class="object-contain transition-all duration-200 shadow-xl" 
                                  style="height: <?= $settings['logo_size'] ?>px; border-radius: <?= $settings['logo_radius'] ?>%; background-color: rgba(255,255,255,0.05);">
