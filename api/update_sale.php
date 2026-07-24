@@ -2,8 +2,7 @@
 session_start();
 header('Content-Type: application/json');
 
-$role      = $_SESSION['role'] ?? 'user';
-$can_edit  = ($role === 'admin' || ($_SESSION['user'] ?? '') === 'admin' || $role === 'admin_view' || $role === 'multi_store_admin');
+$can_edit = ($_SESSION['can_edit'] ?? false) || (($_SESSION['role'] ?? '') === 'admin') || (($_SESSION['user'] ?? '') === 'admin');
 if (!$can_edit) {
     echo json_encode(['success' => false, 'message' => 'Unauthorized.']);
     exit;

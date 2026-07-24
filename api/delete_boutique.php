@@ -2,8 +2,8 @@
 session_start();
 header('Content-Type: application/json');
 
-$is_full_admin = (($_SESSION['role'] ?? 'user') === 'admin' || ($_SESSION['user'] ?? '') === 'admin');
-if (!$is_full_admin) {
+$can_delete = ($_SESSION['can_delete'] ?? false) || (($_SESSION['role'] ?? '') === 'admin') || (($_SESSION['user'] ?? '') === 'admin');
+if (!$can_delete) {
     echo json_encode(['success' => false, 'message' => 'Unauthorized']);
     exit;
 }
