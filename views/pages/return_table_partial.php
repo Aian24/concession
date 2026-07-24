@@ -433,7 +433,7 @@ if (!isset($can_delete)) {
                         <?php if ($is_full_admin): ?>
                         <td class="px-2 py-3 text-center" data-label="Timestamp">
                             <?php if ($r['system_timestamp']): ?>
-                                <span class="text-gray-400 text-[11px] font-medium whitespace-nowrap"><?= date('M d, Y h:i A', strtotime($r['system_timestamp'])) ?></span>
+                                <span class="text-gray-400 text-[11px] font-medium whitespace-nowrap"><?= format_datetime($r['system_timestamp']) ?></span>
                             <?php else: ?>
                                 <span class="text-gray-500/50 text-[10px] uppercase font-bold tracking-widest italic">N/A</span>
                             <?php endif; ?>

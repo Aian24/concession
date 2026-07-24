@@ -1,3 +1,4 @@
+<?php $system_settings = get_system_settings(); ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,13 +8,13 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
-    <title>Login - Concession System</title>
+    <title>Login - <?= htmlspecialchars($system_settings['company_name']) ?></title>
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="images/icon-192.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/app.css">
-    <link rel="icon" type="image/webp" href="assets/images/concessiontab.webp">
+    <link rel="icon" type="image/webp" href="<?= htmlspecialchars($system_settings['favicon_path']) ?>?v=<?= strtotime($system_settings['updated_at']) ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @keyframes spinReverse {
@@ -71,7 +72,7 @@
 
     <div class="login-card glass-panel p-6 sm:p-8 md:p-12 w-full max-w-md relative z-10 mx-4 my-6">
         <div class="text-center mb-6 md:mb-8">
-            <img src="images/logo.png?v=<?= time() ?>" alt="Concession Logo" class="login-logo h-24 sm:h-32 mx-auto mb-3 md:mb-4 object-contain">
+            <img src="<?= htmlspecialchars($system_settings['logo_path']) ?>?v=<?= strtotime($system_settings['updated_at']) ?>" alt="Logo" class="login-logo mx-auto mb-3 md:mb-4 object-contain" style="height: <?= $system_settings['logo_size'] ?>px; border-radius: <?= $system_settings['logo_radius'] ?>%;">
             <p class="login-subtitle text-gray-400 text-sm md:text-base">Sign in to your account</p>
         </div>
 

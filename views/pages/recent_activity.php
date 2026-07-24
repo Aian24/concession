@@ -196,7 +196,7 @@ while ($row = $stores_res->fetch_assoc()) {
                             <td class="px-6 py-4" data-label="Timestamp">
                                 <div class="flex flex-col">
                                     <span class="text-white font-bold text-xs"><?= $date->format('M d, Y') ?></span>
-                                    <span class="text-[10px] text-gray-500 font-medium tracking-tighter uppercase"><?= $date->format('h:i A') ?></span>
+                                    <span class="text-[10px] text-gray-500 font-medium tracking-tighter uppercase"><?= $system_settings['time_format'] === '24h' ? $date->format('H:i') : $date->format('h:i A') ?></span>
                                 </div>
                             </td>
                             <td class="px-6 py-4" data-label="User">

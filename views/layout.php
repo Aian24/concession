@@ -1,3 +1,4 @@
+<?php $system_settings = get_system_settings(); ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,13 +8,13 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
-    <title>Dashboard - Concession System</title>
+    <title>Dashboard - <?= htmlspecialchars($system_settings['company_name']) ?></title>
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="images/icon-192.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&family=Poppins:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/app.css?v=<?= filemtime(__DIR__ . '/../assets/css/app.css') ?>">
-    <link rel="icon" type="image/webp" href="assets/images/concessiontab.webp">
+    <link rel="icon" type="image/webp" href="<?= htmlspecialchars($system_settings['favicon_path']) ?>?v=<?= strtotime($system_settings['updated_at']) ?>">
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- SheetJS for Excel export -->
@@ -348,7 +349,7 @@
     <!-- Sidebar -->
     <aside id="sidebar" class="sidebar-glass w-64 h-[100dvh] lg:h-screen fixed lg:relative z-50 flex flex-col transition-transform duration-300 transform -translate-x-full lg:translate-x-0 overflow-hidden">
         <div class="p-6 flex flex-col items-center justify-center relative">
-            <img src="images/logo.png?v=<?= time() ?>" alt="Concession Logo" class="h-16 lg:h-24 w-auto object-contain transition-all">
+            <img src="<?= htmlspecialchars($system_settings['logo_path']) ?>?v=<?= strtotime($system_settings['updated_at']) ?>" alt="Logo" class="w-auto object-contain transition-all" style="height: <?= $system_settings['logo_size'] ?>px; border-radius: <?= $system_settings['logo_radius'] ?>%;">
             <button class="lg:hidden text-gray-400 hover:text-white transition-colors absolute right-6 top-1/2 -translate-y-1/2" onclick="toggleSidebar()">
                 <i class="fas fa-times text-xl"></i>
             </button>
@@ -419,6 +420,7 @@
                 'user_logs'          => ['icon' => 'fa-users-viewfinder', 'title' => 'User Logs'],
                 'navigation_logs'    => ['icon' => 'fa-route', 'title' => 'User Navigation'],
                 'server_health'      => ['icon' => 'fa-server', 'title' => 'Server Health'],
+                'system_settings'    => ['icon' => 'fa-cogs', 'title' => 'System Settings'],
             ];
 
             $nav_items = [];
@@ -475,6 +477,7 @@
                     'stores'     => 'Manage store codes and store names',
                     'non_submission' => 'Track stores with missing sales submissions',
                     'server_health'  => 'Monitor server performance and processes',
+                    'system_settings'=> 'Configure global application preferences',
                 ];
                 $current_title = $nav_items[$action]['title'] ?? str_replace('_', ' ', $action);
                 $current_sub   = $module_subs[$action] ?? '';

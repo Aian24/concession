@@ -115,6 +115,23 @@ function db_connect(): mysqli {
         }
     }
 
+    // Ensure system_settings table exists
+    $hasSettingsTable = $conn->query("SHOW TABLES LIKE 'system_settings'");
+    if ($hasSettingsTable && $hasSettingsTable->num_rows === 0) {
+        $conn->query("CREATE TABLE IF NOT EXISTS system_settings (
+            id              INT             AUTO_INCREMENT PRIMARY KEY,
+            company_name    VARCHAR(100)    NOT NULL DEFAULT 'Concession System',
+            time_format     VARCHAR(10)     NOT NULL DEFAULT '12h',
+            logo_path       VARCHAR(255)    NOT NULL DEFAULT 'images/logo.png',
+            favicon_path    VARCHAR(255)    NOT NULL DEFAULT 'assets/images/concessiontab.webp',
+            logo_radius     INT             NOT NULL DEFAULT 0,
+            logo_size       INT             NOT NULL DEFAULT 96,
+            updated_at      TIMESTAMP       DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
+        
+        $conn->query("INSERT INTO system_settings (company_name) VALUES ('Concession System')");
+    }
+
     return $conn;
 }
 
@@ -255,4 +272,65 @@ function log_page_navigation(mysqli $db, int $user_id, string $username, string 
     $ok = $stmt->execute();
     $stmt->close();
     return $ok;
+}
+
+/**
+ * Retrieve system settings from the database
+ */
+function get_system_settings(mysqli $db = null): array {
+    if ($db === null) {
+        $db = db_connect();
+    }
+    
+    $result = $db->query("SELECT * FROM system_settings ORDER BY id ASC LIMIT 1");
+    if ($result && $result->num_rows > 0) {
+        return $result->fetch_assoc();
+    }
+    
+    // Default fallback if query fails
+    return [
+        'company_name' => 'Concession System',
+        'time_format' => '12h',
+        'logo_path' => 'images/logo.png',
+        'favicon_path' => 'assets/images/concessiontab.webp',
+        'logo_radius' => 0,
+        'logo_size' => 96,
+        'updated_at' => date('Y-m-d H:i:s')
+    ];
+}
+
+/**
+ * Format a datetime string/timestamp based on system settings
+ */
+function format_datetime($timestamp_string, $db = null): string {
+    static $settings = null;
+    if ($settings === null) {
+        $settings = get_system_settings($db);
+    }
+    
+    $ts = is_numeric($timestamp_string) ? (int)$timestamp_string : strtotime($timestamp_string);
+    
+    if ($settings['time_format'] === '24h') {
+        return date('M d, Y H:i', $ts);
+    } else {
+        return date('M d, Y h:i A', $ts);
+    }
+}
+
+/**
+ * Format a time-only string/timestamp based on system settings
+ */
+function format_time_only($timestamp_string, $db = null): string {
+    static $settings = null;
+    if ($settings === null) {
+        $settings = get_system_settings($db);
+    }
+    
+    $ts = is_numeric($timestamp_string) ? (int)$timestamp_string : strtotime($timestamp_string);
+    
+    if ($settings['time_format'] === '24h') {
+        return date('H:i', $ts);
+    } else {
+        return date('h:i A', $ts);
+    }
 }

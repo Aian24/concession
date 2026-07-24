@@ -156,8 +156,8 @@ try {
                             </td>
                             <td class="px-6 py-4" data-label="Time Range">
                                 <div class="flex flex-col">
-                                    <span class="text-[10px] text-gray-400"><?= $first_visit->format('h:i A') ?></span>
-                                    <span class="text-[10px] text-gray-500">to <?= $last_visit->format('h:i A') ?></span>
+                                    <span class="text-[10px] text-gray-400"><?= $system_settings['time_format'] === '24h' ? $first_visit->format('H:i') : $first_visit->format('h:i A') ?></span>
+                                    <span class="text-[10px] text-gray-500">to <?= $system_settings['time_format'] === '24h' ? $last_visit->format('H:i') : $last_visit->format('h:i A') ?></span>
                                 </div>
                             </td>
                         </tr>
