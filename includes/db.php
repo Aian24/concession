@@ -139,7 +139,7 @@ function db_connect(): mysqli {
         
         $conn->query("INSERT INTO system_settings (company_name, promo_enabled, promo_name, promo_min_spend, promo_item_name, promo_item_no, promo_style_code, promo_start_date) VALUES ('Concession System', 1, 'RL Shoe Bag Promo', 1999.00, 'RL Shoe Bag', '475552', 'RACT95002T26', '2026-10-01')");
     } else {
-        // Ensure promo columns exist in system_settings
+        // Ensure all logo and promo columns exist in system_settings
         $setting_cols = [];
         $sc_res = $conn->query("DESCRIBE system_settings");
         if ($sc_res) {
@@ -147,30 +147,60 @@ function db_connect(): mysqli {
                 $setting_cols[] = strtolower($sc_row['Field']);
             }
         }
+        if (!in_array('logo_radius', $setting_cols)) {
+            @$conn->query("ALTER TABLE system_settings ADD COLUMN logo_radius INT NOT NULL DEFAULT 0");
+        }
+        if (!in_array('logo_size', $setting_cols)) {
+            @$conn->query("ALTER TABLE system_settings ADD COLUMN logo_size INT NOT NULL DEFAULT 96");
+        }
         if (!in_array('promo_enabled', $setting_cols)) {
-            $conn->query("ALTER TABLE system_settings ADD COLUMN promo_enabled TINYINT(1) NOT NULL DEFAULT 1 AFTER logo_size");
+            @$conn->query("ALTER TABLE system_settings ADD COLUMN promo_enabled TINYINT(1) NOT NULL DEFAULT 1");
         }
         if (!in_array('promo_name', $setting_cols)) {
-            $conn->query("ALTER TABLE system_settings ADD COLUMN promo_name VARCHAR(150) NOT NULL DEFAULT 'RL Shoe Bag Promo' AFTER promo_enabled");
+            @$conn->query("ALTER TABLE system_settings ADD COLUMN promo_name VARCHAR(150) NOT NULL DEFAULT 'RL Shoe Bag Promo'");
         }
         if (!in_array('promo_min_spend', $setting_cols)) {
-            $conn->query("ALTER TABLE system_settings ADD COLUMN promo_min_spend DECIMAL(10,2) NOT NULL DEFAULT 1999.00 AFTER promo_name");
+            @$conn->query("ALTER TABLE system_settings ADD COLUMN promo_min_spend DECIMAL(10,2) NOT NULL DEFAULT 1999.00");
         }
         if (!in_array('promo_item_name', $setting_cols)) {
-            $conn->query("ALTER TABLE system_settings ADD COLUMN promo_item_name VARCHAR(150) NOT NULL DEFAULT 'RL Shoe Bag' AFTER promo_min_spend");
+            @$conn->query("ALTER TABLE system_settings ADD COLUMN promo_item_name VARCHAR(150) NOT NULL DEFAULT 'RL Shoe Bag'");
         }
         if (!in_array('promo_item_no', $setting_cols)) {
-            $conn->query("ALTER TABLE system_settings ADD COLUMN promo_item_no VARCHAR(50) NOT NULL DEFAULT '475552' AFTER promo_item_name");
+            @$conn->query("ALTER TABLE system_settings ADD COLUMN promo_item_no VARCHAR(50) NOT NULL DEFAULT '475552'");
         }
         if (!in_array('promo_style_code', $setting_cols)) {
-            $conn->query("ALTER TABLE system_settings ADD COLUMN promo_style_code VARCHAR(100) NOT NULL DEFAULT 'RACT95002T26' AFTER promo_item_no");
+            @$conn->query("ALTER TABLE system_settings ADD COLUMN promo_style_code VARCHAR(100) NOT NULL DEFAULT 'RACT95002T26'");
         }
         if (!in_array('promo_start_date', $setting_cols)) {
-            $conn->query("ALTER TABLE system_settings ADD COLUMN promo_start_date DATE NULL DEFAULT '2026-10-01' AFTER promo_style_code");
+            @$conn->query("ALTER TABLE system_settings ADD COLUMN promo_start_date DATE NULL DEFAULT '2026-10-01'");
         }
         if (!in_array('promo_end_date', $setting_cols)) {
-            $conn->query("ALTER TABLE system_settings ADD COLUMN promo_end_date DATE NULL DEFAULT NULL AFTER promo_start_date");
+            @$conn->query("ALTER TABLE system_settings ADD COLUMN promo_end_date DATE NULL DEFAULT NULL");
         }
+
+        // Ensure at least one row exists
+        $cnt_res = $conn->query("SELECT COUNT(*) as cnt FROM system_settings");
+        if ($cnt_res) {
+            $cnt_row = $cnt_res->fetch_assoc();
+            if (($cnt_row['cnt'] ?? 0) == 0) {
+                @$conn->query("INSERT INTO system_settings (company_name, promo_enabled, promo_name, promo_min_spend, promo_item_name, promo_item_no, promo_style_code, promo_start_date) VALUES ('Concession System', 1, 'RL Shoe Bag Promo', 1999.00, 'RL Shoe Bag', '475552', 'RACT95002T26', '2026-10-01')");
+            }
+        }
+    }
+
+    // Ensure sales table has base_price and discount columns
+    $sales_cols = [];
+    $sales_res = $conn->query("DESCRIBE sales");
+    if ($sales_res) {
+        while ($sr = $sales_res->fetch_assoc()) {
+            $sales_cols[] = strtolower($sr['Field']);
+        }
+    }
+    if (!in_array('base_price', $sales_cols)) {
+        @$conn->query("ALTER TABLE sales ADD COLUMN base_price DECIMAL(10,2) NOT NULL DEFAULT 0.00");
+    }
+    if (!in_array('discount', $sales_cols)) {
+        @$conn->query("ALTER TABLE sales ADD COLUMN discount DECIMAL(5,2) NOT NULL DEFAULT 0.00");
     }
 
     return $conn;

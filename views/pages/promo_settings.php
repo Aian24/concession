@@ -343,13 +343,13 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (result.success) {
                 if (typeof showStatusModal === 'function') {
-                    showStatusModal('Success', result.message, 'success');
+                    showStatusModal(true, result.message, 'Success');
                 } else {
                     alert(result.message);
                 }
             } else {
                 if (typeof showStatusModal === 'function') {
-                    showStatusModal('Error', result.message, 'error');
+                    showStatusModal(false, result.message, 'Error');
                 } else {
                     alert(result.message);
                 }
@@ -358,7 +358,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (typeof hideGlobalLoader === 'function') hideGlobalLoader();
             console.error('Error saving promo settings:', error);
             if (typeof showStatusModal === 'function') {
-                showStatusModal('Error', 'A network error occurred while saving promo settings.', 'error');
+                showStatusModal(false, 'A network error occurred while saving promo settings.', 'Error');
             } else {
                 alert('A network error occurred.');
             }

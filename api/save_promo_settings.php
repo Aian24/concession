@@ -1,52 +1,78 @@
 <?php
 session_start();
-require '../includes/db.php';
-
 header('Content-Type: application/json');
 
-if (!isset($_SESSION['user']) || (($_SESSION['role'] ?? '') !== 'admin' && empty($_SESSION['is_admin']))) {
-    echo json_encode(['success' => false, 'message' => 'Unauthorized. Admin privileges required.']);
-    exit;
-}
+try {
+    require_once __DIR__ . '/../includes/db.php';
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['success' => false, 'message' => 'Invalid request method.']);
-    exit;
-}
+    $is_admin = (($_SESSION['role'] ?? '') === 'admin' || ($_SESSION['user'] ?? '') === 'admin' || !empty($_SESSION['is_admin']));
+    if (!isset($_SESSION['user']) || !$is_admin) {
+        echo json_encode(['success' => false, 'message' => 'Unauthorized. Admin privileges required.']);
+        exit;
+    }
 
-$db = db_connect();
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        echo json_encode(['success' => false, 'message' => 'Invalid request method.']);
+        exit;
+    }
 
-$promo_enabled   = isset($_POST['promo_enabled']) ? 1 : 0;
-$promo_name      = trim($_POST['promo_name'] ?? 'RL Shoe Bag Promo');
-$promo_min_spend = floatval($_POST['promo_min_spend'] ?? 1999.00);
-$promo_item_name = trim($_POST['promo_item_name'] ?? 'RL Shoe Bag');
-$promo_item_no   = trim($_POST['promo_item_no'] ?? '475552');
-$promo_style_code = trim($_POST['promo_style_code'] ?? 'RACT95002T26');
-$promo_start_date = !empty($_POST['promo_start_date']) ? "'" . $db->real_escape_string($_POST['promo_start_date']) . "'" : "NULL";
-$promo_end_date   = !empty($_POST['promo_end_date'])   ? "'" . $db->real_escape_string($_POST['promo_end_date']) . "'"   : "NULL";
+    $db = db_connect();
 
-if ($promo_name === '') {
-    $promo_name = 'RL Shoe Bag Promo';
-}
-if ($promo_item_name === '') {
-    $promo_item_name = 'RL Shoe Bag';
-}
+    // Check if JSON body or POST form data
+    $inputData = [];
+    if (!empty($_POST)) {
+        $inputData = $_POST;
+    } else {
+        $raw = file_get_contents('php://input');
+        if (!empty($raw)) {
+            $decoded = json_decode($raw, true);
+            if (is_array($decoded)) {
+                $inputData = $decoded;
+            }
+        }
+    }
 
-$updates = [
-    "promo_enabled = " . $promo_enabled,
-    "promo_name = '" . $db->real_escape_string($promo_name) . "'",
-    "promo_min_spend = " . $promo_min_spend,
-    "promo_item_name = '" . $db->real_escape_string($promo_item_name) . "'",
-    "promo_item_no = '" . $db->real_escape_string($promo_item_no) . "'",
-    "promo_style_code = '" . $db->real_escape_string($promo_style_code) . "'",
-    "promo_start_date = " . $promo_start_date,
-    "promo_end_date = " . $promo_end_date
-];
+    $promo_enabled   = !empty($inputData['promo_enabled']) ? 1 : 0;
+    $promo_name      = trim($inputData['promo_name'] ?? 'RL Shoe Bag Promo');
+    $promo_min_spend = floatval($inputData['promo_min_spend'] ?? 1999.00);
+    $promo_item_name = trim($inputData['promo_item_name'] ?? 'RL Shoe Bag');
+    $promo_item_no   = trim($inputData['promo_item_no'] ?? '475552');
+    $promo_style_code = trim($inputData['promo_style_code'] ?? 'RACT95002T26');
+    $promo_start_date = !empty($inputData['promo_start_date']) ? "'" . $db->real_escape_string($inputData['promo_start_date']) . "'" : "NULL";
+    $promo_end_date   = !empty($inputData['promo_end_date'])   ? "'" . $db->real_escape_string($inputData['promo_end_date']) . "'"   : "NULL";
 
-$query = "UPDATE system_settings SET " . implode(', ', $updates);
+    if ($promo_name === '') $promo_name = 'RL Shoe Bag Promo';
+    if ($promo_item_name === '') $promo_item_name = 'RL Shoe Bag';
+    if ($promo_item_no === '') $promo_item_no = '475552';
+    if ($promo_style_code === '') $promo_style_code = 'RACT95002T26';
 
-if ($db->query($query)) {
-    echo json_encode(['success' => true, 'message' => 'Promo settings saved successfully.']);
-} else {
-    echo json_encode(['success' => false, 'message' => 'Failed to save promo settings: ' . $db->error]);
+    // Ensure system_settings has a row
+    $chk = $db->query("SELECT id FROM system_settings LIMIT 1");
+    if (!$chk || $chk->num_rows === 0) {
+        $db->query("INSERT INTO system_settings (company_name, promo_enabled, promo_name, promo_min_spend, promo_item_name, promo_item_no, promo_style_code, promo_start_date) VALUES ('Concession System', $promo_enabled, '" . $db->real_escape_string($promo_name) . "', $promo_min_spend, '" . $db->real_escape_string($promo_item_name) . "', '" . $db->real_escape_string($promo_item_no) . "', '" . $db->real_escape_string($promo_style_code) . "', $promo_start_date)");
+        echo json_encode(['success' => true, 'message' => 'Promo settings saved successfully.']);
+        exit;
+    }
+
+    $updates = [
+        "promo_enabled = " . $promo_enabled,
+        "promo_name = '" . $db->real_escape_string($promo_name) . "'",
+        "promo_min_spend = " . $promo_min_spend,
+        "promo_item_name = '" . $db->real_escape_string($promo_item_name) . "'",
+        "promo_item_no = '" . $db->real_escape_string($promo_item_no) . "'",
+        "promo_style_code = '" . $db->real_escape_string($promo_style_code) . "'",
+        "promo_start_date = " . $promo_start_date,
+        "promo_end_date = " . $promo_end_date
+    ];
+
+    $query = "UPDATE system_settings SET " . implode(', ', $updates);
+
+    if ($db->query($query)) {
+        echo json_encode(['success' => true, 'message' => 'Promo settings saved successfully.']);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Failed to save promo settings: ' . $db->error]);
+    }
+} catch (Throwable $e) {
+    http_response_code(200);
+    echo json_encode(['success' => false, 'message' => 'Server error: ' . $e->getMessage()]);
 }
