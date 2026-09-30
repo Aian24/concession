@@ -349,17 +349,7 @@ function log_page_navigation(mysqli $db, int $user_id, string $username, string 
  * Retrieve system settings from the database
  */
 function get_system_settings(mysqli $db = null): array {
-    if ($db === null) {
-        $db = db_connect();
-    }
-    
-    $result = $db->query("SELECT * FROM system_settings ORDER BY id ASC LIMIT 1");
-    if ($result && $result->num_rows > 0) {
-        return $result->fetch_assoc();
-    }
-    
-    // Default fallback if query fails
-    return [
+    $defaults = [
         'company_name' => 'Concession System',
         'time_format' => '12h',
         'logo_path' => 'images/logo.png',
@@ -376,6 +366,18 @@ function get_system_settings(mysqli $db = null): array {
         'promo_end_date' => null,
         'updated_at' => date('Y-m-d H:i:s')
     ];
+
+    if ($db === null) {
+        $db = db_connect();
+    }
+    
+    $result = @$db->query("SELECT * FROM system_settings ORDER BY id ASC LIMIT 1");
+    if ($result && $result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        return array_merge($defaults, $row);
+    }
+    
+    return $defaults;
 }
 
 /**

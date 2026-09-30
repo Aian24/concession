@@ -18,6 +18,32 @@ try {
 
     $db = db_connect();
 
+    // Auto-migrate: Ensure promo columns exist in system_settings table
+    $existing_cols = [];
+    $sc_res = $db->query("SHOW COLUMNS FROM system_settings");
+    if ($sc_res) {
+        while ($r = $sc_res->fetch_assoc()) {
+            $existing_cols[] = strtolower($r['Field']);
+        }
+    }
+
+    $column_definitions = [
+        'promo_enabled'    => "ALTER TABLE system_settings ADD COLUMN promo_enabled TINYINT(1) NOT NULL DEFAULT 1",
+        'promo_name'       => "ALTER TABLE system_settings ADD COLUMN promo_name VARCHAR(150) NOT NULL DEFAULT 'RL Shoe Bag Promo'",
+        'promo_min_spend'  => "ALTER TABLE system_settings ADD COLUMN promo_min_spend DECIMAL(10,2) NOT NULL DEFAULT 1999.00",
+        'promo_item_name'  => "ALTER TABLE system_settings ADD COLUMN promo_item_name VARCHAR(150) NOT NULL DEFAULT 'RL Shoe Bag'",
+        'promo_item_no'    => "ALTER TABLE system_settings ADD COLUMN promo_item_no VARCHAR(50) NOT NULL DEFAULT '475552'",
+        'promo_style_code' => "ALTER TABLE system_settings ADD COLUMN promo_style_code VARCHAR(100) NOT NULL DEFAULT 'RACT95002T26'",
+        'promo_start_date' => "ALTER TABLE system_settings ADD COLUMN promo_start_date DATE NULL DEFAULT '2026-10-01'",
+        'promo_end_date'   => "ALTER TABLE system_settings ADD COLUMN promo_end_date DATE NULL DEFAULT NULL"
+    ];
+
+    foreach ($column_definitions as $col_name => $sql_query) {
+        if (!in_array($col_name, $existing_cols)) {
+            @$db->query($sql_query);
+        }
+    }
+
     // Check if JSON body or POST form data
     $inputData = [];
     if (!empty($_POST)) {
@@ -46,7 +72,7 @@ try {
     if ($promo_item_no === '') $promo_item_no = '475552';
     if ($promo_style_code === '') $promo_style_code = 'RACT95002T26';
 
-    // Ensure system_settings has a row
+    // Ensure system_settings has at least one row
     $chk = $db->query("SELECT id FROM system_settings LIMIT 1");
     if (!$chk || $chk->num_rows === 0) {
         $db->query("INSERT INTO system_settings (company_name, promo_enabled, promo_name, promo_min_spend, promo_item_name, promo_item_no, promo_style_code, promo_start_date) VALUES ('Concession System', $promo_enabled, '" . $db->real_escape_string($promo_name) . "', $promo_min_spend, '" . $db->real_escape_string($promo_item_name) . "', '" . $db->real_escape_string($promo_item_no) . "', '" . $db->real_escape_string($promo_style_code) . "', $promo_start_date)");
