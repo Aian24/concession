@@ -18,6 +18,16 @@ if (!isset($is_admin)) {
 require_once 'includes/db.php';
 $db = db_connect();
 
+$system_settings = get_system_settings($db);
+$promo_enabled   = !empty($system_settings['promo_enabled']);
+$promo_name      = $system_settings['promo_name'] ?? 'RL Shoe Bag Promo';
+$promo_min_spend = floatval($system_settings['promo_min_spend'] ?? 1999.00);
+$promo_item_name = $system_settings['promo_item_name'] ?? 'RL Shoe Bag';
+$promo_item_no   = $system_settings['promo_item_no'] ?? '475552';
+$promo_style_code = $system_settings['promo_style_code'] ?? 'RACT95002T26';
+$promo_start_date = $system_settings['promo_start_date'] ?? '2026-10-01';
+$promo_end_date   = $system_settings['promo_end_date'] ?? '';
+
 // ── Search & Pagination Logic ──────────────────────────────
 $is_filter_request = isset($_GET['ajax']) || isset($_GET['search']) || isset($_GET['start_date']) || isset($_GET['end_date']) || isset($_GET['store_filter']);
 if ($is_filter_request) {
@@ -274,10 +284,10 @@ if (isset($_GET['ajax'])) {
                                 <i class="fas fa-trash-alt text-[10px]"></i>
                             </button>
                         </div>
-                        <div class="p-4 grid grid-cols-1 md:grid-cols-6 gap-4">
+                        <div class="p-3 md:p-4 grid grid-cols-1 md:grid-cols-6 gap-2.5 md:gap-4">
                             <div class="relative flex items-stretch md:col-span-1">
                                 <span class="absolute top-0 -translate-y-1/2 left-3 px-1 bg-[#0d1527] text-[8px] font-black text-green-400/80 uppercase tracking-widest z-10">Item #</span>
-                                <input type="number" name="item_no" min="0" oninput="if(this.value.length > 6) this.value = this.value.slice(0, 6);" onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();" class="bg-slate-900/50 border border-white/10 rounded-l-xl px-4 py-2.5 flex-1 text-xs text-white focus:outline-none focus:border-green-500/50 font-medium focus:text-base md:focus:text-xs focus:tracking-widest md:focus:tracking-normal transition-all" placeholder="100123">
+                                <input type="number" name="item_no" min="0" oninput="if(this.value.length > 6) this.value = this.value.slice(0, 6);" onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();" class="bg-slate-900/50 border border-white/10 rounded-l-xl px-3 py-2 flex-1 text-xs text-white focus:outline-none focus:border-green-500/50 font-medium focus:text-base md:focus:text-xs focus:tracking-widest md:focus:tracking-normal transition-all" placeholder="100123">
                                 <button type="button" onclick="startBarcodeScanForRow(this)" class="bg-purple-600/20 border border-l-0 border-white/10 px-3 rounded-r-xl text-purple-400 hover:bg-purple-600/30 transition-all flex items-center justify-center">
                                     <i class="fas fa-camera"></i>
                                 </button>
@@ -286,44 +296,128 @@ if (isset($_GET['ajax'])) {
                             <div class="grid grid-cols-3 gap-2 md:col-span-2">
                                 <div class="relative">
                                     <span class="absolute top-0 -translate-y-1/2 left-2 px-1 bg-[#0d1527] text-[7.5px] font-black text-green-400/80 uppercase tracking-widest z-10">Price (₱)</span>
-                                    <input type="text" name="base_price" oninput="formatCurrencyInput(this); if(typeof calculateFinalPrice === 'function') calculateFinalPrice(this.closest('.entry-row'));" class="bg-slate-900/50 border border-white/10 rounded-xl px-2 py-2.5 w-full text-xs text-white focus:outline-none focus:border-green-500/50 font-medium" placeholder="0.00">
+                                    <input type="text" name="base_price" oninput="formatCurrencyInput(this); if(typeof calculateFinalPrice === 'function') calculateFinalPrice(this.closest('.entry-row'));" class="bg-slate-900/50 border border-white/10 rounded-xl px-2 py-2 w-full text-xs text-white focus:outline-none focus:border-green-500/50 font-medium" placeholder="0.00">
                                 </div>
                                 <div class="relative">
                                     <span class="absolute top-0 -translate-y-1/2 left-2 px-1 bg-[#0d1527] text-[7.5px] font-black text-green-400/80 uppercase tracking-widest z-10">Disc (%)</span>
-                                    <select name="discount" onchange="if(typeof calculateFinalPrice === 'function') calculateFinalPrice(this.closest('.entry-row'));" class="bg-slate-900/50 border border-white/10 rounded-xl px-2 py-2.5 w-full text-xs text-white focus:outline-none focus:border-green-500/50 font-medium appearance-none cursor-pointer">
+                                    <select name="discount" onchange="if(typeof calculateFinalPrice === 'function') calculateFinalPrice(this.closest('.entry-row'));" class="bg-slate-900/50 border border-white/10 rounded-xl px-2 py-2 w-full text-xs text-white focus:outline-none focus:border-green-500/50 font-medium appearance-none cursor-pointer">
                                         <option value="0">0%</option>
                                         <option value="10">10%</option>
                                         <option value="20">20%</option>
                                         <option value="30">30%</option>
                                     </select>
-                                    <i class="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-[10px] pointer-events-none"></i>
+                                    <i class="fas fa-chevron-down absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 text-[9px] pointer-events-none"></i>
                                 </div>
                                 <div class="relative">
                                     <span class="absolute top-0 -translate-y-1/2 left-2 px-1 bg-[#0d1527] text-[7.5px] font-black text-green-400/80 uppercase tracking-widest z-10">Final (₱)</span>
-                                    <input type="text" name="amount_sold" oninput="formatCurrencyInput(this); if(typeof calculateFinalPrice === 'function') calculateFinalPrice(this.closest('.entry-row'), true);" class="bg-slate-900/50 border border-white/10 rounded-xl px-2 py-2.5 w-full text-xs text-green-400 focus:outline-none focus:border-green-500/50 font-bold" placeholder="0.00">
+                                    <input type="text" name="amount_sold" oninput="formatCurrencyInput(this); if(typeof calculateFinalPrice === 'function') calculateFinalPrice(this.closest('.entry-row'), true);" class="bg-slate-900/50 border border-white/10 rounded-xl px-2 py-2 w-full text-xs text-green-400 focus:outline-none focus:border-green-500/50 font-bold" placeholder="0.00">
                                 </div>
                             </div>
 
-                            <div class="relative md:col-span-1">
-                                <span class="absolute top-0 -translate-y-1/2 left-3 px-1 bg-[#0d1527] text-[8px] font-black text-green-400/80 uppercase tracking-widest z-10">Qty</span>
-                                <input type="number" name="quantity" min="0" max="1" maxlength="1" oninput="this.value = this.value.replace(/[^01]/g, '').substring(0, 1);" onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();" class="bg-slate-900/50 border border-white/10 rounded-xl px-4 py-2.5 w-full text-xs text-white focus:outline-none focus:border-green-500/50 font-medium" placeholder="0">
+                            <div class="grid grid-cols-3 gap-2 md:contents">
+                                <div class="relative col-span-1 md:col-span-1">
+                                    <span class="absolute top-0 -translate-y-1/2 left-3 px-1 bg-[#0d1527] text-[8px] font-black text-green-400/80 uppercase tracking-widest z-10">Qty</span>
+                                    <input type="number" name="quantity" min="0" max="1" maxlength="1" oninput="this.value = this.value.replace(/[^01]/g, '').substring(0, 1);" onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();" class="bg-slate-900/50 border border-white/10 rounded-xl px-3 py-2 w-full text-xs text-white focus:outline-none focus:border-green-500/50 font-medium text-center md:text-left" placeholder="0">
+                                </div>
+                                <div class="relative col-span-2 md:col-span-2">
+                                    <span class="absolute top-0 -translate-y-1/2 left-3 px-1 bg-[#0d1527] text-[8px] font-black text-green-400/80 uppercase tracking-widest z-10">Details</span>
+                                    <input type="text" name="item_details" readonly class="bg-slate-900/50 border border-white/10 rounded-xl px-3 py-2 w-full text-xs text-gray-400 focus:outline-none font-medium cursor-not-allowed truncate" placeholder="Code | Style | Color | Size">
+                                </div>
                             </div>
-                            <div class="relative md:col-span-2">
-                                <span class="absolute top-0 -translate-y-1/2 left-3 px-1 bg-[#0d1527] text-[8px] font-black text-green-400/80 uppercase tracking-widest z-10">Details</span>
-                                <input type="text" name="item_details" readonly class="bg-slate-900/50 border border-white/10 rounded-xl px-4 py-2.5 w-full text-xs text-gray-400 focus:outline-none font-medium cursor-not-allowed truncate" placeholder="Code | Style | Color | Size">
+                        </div>
+                </div>
+            </div>
+
+            <?php if ($promo_enabled): ?>
+            <!-- Promo / Gift With Purchase (GWP) Section -->
+            <div id="promo-section" class="glass-panel border border-white/10 rounded-xl p-2.5 sm:p-3 bg-gradient-to-r from-slate-900/95 via-purple-950/20 to-pink-950/20 transition-all duration-300 relative overflow-hidden my-1 shadow-md"
+                 data-min-spend="<?= $promo_min_spend ?>"
+                 data-promo-name="<?= htmlspecialchars($promo_name) ?>"
+                 data-gift-name="<?= htmlspecialchars($promo_item_name) ?>"
+                 data-default-item-no="<?= htmlspecialchars($promo_item_no) ?>"
+                 data-style-code="<?= htmlspecialchars($promo_style_code) ?>">
+                
+                <!-- Decorative glow -->
+                <div id="promo-glow" class="absolute -right-6 -top-6 w-24 h-24 bg-pink-500/10 rounded-full blur-xl pointer-events-none transition-all"></div>
+
+                <div class="flex items-center justify-between gap-2.5 relative z-10">
+                    <div class="flex items-center gap-2.5 min-w-0 flex-1">
+                        <div id="promo-icon-box" class="w-7 h-7 rounded-lg bg-pink-500/20 border border-pink-500/30 flex items-center justify-center text-pink-400 shrink-0 shadow-sm transition-all">
+                            <i class="fas fa-gift text-xs"></i>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                <h4 class="text-[10px] sm:text-[11px] font-black text-white uppercase tracking-wider truncate"><?= htmlspecialchars($promo_name) ?></h4>
+                                <span id="promo-status-badge" class="text-[7.5px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-800 text-gray-400 border border-white/10">Min. ₱<?= number_format($promo_min_spend, 2) ?></span>
+                            </div>
+                            <p id="promo-helper-text" class="text-[8px] sm:text-[9px] text-gray-400 font-medium truncate mt-0.5">
+                                Spend <span class="text-green-400 font-bold">₱<?= number_format($promo_min_spend, 2) ?></span>+ for <span class="text-pink-300 font-bold">FREE Gift</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2 shrink-0">
+                        <label class="relative inline-flex items-center cursor-pointer select-none">
+                            <input type="checkbox" id="gwp-toggle" class="sr-only peer" onchange="toggleGwpPromo(this.checked)">
+                            <div class="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-purple-600 peer-checked:to-pink-600 border border-white/10 shadow-inner"></div>
+                            <span id="gwp-toggle-label" class="hidden xs:inline-block sm:inline-block ml-2 text-[9px] font-black uppercase tracking-wider text-gray-400 peer-checked:text-pink-400 transition-colors">
+                                Promo Gift
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Free Gift Entry Row (Expands when toggle is ON) -->
+                <div id="gwp-gift-box" class="hidden mt-3 pt-3 border-t border-white/10 animate-slide-in">
+                    <div class="glass-panel border border-pink-500/30 bg-[#0c1222]/90 rounded-xl p-3 shadow-inner">
+                        <div class="grid grid-cols-1 md:grid-cols-12 gap-2.5 md:gap-3">
+                            <!-- Gift Item # Input & Camera (Full line on mobile, 3 cols on desktop) -->
+                            <div class="relative flex items-stretch md:col-span-3">
+                                <span class="absolute top-0 -translate-y-1/2 left-3 px-1 bg-[#0c1222] text-[8px] font-black text-pink-400 uppercase tracking-widest z-10">Gift Item #</span>
+                                <input type="number" id="gwp-item-no" name="gwp_item_no" min="0" value="<?= htmlspecialchars($promo_item_no) ?>"
+                                       oninput="if(this.value.length > 6) this.value = this.value.slice(0, 6); lookupGwpPrism(this);" 
+                                       onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();"
+                                       class="bg-slate-900/90 border border-pink-500/40 rounded-l-xl px-3 py-2 flex-1 text-xs text-white focus:outline-none focus:border-pink-400 font-bold focus:text-base md:focus:text-xs tracking-wider font-mono" 
+                                       placeholder="475552">
+                                <button type="button" onclick="startGwpBarcodeScan()" class="bg-pink-600/20 border border-l-0 border-pink-500/40 px-3.5 rounded-r-xl text-pink-400 hover:bg-pink-600/30 transition-all flex items-center justify-center shrink-0" title="Scan Gift Barcode">
+                                    <i class="fas fa-camera text-sm"></i>
+                                </button>
+                            </div>
+
+                            <!-- Gift Details (Full line on mobile, 6 cols on desktop) -->
+                            <div class="relative md:col-span-6">
+                                <span class="absolute top-0 -translate-y-1/2 left-3 px-1 bg-[#0c1222] text-[8px] font-black text-pink-400 uppercase tracking-widest z-10">Gift Details</span>
+                                <input type="text" id="gwp-details" readonly value="[PROMO GIFT] <?= htmlspecialchars($promo_item_name) ?> | <?= htmlspecialchars($promo_style_code) ?>" class="bg-slate-900/50 border border-white/10 rounded-xl px-3 py-2 w-full text-xs text-pink-300 font-medium cursor-not-allowed truncate" title="Gift Details">
+                            </div>
+                            
+                            <!-- Qty & Price on mobile (grid-cols-2 on mobile, md:contents on desktop) -->
+                            <div class="grid grid-cols-2 md:contents gap-2.5 md:gap-3">
+                                <!-- Qty (1 col on mobile, 1 col on desktop) -->
+                                <div class="relative md:col-span-1">
+                                    <span class="absolute top-0 -translate-y-1/2 left-2 px-1 bg-[#0c1222] text-[7.5px] font-black text-gray-400 uppercase tracking-widest z-10">Qty</span>
+                                    <div class="bg-slate-900/50 border border-white/10 rounded-xl px-2 py-2 text-xs text-white font-bold text-center leading-normal">1</div>
+                                </div>
+
+                                <!-- Price (1 col on mobile, 2 cols on desktop) -->
+                                <div class="relative md:col-span-2">
+                                    <span class="absolute top-0 -translate-y-1/2 left-2 px-1 bg-[#0c1222] text-[7.5px] font-black text-emerald-400 uppercase tracking-widest z-10">Price</span>
+                                    <div class="bg-emerald-500/10 border border-emerald-500/30 rounded-xl px-2 py-2 text-xs text-emerald-400 font-black text-center whitespace-nowrap leading-normal">FREE</div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+            <?php endif; ?>
+        </div>
 
-            <div class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-white/5 pt-4">
+            <div class="mt-3 sm:mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 sm:gap-3 border-t border-white/5 pt-3 sm:pt-4">
                 <div class="flex items-center gap-2 w-full sm:w-auto">
-                    <button type="button" onclick="addRow()" class="flex-1 sm:flex-initial h-[42px] px-4 rounded-lg bg-slate-700/40 hover:bg-slate-700/60 text-green-400 border border-white/10 text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 shadow-lg hover:-translate-y-0.5">
+                    <button type="button" onclick="addRow()" class="flex-1 sm:flex-initial h-[38px] sm:h-[42px] px-3.5 sm:px-4 rounded-lg bg-slate-700/40 hover:bg-slate-700/60 text-green-400 border border-white/10 text-[9px] sm:text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 shadow-lg hover:-translate-y-0.5">
                         <i class="fas fa-plus-circle"></i> Add Another Entry
                     </button>
                     
-                    <button type="button" onclick="startBarcodeScan('item_no')" class="sm:hidden h-[42px] px-4 rounded-lg bg-purple-600/40 hover:bg-purple-600/60 text-purple-400 border border-white/10 text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 shadow-lg hover:-translate-y-0.5">
+                    <button type="button" onclick="startBarcodeScan('item_no')" class="sm:hidden h-[38px] px-3.5 rounded-lg bg-purple-600/40 hover:bg-purple-600/60 text-purple-400 border border-white/10 text-[9px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 shadow-lg hover:-translate-y-0.5">
                         <i class="fas fa-camera"></i> Scan
                     </button>
                 </div>
@@ -547,6 +641,68 @@ if (isset($_GET['ajax'])) {
         document.getElementById('edit-amount').value = final.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
     };
 
+    // ── GWP Promo Logic ──────────────────────────────────────
+    window.toggleGwpPromo = function(isChecked, skipSummary = false) {
+        const box = document.getElementById('gwp-gift-box');
+        const label = document.getElementById('gwp-toggle-label');
+        const input = document.getElementById('gwp-item-no');
+        
+        if (isChecked) {
+            if (box) box.classList.remove('hidden');
+            if (label) label.textContent = 'Promo Gift Added';
+            if (input && !input.value) input.focus();
+            if (input && input.value) window.lookupGwpPrism(input);
+        } else {
+            if (box) box.classList.add('hidden');
+            if (label) label.textContent = 'Promo Gift';
+        }
+        if (!skipSummary) {
+            window.updateSummary();
+        }
+    };
+
+    window.lookupGwpPrism = function(input) {
+        const item_no = input.value.trim();
+        const detailsInput = document.getElementById('gwp-details');
+        const promoSection = document.getElementById('promo-section');
+        const giftName = promoSection?.dataset.giftName || 'RL Shoe Bag';
+        const defaultStyleCode = promoSection?.dataset.styleCode || 'RACT95002T26';
+        const defaultItemNo = promoSection?.dataset.defaultItemNo || '475552';
+        
+        const fallbackText = defaultStyleCode 
+            ? `[PROMO GIFT] ${giftName} | ${defaultStyleCode}` 
+            : `[PROMO GIFT] ${giftName}`;
+
+        if (item_no.length === 6) {
+            fetch(`api/get_prism_price.php?item_no=${encodeURIComponent(item_no)}`)
+            .then(r => r.json())
+            .then(res => {
+                if (res.success && detailsInput) {
+                    const parts = [res.itemcode, res.stylename, res.color, res.size].filter(Boolean);
+                    detailsInput.value = `[PROMO GIFT] ${giftName} | ` + parts.join(' | ');
+                } else if (detailsInput) {
+                    if (item_no === defaultItemNo) {
+                        detailsInput.value = fallbackText;
+                    } else {
+                        detailsInput.value = `[PROMO GIFT] ${giftName}`;
+                    }
+                }
+            })
+            .catch(() => {
+                if (detailsInput) detailsInput.value = fallbackText;
+            });
+        } else if (detailsInput) {
+            detailsInput.value = fallbackText;
+        }
+    };
+
+    window.startGwpBarcodeScan = function() {
+        const input = document.getElementById('gwp-item-no');
+        if (typeof window.startBarcodeScan === 'function') {
+            window.startBarcodeScan('item_no', input);
+        }
+    };
+
     // ── Form Logic ───────────────────────────────────────────
     function updateBadge() {
         const rows = document.querySelectorAll('.entry-row');
@@ -559,20 +715,83 @@ if (isset($_GET['ajax'])) {
         });
     }
 
-    function updateSummary() {
+    window.updateSummary = function() {
         let items = 0, qty = 0, total = 0;
+        const promoSec = document.getElementById('promo-section');
+        const minSpend = promoSec ? (parseFloat(promoSec.dataset.minSpend) || 1999) : 1999;
+
         document.querySelectorAll('.entry-row').forEach(row => {
             const itm = row.querySelector('[name="item_no"]').value.trim();
-            const amt = parseFloat(row.querySelector('[name="amount_sold"]').value) || 0;
-            const q   = parseInt(row.querySelector('[name="quantity"]').value) || 0;
+            const amt = parseFloat(row.querySelector('[name="amount_sold"]').value.replace(/,/g, '')) || 0;
+            const qtyInput = row.querySelector('[name="quantity"]');
+            let qVal = qtyInput ? qtyInput.value.trim() : '';
+
+            // Auto-default qty to 1 if item has valid price/item# and qty is empty or 0
+            if ((qVal === '' || qVal === '0') && (amt > 0 || itm.length === 6) && itm !== '0') {
+                qVal = '1';
+                if (qtyInput) qtyInput.value = '1';
+            }
+
+            const q = parseInt(qVal) || 0;
             if (itm) items++;
             qty += q;
             total += amt * q;
         });
-        document.getElementById('summary-items').textContent = items;
-        document.getElementById('summary-qty').textContent = qty;
-        document.getElementById('summary-total').textContent = '₱' + total.toLocaleString('en-PH', {minimumFractionDigits:2});
-    }
+
+        // Check GWP Promo status and thresholds
+        const gwpToggle = document.getElementById('gwp-toggle');
+        
+        if (promoSec) {
+            const promoBadge = document.getElementById('promo-status-badge');
+            const promoHelper = document.getElementById('promo-helper-text');
+            
+            if (total >= minSpend && minSpend > 0) {
+                promoSec.classList.add('border-pink-500/50');
+                promoSec.classList.remove('border-white/10');
+                if (promoBadge) {
+                    promoBadge.className = 'text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-600 text-white shadow-sm';
+                    promoBadge.innerHTML = '🎉 Qualified';
+                }
+                if (promoHelper) {
+                    promoHelper.innerHTML = `Spend qualified for <span class="text-pink-300 font-bold">FREE Gift</span>.`;
+                }
+                // Auto-on / enable toggle if qualified
+                if (gwpToggle && !gwpToggle.checked) {
+                    gwpToggle.checked = true;
+                    window.toggleGwpPromo(true, true);
+                }
+            } else {
+                promoSec.classList.remove('border-pink-500/50');
+                promoSec.classList.add('border-white/10');
+                const remaining = minSpend - total;
+                if (promoBadge) {
+                    promoBadge.className = 'text-[7.5px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-800 text-gray-400 border border-white/10';
+                    promoBadge.textContent = `Min. ₱${minSpend.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+                }
+                if (promoHelper) {
+                    promoHelper.innerHTML = `Spend <span class="text-green-400 font-bold">₱${remaining.toLocaleString('en-US', {minimumFractionDigits: 2})}</span> more for <span class="text-pink-300 font-bold">FREE Gift</span>`;
+                }
+                // Auto turn off if not qualified
+                if (gwpToggle && gwpToggle.checked) {
+                    gwpToggle.checked = false;
+                    window.toggleGwpPromo(false, true);
+                }
+            }
+
+            if (gwpToggle && gwpToggle.checked) {
+                items += 1;
+                qty += 1;
+                // total remains unchanged since GWP price is ₱0.00
+            }
+        }
+
+        const summaryItemsEl = document.getElementById('summary-items');
+        const summaryQtyEl = document.getElementById('summary-qty');
+        const summaryTotalEl = document.getElementById('summary-total');
+        if (summaryItemsEl) summaryItemsEl.textContent = items;
+        if (summaryQtyEl) summaryQtyEl.textContent = qty;
+        if (summaryTotalEl) summaryTotalEl.textContent = '₱' + total.toLocaleString('en-US', {minimumFractionDigits:2});
+    };
 
     window.addRow = function () {
         const tpl = document.querySelector('.entry-row');
@@ -580,7 +799,7 @@ if (isset($_GET['ajax'])) {
         const row = tpl.cloneNode(true);
         row.querySelectorAll('input').forEach(i => i.value = '');
         row.querySelectorAll('select').forEach(s => s.value = '0');
-        row.querySelectorAll('input, select').forEach(i => i.addEventListener('input', updateSummary));
+        row.querySelectorAll('input, select').forEach(i => i.addEventListener('input', window.updateSummary));
         
         const removeBtn = row.querySelector('.remove-btn');
         if (removeBtn) removeBtn.classList.remove('hidden');
@@ -597,36 +816,41 @@ if (isset($_GET['ajax'])) {
             showConfirmModal('Are you sure you want to remove this entry row?', () => {
                 btn.closest('.entry-row').remove();
                 updateBadge();
-                updateSummary();
+                window.updateSummary();
             }, 'Remove Entry');
         } else {
             btn.closest('.entry-row').remove();
             updateBadge();
-            updateSummary();
+            window.updateSummary();
         }
     };
 
     window.clearForm = function () {
-        if (typeof showConfirmModal === 'function') {
-            showConfirmModal('Are you sure you want to clear all current entry data?', () => {
-                const rows = document.querySelectorAll('.entry-row');
-                rows.forEach((r, i) => { if (i > 0) r.remove(); });
-                rows[0].querySelectorAll('input').forEach(i => i.value = '');
-                rows[0].querySelectorAll('select').forEach(s => s.value = '0');
-                updateSummary();
-                updateBadge();
-            }, 'Clear Form');
-        } else {
+        const doClear = () => {
             const rows = document.querySelectorAll('.entry-row');
             rows.forEach((r, i) => { if (i > 0) r.remove(); });
             rows[0].querySelectorAll('input').forEach(i => i.value = '');
             rows[0].querySelectorAll('select').forEach(s => s.value = '0');
-            updateSummary();
+            
+            const gwpToggle = document.getElementById('gwp-toggle');
+            if (gwpToggle) {
+                gwpToggle.checked = false;
+                window.toggleGwpPromo(false);
+            }
+            const defaultItemNo = document.getElementById('promo-section')?.dataset.defaultItemNo || '';
+            const gwpItemInput = document.getElementById('gwp-item-no');
+            if (gwpItemInput) gwpItemInput.value = defaultItemNo;
+
+            window.updateSummary();
             updateBadge();
+        };
+
+        if (typeof showConfirmModal === 'function') {
+            showConfirmModal('Are you sure you want to clear all current entry data?', doClear, 'Clear Form');
+        } else {
+            doClear();
         }
     };
-
-
 
     window.startBarcodeScanForRow = function(btn) {
         const input = btn.closest('.relative').querySelector('input[name="item_no"]');
@@ -651,14 +875,34 @@ if (isset($_GET['ajax'])) {
                 hasErrors = true;
             }
             
-            if (item || amt || qty) {
-                if (!item || !amt || !qty) {
+            if (item || amt !== '' || qty) {
+                if (!item || amt === '' || !qty) {
                     valid = false;
                 } else {
                     entries.push({ item_no: item, base_price: base, discount: disc, amount_sold: amt, quantity: qty });
                 }
             }
         });
+
+        // Check GWP Promo
+        const gwpToggle = document.getElementById('gwp-toggle');
+        if (gwpToggle && gwpToggle.checked) {
+            const gwpItemNo = document.getElementById('gwp-item-no')?.value.trim();
+            const giftName = document.getElementById('promo-section')?.dataset.giftName || 'RL Shoe Bag';
+            if (!gwpItemNo) {
+                showStatusModal(false, `Please enter or scan the Item # for the Promo Gift (${giftName}) before submitting, or turn off the promo toggle.`, 'Missing Gift Item #');
+                document.getElementById('gwp-item-no')?.focus();
+                return;
+            }
+            entries.push({
+                item_no: gwpItemNo,
+                base_price: 0,
+                discount: 100,
+                amount_sold: 0,
+                quantity: 1,
+                is_gwp: 1
+            });
+        }
 
         if (hasErrors) {
             showStatusModal(false, 'Please correct the invalid items before submitting.', 'Validation Error');
@@ -677,12 +921,12 @@ if (isset($_GET['ajax'])) {
         
         // Show Loader
         const loader = document.getElementById('loading-overlay');
-        const p = loader.querySelector('p');
+        const p = loader?.querySelector('p');
         if (p) p.textContent = 'Processing Transaction...';
-        loader.classList.remove('opacity-0', 'pointer-events-none');
+        loader?.classList.remove('opacity-0', 'pointer-events-none');
 
-        const dateType = document.querySelector('input[name="page_date_type"]:checked').value;
-        const customDate = document.getElementById('page_custom_date').value;
+        const dateType = document.querySelector('input[name="page_date_type"]:checked')?.value || 'current';
+        const customDate = document.getElementById('page_custom_date')?.value;
         const finalDate = (dateType === 'backdate') ? customDate : '<?= date('Y-m-d') ?>';
 
         fetch('api/save_sale.php', { 
@@ -696,14 +940,24 @@ if (isset($_GET['ajax'])) {
         .then(r => r.json())
         .then(res => { 
             setTimeout(() => { // Small delay for "premium" feel
-                loader.classList.add('opacity-0', 'pointer-events-none');
+                loader?.classList.add('opacity-0', 'pointer-events-none');
                 showStatusModal(res.success, res.message, res.success ? 'Sale Successful' : 'Sale Failed');
                 if (res.success) { 
                     const rows = document.querySelectorAll('.entry-row');
                     rows.forEach((r, i) => { if (i > 0) r.remove(); });
                     rows[0].querySelectorAll('input').forEach(i => i.value = '');
                     rows[0].querySelectorAll('select').forEach(s => s.value = '0');
-                    updateSummary();
+                    
+                    // Reset GWP toggle and fields
+                    if (gwpToggle) {
+                        gwpToggle.checked = false;
+                        window.toggleGwpPromo(false);
+                    }
+                    const defaultItemNo = document.getElementById('promo-section')?.dataset.defaultItemNo || '';
+                    const gwpItemInput = document.getElementById('gwp-item-no');
+                    if (gwpItemInput) gwpItemInput.value = defaultItemNo;
+
+                    window.updateSummary();
                     updateBadge();
                     
                     const searchInput = document.querySelector('[name="search"]');
@@ -715,6 +969,10 @@ if (isset($_GET['ajax'])) {
                     refreshTable(1); 
                 }
             }, 600);
+        })
+        .catch(() => {
+            loader?.classList.add('opacity-0', 'pointer-events-none');
+            showStatusModal(false, 'A network error occurred while submitting the sale.', 'Submission Error');
         });
     };
 
@@ -931,21 +1189,6 @@ if (isset($_GET['ajax'])) {
         if (typeof window.centerTableQuickFilters === 'function') window.centerTableQuickFilters();
     });
 
-    window.updateSummary = function() {
-        let items = 0, qty = 0, total = 0;
-        document.querySelectorAll('.entry-row').forEach(row => {
-            const itm = row.querySelector('[name="item_no"]').value.trim();
-            const amt = parseFloat(row.querySelector('[name="amount_sold"]').value.replace(/,/g, '')) || 0;
-            const q   = parseInt(row.querySelector('[name="quantity"]').value) || 0;
-            if (itm) items++;
-            qty += q;
-            total += amt * q;
-        });
-        document.getElementById('summary-items').textContent = items;
-        document.getElementById('summary-qty').textContent = qty;
-        document.getElementById('summary-total').textContent = '₱' + total.toLocaleString('en-US', {minimumFractionDigits:2});
-    };
-
     window.showItemError = function(input, message) {
         window.removeItemError(input);
         const err = document.createElement('span');
@@ -980,6 +1223,12 @@ if (isset($_GET['ajax'])) {
         if (row.querySelector('[name="base_price"]').value !== '') {
             finalInput.value = finalPrice.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
         }
+        
+        const qtyInput = row.querySelector('[name="quantity"]');
+        if (qtyInput && (qtyInput.value === '' || qtyInput.value === '0') && basePrice > 0) {
+            qtyInput.value = '1';
+        }
+
         window.updateSummary();
     };
 
@@ -1033,9 +1282,12 @@ if (isset($_GET['ajax'])) {
                     if (baseInput) baseInput.value = res.srp ? parseFloat(res.srp).toLocaleString('en-US', {minimumFractionDigits: 2}) : '';
                     if (amountInput) {
                         amountInput.value = res.srp ? parseFloat(res.srp).toLocaleString('en-US', {minimumFractionDigits: 2}) : '';
-                        window.calculateFinalPrice(row);
                         amountInput.classList.add('ring-2', 'ring-green-500/50');
                         setTimeout(() => amountInput.classList.remove('ring-2', 'ring-green-500/50'), 1000);
+                    }
+                    const qtyInput = row ? row.querySelector('[name="quantity"]') : null;
+                    if (qtyInput && (qtyInput.value === '' || qtyInput.value === '0')) {
+                        qtyInput.value = '1';
                     }
                     if (detailsInput) {
                         const itemcode = res.itemcode || '';
@@ -1045,6 +1297,7 @@ if (isset($_GET['ajax'])) {
                         const parts = [itemcode, style, color, size].filter(Boolean);
                         detailsInput.value = parts.join(' | ');
                     }
+                    window.calculateFinalPrice(row);
                 } else {
                     window.showItemError(input, 'Item # not found');
                     if (baseInput) baseInput.value = '';

@@ -280,11 +280,29 @@ if ($page > $total_pages) $page = $total_pages;
                     <?php foreach ($records as $r): ?>
                         <tr class="hover:bg-white/5 transition-colors">
                             <?php if ($tab === 'sales'): ?>
+                                <?php 
+                                    $is_gwp = ((float)($r['amount_sold'] ?? 0) == 0 && (int)($r['quantity'] ?? 0) > 0 && ($r['item_no'] ?? '') !== '0');
+                                ?>
                                 <?php if($is_admin): ?><td class="px-6 py-4 font-bold text-purple-400"><?= htmlspecialchars($r['username']) ?></td><?php endif; ?>
-                                <td class="px-6 py-4 text-white font-bold tracking-wide"><?= htmlspecialchars($r['item_no']) ?></td>
-                                <td class="px-6 py-4 text-center font-bold text-emerald-400">₱<?= number_format($r['amount_sold'], 2) ?></td>
+                                <td class="px-6 py-4 text-white font-bold tracking-wide">
+                                    <div class="flex items-center gap-2">
+                                        <span><?= htmlspecialchars($r['item_no']) ?></span>
+                                        <?php if ($is_gwp): ?>
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-pink-500/20 text-pink-300 border border-pink-500/40 text-[9px] font-black uppercase tracking-wider shadow-sm">
+                                                <i class="fas fa-gift text-pink-400"></i> Promo Gift
+                                            </span>
+                                        <?php endif; ?>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-center font-bold <?= $is_gwp ? 'text-pink-400' : 'text-emerald-400' ?>">
+                                    <?php if ($is_gwp): ?>
+                                        <span>₱0.00 <span class="text-[9px] bg-pink-500/20 text-pink-300 px-1.5 py-0.5 rounded font-black border border-pink-500/30 ml-1">FREE</span></span>
+                                    <?php else: ?>
+                                        ₱<?= number_format($r['amount_sold'], 2) ?>
+                                    <?php endif; ?>
+                                </td>
                                 <td class="px-6 py-4 text-center text-purple-300 font-black"><?= $r['quantity'] ?></td>
-                                <td class="px-6 py-4 text-center font-black text-emerald-300">₱<?= number_format($r['line_total'], 2) ?></td>
+                                <td class="px-6 py-4 text-center font-black <?= $is_gwp ? 'text-pink-300' : 'text-emerald-300' ?>">₱<?= number_format($r['line_total'], 2) ?></td>
                                 <td class="px-6 py-4 text-right text-gray-500 text-[10px]">
                                     <div><?= date('M d, Y', strtotime($r['created_at'])) ?></div>
                                     <?php if (date('Y-m-d', strtotime($r['created_at'])) !== date('Y-m-d', strtotime($r['system_timestamp']))): ?>
@@ -355,17 +373,31 @@ if ($page > $total_pages) $page = $total_pages;
 
                     <div class="grid grid-cols-2 gap-y-3 gap-x-4 text-xs">
                         <?php if ($tab === 'sales'): ?>
-                            <div>
+                            <?php 
+                                $is_gwp = ((float)($r['amount_sold'] ?? 0) == 0 && (int)($r['quantity'] ?? 0) > 0 && ($r['item_no'] ?? '') !== '0');
+                            ?>
+                            <div class="col-span-2">
                                 <span class="text-[9px] text-gray-500 uppercase tracking-wider block">Item #</span>
-                                <span class="text-white font-bold tracking-wide"><?= htmlspecialchars($r['item_no']) ?></span>
+                                <div class="flex items-center gap-2 mt-0.5">
+                                    <span class="text-white font-bold tracking-wide text-sm"><?= htmlspecialchars($r['item_no']) ?></span>
+                                    <?php if ($is_gwp): ?>
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-pink-500/20 text-pink-300 border border-pink-500/40 text-[9px] font-black uppercase tracking-wider shadow-sm">
+                                            <i class="fas fa-gift text-pink-400"></i> Promo Gift
+                                        </span>
+                                    <?php endif; ?>
+                                </div>
                             </div>
                             <div>
                                 <span class="text-[9px] text-gray-500 uppercase tracking-wider block">Line Total</span>
-                                <span class="font-black text-emerald-400">₱<?= number_format($r['line_total'], 2) ?></span>
+                                <span class="font-black <?= $is_gwp ? 'text-pink-300' : 'text-emerald-400' ?>">₱<?= number_format($r['line_total'], 2) ?></span>
                             </div>
                             <div>
                                 <span class="text-[9px] text-gray-500 uppercase tracking-wider block">Amount</span>
-                                <span class="font-bold text-gray-300">₱<?= number_format($r['amount_sold'], 2) ?></span>
+                                <?php if ($is_gwp): ?>
+                                    <span class="font-bold text-pink-400">₱0.00 <span class="text-[8px] bg-pink-500/20 text-pink-300 px-1 py-0.5 rounded font-black border border-pink-500/30 ml-0.5">FREE</span></span>
+                                <?php else: ?>
+                                    <span class="font-bold text-gray-300">₱<?= number_format($r['amount_sold'], 2) ?></span>
+                                <?php endif; ?>
                             </div>
                             <div>
                                 <span class="text-[9px] text-gray-500 uppercase tracking-wider block">Quantity</span>

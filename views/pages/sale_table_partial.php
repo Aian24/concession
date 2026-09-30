@@ -516,14 +516,32 @@ if ($is_single_day && ($is_admin || $is_multi_store_admin) && empty($store_filte
                                 </div>
                             </td>
                         <?php endif; ?>
+                        <?php 
+                            $is_gwp_row = ((float)($s['amount_sold'] ?? 0) == 0 && (int)($s['quantity'] ?? 0) > 0 && ($s['item_no'] ?? '') !== '0');
+                        ?>
                         <td class="px-5 py-3.5 font-bold text-purple-300 tracking-wide text-center" data-label="Item #">
-                            <?= htmlspecialchars($s['item_no']) ?>
+                            <div class="flex flex-col items-center justify-center gap-1">
+                                <span><?= htmlspecialchars($s['item_no']) ?></span>
+                                <?php if ($is_gwp_row): ?>
+                                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-pink-500/20 text-pink-300 border border-pink-500/30 text-[8px] font-black uppercase tracking-wider">
+                                        <i class="fas fa-gift text-[8px]"></i> Promo Gift
+                                    </span>
+                                <?php endif; ?>
+                            </div>
                         </td>
                         <td class="px-5 py-3.5 text-gray-300 font-bold text-center" data-label="SRP">₱<?= number_format($s['base_price'] ?? 0, 2) ?></td>
                         <td class="px-5 py-3.5 text-gray-300 font-bold text-center" data-label="Disc %"><?= floatval($s['discount'] ?? 0) ?>%</td>
-                        <td class="px-5 py-3.5 text-emerald-400 font-black text-center" data-label="Final Price">₱<?= number_format($s['amount_sold'], 2) ?></td>
+                        <td class="px-5 py-3.5 <?= $is_gwp_row ? 'text-pink-400 font-black' : 'text-emerald-400 font-black' ?> text-center" data-label="Final Price">
+                            <?php if ($is_gwp_row): ?>
+                                <span>₱0.00 <span class="text-[8px] bg-pink-500/20 px-1 py-0.5 rounded ml-0.5 font-black text-pink-300">FREE</span></span>
+                            <?php else: ?>
+                                ₱<?= number_format($s['amount_sold'], 2) ?>
+                            <?php endif; ?>
+                        </td>
                         <td class="px-5 py-3.5 text-gray-300 font-bold text-center" data-label="Qty"><?= $s['quantity'] ?></td>
-                        <td class="px-5 py-3.5 text-emerald-300 font-black text-center" data-label="Line Total">₱<?= number_format($s['line_total'], 2) ?></td>
+                        <td class="px-5 py-3.5 <?= $is_gwp_row ? 'text-pink-300 font-black' : 'text-emerald-300 font-black' ?> text-center" data-label="Line Total">
+                            ₱<?= number_format($s['line_total'], 2) ?>
+                        </td>
                         <td class="px-5 py-3.5 text-center" data-label="Submitted By">
                             <span class="flex items-center justify-center gap-2">
                                 <span class="w-6 h-6 rounded-full bg-gradient-to-tr from-purple-600/20 to-pink-600/20 border border-white/10 flex items-center justify-center text-[10px] text-white font-bold"><?= strtoupper($s['username'][0]) ?></span>

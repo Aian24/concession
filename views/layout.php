@@ -416,11 +416,12 @@
                 'stores'          => ['icon' => 'fa-store', 'title' => 'Manage Stores'],
                 'prism_data'      => ['icon' => 'fa-gem', 'title' => 'Manage Prism Data'],
                 'boutique_data'   => ['icon' => 'fa-store', 'title' => 'Manage Boutique Data'],
-                'recent_activity'    => ['icon' => 'fa-clock-rotate-left', 'title' => 'Recent Activity'],
-                'user_logs'          => ['icon' => 'fa-users-viewfinder', 'title' => 'User Logs'],
-                'navigation_logs'    => ['icon' => 'fa-route', 'title' => 'User Navigation'],
-                'server_health'      => ['icon' => 'fa-server', 'title' => 'Server Health'],
-                'system_settings'    => ['icon' => 'fa-cogs', 'title' => 'System Settings'],
+                'promo_settings'  => ['icon' => 'fa-gift', 'title' => 'Promo Settings'],
+                'recent_activity' => ['icon' => 'fa-clock-rotate-left', 'title' => 'Recent Activity'],
+                'user_logs'       => ['icon' => 'fa-users-viewfinder', 'title' => 'User Logs'],
+                'navigation_logs' => ['icon' => 'fa-route', 'title' => 'User Navigation'],
+                'server_health'   => ['icon' => 'fa-server', 'title' => 'Server Health'],
+                'system_settings' => ['icon' => 'fa-cogs', 'title' => 'System Settings'],
             ];
 
             $nav_items = [];
@@ -477,6 +478,7 @@
                     'stores'     => 'Manage store codes and store names',
                     'non_submission' => 'Track stores with missing sales submissions',
                     'server_health'  => 'Monitor server performance and processes',
+                    'promo_settings' => 'Configure promotions, gift items & spend thresholds',
                     'system_settings'=> 'Configure global application preferences',
                 ];
                 $current_title = $nav_items[$action]['title'] ?? str_replace('_', ' ', $action);

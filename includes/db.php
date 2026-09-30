@@ -126,10 +126,51 @@ function db_connect(): mysqli {
             favicon_path    VARCHAR(255)    NOT NULL DEFAULT 'assets/images/concessiontab.webp',
             logo_radius     INT             NOT NULL DEFAULT 0,
             logo_size       INT             NOT NULL DEFAULT 96,
+            promo_enabled   TINYINT(1)      NOT NULL DEFAULT 1,
+            promo_name      VARCHAR(150)    NOT NULL DEFAULT 'RL Shoe Bag Promo',
+            promo_min_spend DECIMAL(10,2)   NOT NULL DEFAULT 1999.00,
+            promo_item_name VARCHAR(150)    NOT NULL DEFAULT 'RL Shoe Bag',
+            promo_item_no   VARCHAR(50)     NOT NULL DEFAULT '475552',
+            promo_style_code VARCHAR(100)   NOT NULL DEFAULT 'RACT95002T26',
+            promo_start_date DATE           NULL DEFAULT '2026-10-01',
+            promo_end_date   DATE           NULL DEFAULT NULL,
             updated_at      TIMESTAMP       DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
         
-        $conn->query("INSERT INTO system_settings (company_name) VALUES ('Concession System')");
+        $conn->query("INSERT INTO system_settings (company_name, promo_enabled, promo_name, promo_min_spend, promo_item_name, promo_item_no, promo_style_code, promo_start_date) VALUES ('Concession System', 1, 'RL Shoe Bag Promo', 1999.00, 'RL Shoe Bag', '475552', 'RACT95002T26', '2026-10-01')");
+    } else {
+        // Ensure promo columns exist in system_settings
+        $setting_cols = [];
+        $sc_res = $conn->query("DESCRIBE system_settings");
+        if ($sc_res) {
+            while ($sc_row = $sc_res->fetch_assoc()) {
+                $setting_cols[] = strtolower($sc_row['Field']);
+            }
+        }
+        if (!in_array('promo_enabled', $setting_cols)) {
+            $conn->query("ALTER TABLE system_settings ADD COLUMN promo_enabled TINYINT(1) NOT NULL DEFAULT 1 AFTER logo_size");
+        }
+        if (!in_array('promo_name', $setting_cols)) {
+            $conn->query("ALTER TABLE system_settings ADD COLUMN promo_name VARCHAR(150) NOT NULL DEFAULT 'RL Shoe Bag Promo' AFTER promo_enabled");
+        }
+        if (!in_array('promo_min_spend', $setting_cols)) {
+            $conn->query("ALTER TABLE system_settings ADD COLUMN promo_min_spend DECIMAL(10,2) NOT NULL DEFAULT 1999.00 AFTER promo_name");
+        }
+        if (!in_array('promo_item_name', $setting_cols)) {
+            $conn->query("ALTER TABLE system_settings ADD COLUMN promo_item_name VARCHAR(150) NOT NULL DEFAULT 'RL Shoe Bag' AFTER promo_min_spend");
+        }
+        if (!in_array('promo_item_no', $setting_cols)) {
+            $conn->query("ALTER TABLE system_settings ADD COLUMN promo_item_no VARCHAR(50) NOT NULL DEFAULT '475552' AFTER promo_item_name");
+        }
+        if (!in_array('promo_style_code', $setting_cols)) {
+            $conn->query("ALTER TABLE system_settings ADD COLUMN promo_style_code VARCHAR(100) NOT NULL DEFAULT 'RACT95002T26' AFTER promo_item_no");
+        }
+        if (!in_array('promo_start_date', $setting_cols)) {
+            $conn->query("ALTER TABLE system_settings ADD COLUMN promo_start_date DATE NULL DEFAULT '2026-10-01' AFTER promo_style_code");
+        }
+        if (!in_array('promo_end_date', $setting_cols)) {
+            $conn->query("ALTER TABLE system_settings ADD COLUMN promo_end_date DATE NULL DEFAULT NULL AFTER promo_start_date");
+        }
     }
 
     return $conn;
@@ -295,6 +336,14 @@ function get_system_settings(mysqli $db = null): array {
         'favicon_path' => 'assets/images/concessiontab.webp',
         'logo_radius' => 0,
         'logo_size' => 96,
+        'promo_enabled' => 1,
+        'promo_name' => 'RL Shoe Bag Promo',
+        'promo_min_spend' => 1999.00,
+        'promo_item_name' => 'RL Shoe Bag',
+        'promo_item_no' => '475552',
+        'promo_style_code' => 'RACT95002T26',
+        'promo_start_date' => '2026-10-01',
+        'promo_end_date' => null,
         'updated_at' => date('Y-m-d H:i:s')
     ];
 }

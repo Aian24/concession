@@ -50,9 +50,14 @@ foreach ($entries as $entry) {
     $created_at = $req_date . ' ' . date('H:i:s');
     $stmt->bind_param("sssdddids", $username, $store_code, $item_no, $base_price, $discount, $amount_sold, $quantity, $line_total, $created_at);
 
+    $is_gwp = !empty($entry['is_gwp']) || ($amount_sold == 0 && $quantity > 0 && $item_no !== '0');
+
     if ($stmt->execute()) {
         $saved++;
-        log_activity($db, $username, 'create', 'Sale', $store_code, $item_no, $quantity, "Created sale entry for item #$item_no");
+        $log_details = $is_gwp 
+            ? "Created sale entry for Promo Gift item #$item_no" 
+            : "Created sale entry for item #$item_no";
+        log_activity($db, $username, 'create', 'Sale', $store_code, $item_no, $quantity, $log_details);
     } else {
         $errors[] = "DB error for item '{$item_no}': " . $stmt->error;
     }

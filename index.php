@@ -176,6 +176,14 @@ if ($is_full_admin && !in_array('user_logs', $user_permissions)) {
 if ($is_full_admin && !in_array('navigation_logs', $user_permissions)) {
     $user_permissions[] = 'navigation_logs';
 }
+
+if ($is_full_admin && !in_array('promo_settings', $user_permissions)) {
+    $user_permissions[] = 'promo_settings';
+}
+
+if ($is_full_admin && !in_array('system_settings', $user_permissions)) {
+    $user_permissions[] = 'system_settings';
+}
 // ── Guard ─────────────────────────────────────────────────────
 if (!isset($_SESSION['user'])) {
     require 'views/login.php';
@@ -214,7 +222,7 @@ $allowed_pages = [
     'receiving', 'create_receiving',
     'pullout', 'create_pullout',
     'ros_supplies', 'create_ros_supplies',
-    'submitted', 'server_health', 'system_settings'
+    'submitted', 'server_health', 'promo_settings', 'system_settings'
 ];
 
 // Check if the requested action is globally valid, AND if the user has permission to view it
