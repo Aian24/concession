@@ -18,8 +18,26 @@ if (!isset($is_admin)) {
 require_once 'includes/db.php';
 $db = db_connect();
 
-$system_settings = get_system_settings($db);
-$promo_enabled   = !empty($system_settings['promo_enabled']);
+$system_settings       = get_system_settings($db);
+$promo_master_enabled  = !empty($system_settings['promo_enabled']);
+$promo_stores_raw      = $system_settings['promo_stores'] ?? 'ALL';
+
+// Check if promo applies to the current store
+$promo_enabled = false;
+if ($promo_master_enabled) {
+    if ($promo_stores_raw === 'ALL' || empty($promo_stores_raw)) {
+        $promo_enabled = true;
+    } else {
+        $allowed_stores = json_decode($promo_stores_raw, true);
+        if (!is_array($allowed_stores)) {
+            $allowed_stores = array_map('trim', explode(',', $promo_stores_raw));
+        }
+        if ($sale_store_code === 'MULTI' || $sale_store_code === 'ALL' || in_array($sale_store_code, $allowed_stores)) {
+            $promo_enabled = true;
+        }
+    }
+}
+
 $promo_name      = $system_settings['promo_name'] ?? 'RL Shoe Bag Promo';
 $promo_min_spend = floatval($system_settings['promo_min_spend'] ?? 1999.00);
 $promo_item_name = $system_settings['promo_item_name'] ?? 'RL Shoe Bag';

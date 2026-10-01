@@ -6,7 +6,28 @@ if (!isset($_SESSION['user']) || (($_SESSION['role'] ?? '') !== 'admin' && empty
 }
 
 require_once 'includes/db.php';
-$settings = get_system_settings();
+$db = db_connect();
+$settings = get_system_settings($db);
+
+$stores_res = $db->query("SELECT scode, sname FROM storecode ORDER BY sname ASC");
+$all_stores = [];
+if ($stores_res) {
+    while ($s = $stores_res->fetch_assoc()) {
+        $all_stores[] = $s;
+    }
+}
+
+$promo_stores_val = $settings['promo_stores'] ?? 'ALL';
+$is_all_stores = ($promo_stores_val === 'ALL' || empty($promo_stores_val));
+$selected_stores = [];
+if (!$is_all_stores) {
+    $decoded = json_decode($promo_stores_val, true);
+    if (is_array($decoded)) {
+        $selected_stores = $decoded;
+    } else {
+        $selected_stores = array_map('trim', explode(',', $promo_stores_val));
+    }
+}
 ?>
 
 <div class="glass-panel border border-white/10 p-6 md:p-8 rounded-2xl w-full shadow-2xl relative overflow-hidden">
@@ -196,6 +217,104 @@ $settings = get_system_settings();
 
         </div>
 
+        <!-- Store Scope & Branch Eligibility Card -->
+        <div class="p-5 sm:p-6 rounded-2xl bg-slate-900/90 border-2 border-slate-700/80 shadow-xl space-y-5">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-pink-500/20 border border-pink-500/40 text-pink-400 flex items-center justify-center shrink-0 shadow-sm">
+                        <i class="fas fa-store text-lg"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h3 class="text-sm sm:text-base font-bold text-white uppercase tracking-wide">Store Scope & Branch Eligibility</h3>
+                            <span id="scope-status-badge" class="px-2.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider <?= $is_all_stores ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30' : 'bg-pink-500/20 text-pink-300 border border-pink-500/30' ?>">
+                                <?= $is_all_stores ? 'All Branches Active' : 'Specific Stores Only (' . count($selected_stores) . ')' ?>
+                            </span>
+                        </div>
+                        <p class="text-xs text-gray-300 mt-0.5">Determine which concession branch stores can offer and claim this promo gift.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scope Choice Cards (All vs Specific) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- Card 1: All Stores -->
+                <div id="scope-card-all" onclick="selectStoreScope('all')" class="p-4 rounded-xl cursor-pointer select-none transition-all flex items-start gap-3.5 shadow-md border-2 <?= $is_all_stores ? 'border-pink-500 bg-pink-500/10 shadow-pink-500/10' : 'border-slate-700 bg-slate-800/60 hover:border-slate-500' ?>">
+                    <input type="radio" name="promo_store_scope" value="all" id="scope-radio-all" <?= $is_all_stores ? 'checked' : '' ?> class="sr-only">
+                    <div id="scope-dot-all" class="w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 transition-all <?= $is_all_stores ? 'border-pink-400 bg-pink-500 text-white' : 'border-gray-500 bg-slate-900 text-transparent' ?>">
+                        <i class="fas fa-circle text-[7px]"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs font-black text-white uppercase tracking-wider flex items-center gap-1.5">
+                            <i class="fas fa-globe text-cyan-400"></i> All Concession Stores (Universal)
+                        </div>
+                        <p class="text-[11px] text-gray-400 mt-1">Promo will be active and available across all <?= count($all_stores) ?> branches automatically.</p>
+                    </div>
+                </div>
+
+                <!-- Card 2: Specific Stores -->
+                <div id="scope-card-specific" onclick="selectStoreScope('specific')" class="p-4 rounded-xl cursor-pointer select-none transition-all flex items-start gap-3.5 shadow-md border-2 <?= !$is_all_stores ? 'border-pink-500 bg-pink-500/10 shadow-pink-500/10' : 'border-slate-700 bg-slate-800/60 hover:border-slate-500' ?>">
+                    <input type="radio" name="promo_store_scope" value="specific" id="scope-radio-specific" <?= !$is_all_stores ? 'checked' : '' ?> class="sr-only">
+                    <div id="scope-dot-specific" class="w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 transition-all <?= !$is_all_stores ? 'border-pink-400 bg-pink-500 text-white' : 'border-gray-500 bg-slate-900 text-transparent' ?>">
+                        <i class="fas fa-circle text-[7px]"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs font-black text-white uppercase tracking-wider flex items-center gap-1.5">
+                            <i class="fas fa-store-alt text-pink-400"></i> Specific Stores Only
+                        </div>
+                        <p class="text-[11px] text-gray-400 mt-1">Selectively choose which branch stores participate in this promotional campaign.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Specific Store Selection Panel (Collapsible) -->
+            <div id="specific-stores-panel" class="<?= $is_all_stores ? 'hidden' : '' ?> space-y-3 pt-3 border-t border-white/10">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-950/80 p-3.5 rounded-xl border border-white/10">
+                    <!-- Search Input -->
+                    <div class="relative flex-1">
+                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                            <i class="fas fa-search text-xs"></i>
+                        </div>
+                        <input type="text" id="store-search-input" oninput="filterStoreList(this.value)" placeholder="Search store by name or code (e.g. MOA, SM-CEBU)..." class="w-full bg-slate-900 border border-slate-700 focus:border-pink-500 focus:ring-1 focus:ring-pink-500 rounded-lg pl-9 pr-3 py-2 text-xs text-white placeholder-gray-500 outline-none transition-all">
+                    </div>
+
+                    <!-- Quick Actions & Selected Counter -->
+                    <div class="flex items-center gap-2 shrink-0 flex-wrap">
+                        <button type="button" onclick="selectAllStores(true)" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/30 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer shadow-sm">
+                            <i class="fas fa-check-double text-[9px]"></i> Select All
+                        </button>
+                        <button type="button" onclick="selectAllStores(false)" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-gray-300 border border-gray-600 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer shadow-sm">
+                            <i class="fas fa-times text-[9px]"></i> Clear All
+                        </button>
+                        <span id="store-counter-badge" class="px-3 py-2 rounded-lg bg-pink-500/20 text-pink-300 border border-pink-500/40 text-[10px] font-black uppercase tracking-wider shadow-sm">
+                            <span id="selected-store-count"><?= count($selected_stores) ?></span> / <?= count($all_stores) ?> Selected
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Store Checkboxes Grid -->
+                <div id="store-checkbox-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 max-h-80 overflow-y-auto pr-1 custom-scrollbar">
+                    <?php if (empty($all_stores)): ?>
+                        <div class="col-span-full py-8 text-center text-gray-400 text-xs font-semibold">No stores found in database.</div>
+                    <?php else: ?>
+                        <?php foreach ($all_stores as $st): 
+                            $scode = $st['scode'];
+                            $sname = $st['sname'];
+                            $isChecked = in_array($scode, $selected_stores);
+                        ?>
+                        <label class="store-item-card relative flex items-center gap-3 p-3 rounded-xl cursor-pointer select-none transition-all border <?= $isChecked ? 'bg-pink-950/30 border-pink-500/60 shadow-inner' : 'bg-slate-800/70 hover:bg-slate-800 border-slate-700/80 hover:border-pink-500/40' ?> group" data-name="<?= strtolower(htmlspecialchars($sname)) ?>" data-code="<?= strtolower(htmlspecialchars($scode)) ?>">
+                            <input type="checkbox" name="promo_stores[]" value="<?= htmlspecialchars($scode) ?>" <?= $isChecked ? 'checked' : '' ?> onchange="handleStoreCheckboxChange(this)" class="store-checkbox w-4 h-4 rounded text-pink-600 bg-slate-900 border-slate-600 focus:ring-pink-500 focus:ring-offset-slate-900 cursor-pointer">
+                            <div class="min-w-0 flex-1">
+                                <div class="text-[11px] font-bold text-white truncate group-hover:text-pink-300 transition-colors"><?= htmlspecialchars($sname) ?></div>
+                                <span class="inline-block text-[8.5px] font-mono font-bold text-gray-400 bg-slate-900/90 px-1.5 py-0.5 rounded border border-white/5 mt-0.5"><?= htmlspecialchars($scode) ?></span>
+                            </div>
+                        </label>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+
         <!-- Live Cashier Preview Section -->
         <div class="p-6 rounded-2xl bg-slate-900/90 border-2 border-slate-700/80 shadow-2xl space-y-4">
             <div class="flex items-center justify-between border-b border-white/10 pb-3">
@@ -366,27 +485,129 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// Quick Preset function
-function loadOct2026Preset() {
-    document.getElementById('promo-name-input').value = 'RL Shoe Bag Promo';
-    document.getElementById('promo-min-spend-input').value = '1999.00';
-    document.getElementById('promo-item-name-input').value = 'RL Shoe Bag';
-    document.getElementById('promo-item-no-input').value = '475552';
-    document.getElementById('promo-style-code-input').value = 'RACT95002T26';
-    document.getElementById('promo-start-date-input').value = '2026-10-01';
-    document.getElementById('promo-end-date-input').value = '';
-    
-    const promoToggle = document.getElementById('promo-enabled-toggle');
-    if (promoToggle && !promoToggle.checked) {
-        promoToggle.checked = true;
-        promoToggle.dispatchEvent(new Event('change'));
-    }
+    // Quick Preset function
+    window.loadOct2026Preset = function() {
+        document.getElementById('promo-name-input').value = 'RL Shoe Bag Promo';
+        document.getElementById('promo-min-spend-input').value = '1999.00';
+        document.getElementById('promo-item-name-input').value = 'RL Shoe Bag';
+        document.getElementById('promo-item-no-input').value = '475552';
+        document.getElementById('promo-style-code-input').value = 'RACT95002T26';
+        document.getElementById('promo-start-date-input').value = '2026-10-01';
+        document.getElementById('promo-end-date-input').value = '';
+        
+        const promoToggle = document.getElementById('promo-enabled-toggle');
+        if (promoToggle && !promoToggle.checked) {
+            promoToggle.checked = true;
+            promoToggle.dispatchEvent(new Event('change'));
+        }
 
-    // Trigger input events for live preview
-    document.getElementById('promo-name-input').dispatchEvent(new Event('input'));
-    document.getElementById('promo-min-spend-input').dispatchEvent(new Event('input'));
-    document.getElementById('promo-item-name-input').dispatchEvent(new Event('input'));
-    document.getElementById('promo-item-no-input').dispatchEvent(new Event('input'));
-    document.getElementById('promo-style-code-input').dispatchEvent(new Event('input'));
-}
+        window.selectStoreScope('all');
+
+        // Trigger input events for live preview
+        document.getElementById('promo-name-input').dispatchEvent(new Event('input'));
+        document.getElementById('promo-min-spend-input').dispatchEvent(new Event('input'));
+        document.getElementById('promo-item-name-input').dispatchEvent(new Event('input'));
+        document.getElementById('promo-item-no-input').dispatchEvent(new Event('input'));
+        document.getElementById('promo-style-code-input').dispatchEvent(new Event('input'));
+    };
+});
+
+// Store Scope Handlers
+window.selectStoreScope = function(scope) {
+    const radioAll = document.getElementById('scope-radio-all');
+    const radioSpecific = document.getElementById('scope-radio-specific');
+    const cardAll = document.getElementById('scope-card-all');
+    const cardSpecific = document.getElementById('scope-card-specific');
+    const dotAll = document.getElementById('scope-dot-all');
+    const dotSpecific = document.getElementById('scope-dot-specific');
+    const panel = document.getElementById('specific-stores-panel');
+    const badge = document.getElementById('scope-status-badge');
+    const checkedBoxes = document.querySelectorAll('.store-checkbox:checked');
+
+    if (scope === 'all') {
+        if (radioAll) radioAll.checked = true;
+        if (radioSpecific) radioSpecific.checked = false;
+
+        if (cardAll) cardAll.className = 'p-4 rounded-xl cursor-pointer select-none transition-all flex items-start gap-3.5 shadow-md border-2 border-pink-500 bg-pink-500/10 shadow-pink-500/10';
+        if (cardSpecific) cardSpecific.className = 'p-4 rounded-xl cursor-pointer select-none transition-all flex items-start gap-3.5 shadow-md border-2 border-slate-700 bg-slate-800/60 hover:border-slate-500';
+
+        if (dotAll) dotAll.className = 'w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 transition-all border-pink-400 bg-pink-500 text-white';
+        if (dotSpecific) dotSpecific.className = 'w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 transition-all border-gray-500 bg-slate-900 text-transparent';
+
+        if (panel) panel.classList.add('hidden');
+        if (badge) {
+            badge.textContent = 'All Branches Active';
+            badge.className = 'px-2.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-cyan-500/20 text-cyan-300 border border-cyan-500/30';
+        }
+    } else {
+        if (radioAll) radioAll.checked = false;
+        if (radioSpecific) radioSpecific.checked = true;
+
+        if (cardAll) cardAll.className = 'p-4 rounded-xl cursor-pointer select-none transition-all flex items-start gap-3.5 shadow-md border-2 border-slate-700 bg-slate-800/60 hover:border-slate-500';
+        if (cardSpecific) cardSpecific.className = 'p-4 rounded-xl cursor-pointer select-none transition-all flex items-start gap-3.5 shadow-md border-2 border-pink-500 bg-pink-500/10 shadow-pink-500/10';
+
+        if (dotAll) dotAll.className = 'w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 transition-all border-gray-500 bg-slate-900 text-transparent';
+        if (dotSpecific) dotSpecific.className = 'w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 transition-all border-pink-400 bg-pink-500 text-white';
+
+        if (panel) panel.classList.remove('hidden');
+        if (badge) {
+            badge.textContent = `Specific Stores Only (${checkedBoxes.length})`;
+            badge.className = 'px-2.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-pink-500/20 text-pink-300 border border-pink-500/30';
+        }
+    }
+};
+
+window.handleStoreCheckboxChange = function(checkbox) {
+    const card = checkbox.closest('.store-item-card');
+    if (card) {
+        if (checkbox.checked) {
+            card.className = 'store-item-card relative flex items-center gap-3 p-3 rounded-xl cursor-pointer select-none transition-all border bg-pink-950/30 border-pink-500/60 shadow-inner group';
+        } else {
+            card.className = 'store-item-card relative flex items-center gap-3 p-3 rounded-xl cursor-pointer select-none transition-all border bg-slate-800/70 hover:bg-slate-800 border-slate-700/80 hover:border-pink-500/40 group';
+        }
+    }
+    window.updateSelectedStoreCount();
+};
+
+window.filterStoreList = function(query) {
+    const q = (query || '').toLowerCase().trim();
+    const cards = document.querySelectorAll('.store-item-card');
+    cards.forEach(card => {
+        const name = card.dataset.name || '';
+        const code = card.dataset.code || '';
+        if (!q || name.includes(q) || code.includes(q)) {
+            card.classList.remove('hidden');
+        } else {
+            card.classList.add('hidden');
+        }
+    });
+};
+
+window.selectAllStores = function(check) {
+    const checkboxes = document.querySelectorAll('.store-checkbox');
+    checkboxes.forEach(cb => {
+        const card = cb.closest('.store-item-card');
+        if (!card || !card.classList.contains('hidden')) {
+            cb.checked = check;
+            if (check) {
+                card.className = 'store-item-card relative flex items-center gap-3 p-3 rounded-xl cursor-pointer select-none transition-all border bg-pink-950/30 border-pink-500/60 shadow-inner group';
+            } else {
+                card.className = 'store-item-card relative flex items-center gap-3 p-3 rounded-xl cursor-pointer select-none transition-all border bg-slate-800/70 hover:bg-slate-800 border-slate-700/80 hover:border-pink-500/40 group';
+            }
+        }
+    });
+    window.updateSelectedStoreCount();
+};
+
+window.updateSelectedStoreCount = function() {
+    const checked = document.querySelectorAll('.store-checkbox:checked');
+    const countEl = document.getElementById('selected-store-count');
+    const badge = document.getElementById('scope-status-badge');
+    const scopeSpecific = document.getElementById('scope-radio-specific')?.checked;
+    
+    if (countEl) countEl.textContent = checked.length;
+    if (scopeSpecific && badge) {
+        badge.textContent = `Specific Stores Only (${checked.length})`;
+    }
+};
 </script>

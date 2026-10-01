@@ -177,6 +177,9 @@ function db_connect(): mysqli {
         if (!in_array('promo_end_date', $setting_cols)) {
             @$conn->query("ALTER TABLE system_settings ADD COLUMN promo_end_date DATE NULL DEFAULT NULL");
         }
+        if (!in_array('promo_stores', $setting_cols)) {
+            @$conn->query("ALTER TABLE system_settings ADD COLUMN promo_stores TEXT NULL");
+        }
 
         // Ensure at least one row exists
         $cnt_res = $conn->query("SELECT COUNT(*) as cnt FROM system_settings");
@@ -364,6 +367,7 @@ function get_system_settings(mysqli $db = null): array {
         'promo_style_code' => 'RACT95002T26',
         'promo_start_date' => '2026-10-01',
         'promo_end_date' => null,
+        'promo_stores' => 'ALL',
         'updated_at' => date('Y-m-d H:i:s')
     ];
 

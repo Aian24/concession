@@ -35,7 +35,8 @@ try {
         'promo_item_no'    => "ALTER TABLE system_settings ADD COLUMN promo_item_no VARCHAR(50) NOT NULL DEFAULT '475552'",
         'promo_style_code' => "ALTER TABLE system_settings ADD COLUMN promo_style_code VARCHAR(100) NOT NULL DEFAULT 'RACT95002T26'",
         'promo_start_date' => "ALTER TABLE system_settings ADD COLUMN promo_start_date DATE NULL DEFAULT '2026-10-01'",
-        'promo_end_date'   => "ALTER TABLE system_settings ADD COLUMN promo_end_date DATE NULL DEFAULT NULL"
+        'promo_end_date'   => "ALTER TABLE system_settings ADD COLUMN promo_end_date DATE NULL DEFAULT NULL",
+        'promo_stores'     => "ALTER TABLE system_settings ADD COLUMN promo_stores TEXT NULL"
     ];
 
     foreach ($column_definitions as $col_name => $sql_query) {
@@ -67,6 +68,25 @@ try {
     $promo_start_date = !empty($inputData['promo_start_date']) ? "'" . $db->real_escape_string($inputData['promo_start_date']) . "'" : "NULL";
     $promo_end_date   = !empty($inputData['promo_end_date'])   ? "'" . $db->real_escape_string($inputData['promo_end_date']) . "'"   : "NULL";
 
+    // Handle promo_stores: can be 'ALL' or array/comma-separated list of store codes
+    $store_scope = $inputData['promo_store_scope'] ?? '';
+    if ($store_scope === 'all') {
+        $promo_stores = 'ALL';
+    } else {
+        $stores_raw = $inputData['promo_stores'] ?? 'ALL';
+        if (is_array($stores_raw)) {
+            $cleaned = array_values(array_unique(array_filter(array_map('trim', $stores_raw))));
+            $promo_stores = count($cleaned) > 0 ? json_encode($cleaned) : 'ALL';
+        } else {
+            $stores_str = trim($stores_raw);
+            if ($stores_str === '' || strtoupper($stores_str) === 'ALL') {
+                $promo_stores = 'ALL';
+            } else {
+                $promo_stores = $stores_str;
+            }
+        }
+    }
+
     if ($promo_name === '') $promo_name = 'RL Shoe Bag Promo';
     if ($promo_item_name === '') $promo_item_name = 'RL Shoe Bag';
     if ($promo_item_no === '') $promo_item_no = '475552';
@@ -75,7 +95,7 @@ try {
     // Ensure system_settings has at least one row
     $chk = $db->query("SELECT id FROM system_settings LIMIT 1");
     if (!$chk || $chk->num_rows === 0) {
-        $db->query("INSERT INTO system_settings (company_name, promo_enabled, promo_name, promo_min_spend, promo_item_name, promo_item_no, promo_style_code, promo_start_date) VALUES ('Concession System', $promo_enabled, '" . $db->real_escape_string($promo_name) . "', $promo_min_spend, '" . $db->real_escape_string($promo_item_name) . "', '" . $db->real_escape_string($promo_item_no) . "', '" . $db->real_escape_string($promo_style_code) . "', $promo_start_date)");
+        $db->query("INSERT INTO system_settings (company_name, promo_enabled, promo_name, promo_min_spend, promo_item_name, promo_item_no, promo_style_code, promo_start_date, promo_stores) VALUES ('Concession System', $promo_enabled, '" . $db->real_escape_string($promo_name) . "', $promo_min_spend, '" . $db->real_escape_string($promo_item_name) . "', '" . $db->real_escape_string($promo_item_no) . "', '" . $db->real_escape_string($promo_style_code) . "', $promo_start_date, '" . $db->real_escape_string($promo_stores) . "')");
         echo json_encode(['success' => true, 'message' => 'Promo settings saved successfully.']);
         exit;
     }
@@ -88,7 +108,8 @@ try {
         "promo_item_no = '" . $db->real_escape_string($promo_item_no) . "'",
         "promo_style_code = '" . $db->real_escape_string($promo_style_code) . "'",
         "promo_start_date = " . $promo_start_date,
-        "promo_end_date = " . $promo_end_date
+        "promo_end_date = " . $promo_end_date,
+        "promo_stores = '" . $db->real_escape_string($promo_stores) . "'"
     ];
 
     $query = "UPDATE system_settings SET " . implode(', ', $updates);
