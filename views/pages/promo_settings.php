@@ -365,152 +365,147 @@ if (!$is_all_stores) {
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-    const promoToggle = document.getElementById('promo-enabled-toggle');
-    const statusIcon = document.getElementById('status-icon');
-    const statusIconBox = document.getElementById('status-icon-box');
-    const statusBadge = document.getElementById('promo-status-badge');
-
-    const promoNameInput = document.getElementById('promo-name-input');
-    const promoMinSpendInput = document.getElementById('promo-min-spend-input');
-    const promoItemNameInput = document.getElementById('promo-item-name-input');
-    const promoItemNoInput = document.getElementById('promo-item-no-input');
-    const promoStyleCodeInput = document.getElementById('promo-style-code-input');
-
-    const previewTitle = document.getElementById('preview-promo-title');
-    const previewMinSpend = document.getElementById('preview-min-spend');
-    const previewGiftName = document.getElementById('preview-gift-name');
-    const previewGiftCodes = document.getElementById('preview-gift-codes');
-    const previewContainer = document.getElementById('preview-container');
-
-    function updatePreviewCodes() {
-        if (!previewGiftCodes) return;
-        const itemNo = promoItemNoInput?.value.trim() || '475552';
-        const styleCode = promoStyleCodeInput?.value.trim() || 'RACT95002T26';
-        previewGiftCodes.textContent = `(#${itemNo} • ${styleCode})`;
-    }
-
-    // Toggle switch handler
-    if (promoToggle) {
-        promoToggle.addEventListener('change', () => {
-            if (promoToggle.checked) {
-                statusBadge.textContent = 'Active & Running';
-                statusBadge.className = 'px-2.5 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
-                
-                statusIconBox.className = 'w-12 h-12 rounded-xl bg-emerald-500/20 border-emerald-500/40 text-emerald-400 border flex items-center justify-center shrink-0 transition-all';
-                statusIcon.className = 'fas fa-toggle-on text-2xl';
-
-                previewContainer.style.opacity = '1';
-                previewContainer.style.filter = 'none';
-            } else {
-                statusBadge.textContent = 'Disabled';
-                statusBadge.className = 'px-2.5 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-gray-800 text-gray-400 border border-gray-700';
-                
-                statusIconBox.className = 'w-12 h-12 rounded-xl bg-slate-800 border-slate-700 text-gray-500 border flex items-center justify-center shrink-0 transition-all';
-                statusIcon.className = 'fas fa-toggle-off text-2xl';
-
-                previewContainer.style.opacity = '0.5';
-                previewContainer.style.filter = 'grayscale(0.6)';
-            }
-        });
-    }
-
-    // Live preview update
-    if (promoNameInput && previewTitle) {
-        promoNameInput.addEventListener('input', (e) => {
-            previewTitle.textContent = e.target.value.trim() || 'RL Shoe Bag Promo';
-        });
-    }
-
-    if (promoMinSpendInput && previewMinSpend) {
-        promoMinSpendInput.addEventListener('input', (e) => {
-            const val = parseFloat(e.target.value) || 0;
-            previewMinSpend.textContent = '₱' + val.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-        });
-    }
-
-    if (promoItemNameInput && previewGiftName) {
-        promoItemNameInput.addEventListener('input', (e) => {
-            previewGiftName.textContent = 'FREE ' + (e.target.value.trim() || 'RL Shoe Bag');
-        });
-    }
-
-    if (promoItemNoInput) {
-        promoItemNoInput.addEventListener('input', updatePreviewCodes);
-    }
-    if (promoStyleCodeInput) {
-        promoStyleCodeInput.addEventListener('input', updatePreviewCodes);
-    }
-
-    // Save form handler
-    const form = document.getElementById('promo-settings-form');
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        if (typeof showGlobalLoader === 'function') showGlobalLoader("Saving Promo Settings...");
-        
-        try {
-            const formData = new FormData(form);
-            const response = await fetch('api/save_promo_settings.php', {
-                method: 'POST',
-                body: formData
-            });
-            
-            const result = await response.json();
-            
-            if (typeof hideGlobalLoader === 'function') hideGlobalLoader();
-            
-            if (result.success) {
-                if (typeof showStatusModal === 'function') {
-                    showStatusModal(true, result.message, 'Success');
-                } else {
-                    alert(result.message);
-                }
-            } else {
-                if (typeof showStatusModal === 'function') {
-                    showStatusModal(false, result.message, 'Error');
-                } else {
-                    alert(result.message);
-                }
-            }
-        } catch (error) {
-            if (typeof hideGlobalLoader === 'function') hideGlobalLoader();
-            console.error('Error saving promo settings:', error);
-            if (typeof showStatusModal === 'function') {
-                showStatusModal(false, 'A network error occurred while saving promo settings.', 'Error');
-            } else {
-                alert('A network error occurred.');
-            }
-        }
-    });
-});
-
-    // Quick Preset function
-    window.loadOct2026Preset = function() {
-        document.getElementById('promo-name-input').value = 'RL Shoe Bag Promo';
-        document.getElementById('promo-min-spend-input').value = '1999.00';
-        document.getElementById('promo-item-name-input').value = 'RL Shoe Bag';
-        document.getElementById('promo-item-no-input').value = '475552';
-        document.getElementById('promo-style-code-input').value = 'RACT95002T26';
-        document.getElementById('promo-start-date-input').value = '2026-10-01';
-        document.getElementById('promo-end-date-input').value = '';
-        
+(function() {
+    function initPromoSettings() {
         const promoToggle = document.getElementById('promo-enabled-toggle');
-        if (promoToggle && !promoToggle.checked) {
-            promoToggle.checked = true;
-            promoToggle.dispatchEvent(new Event('change'));
+        const statusIcon = document.getElementById('status-icon');
+        const statusIconBox = document.getElementById('status-icon-box');
+        const statusBadge = document.getElementById('promo-status-badge');
+
+        const promoNameInput = document.getElementById('promo-name-input');
+        const promoMinSpendInput = document.getElementById('promo-min-spend-input');
+        const promoItemNameInput = document.getElementById('promo-item-name-input');
+        const promoItemNoInput = document.getElementById('promo-item-no-input');
+        const promoStyleCodeInput = document.getElementById('promo-style-code-input');
+
+        const previewTitle = document.getElementById('preview-promo-title');
+        const previewMinSpend = document.getElementById('preview-min-spend');
+        const previewGiftName = document.getElementById('preview-gift-name');
+        const previewGiftCodes = document.getElementById('preview-gift-codes');
+        const previewContainer = document.getElementById('preview-container');
+
+        function updatePreviewCodes() {
+            if (!previewGiftCodes) return;
+            const itemNo = promoItemNoInput?.value.trim() || '475552';
+            const styleCode = promoStyleCodeInput?.value.trim() || 'RACT95002T26';
+            previewGiftCodes.textContent = `(#${itemNo} • ${styleCode})`;
         }
 
-        window.selectStoreScope('all');
+        // Toggle switch handler
+        if (promoToggle) {
+            promoToggle.addEventListener('change', () => {
+                if (promoToggle.checked) {
+                    if (statusBadge) {
+                        statusBadge.textContent = 'Active & Running';
+                        statusBadge.className = 'px-2.5 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+                    }
+                    if (statusIconBox) {
+                        statusIconBox.className = 'w-12 h-12 rounded-xl bg-emerald-500/20 border-emerald-500/40 text-emerald-400 border flex items-center justify-center shrink-0 transition-all';
+                    }
+                    if (statusIcon) {
+                        statusIcon.className = 'fas fa-toggle-on text-2xl';
+                    }
+                    if (previewContainer) {
+                        previewContainer.style.opacity = '1';
+                        previewContainer.style.filter = 'none';
+                    }
+                } else {
+                    if (statusBadge) {
+                        statusBadge.textContent = 'Disabled';
+                        statusBadge.className = 'px-2.5 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-gray-800 text-gray-400 border border-gray-700';
+                    }
+                    if (statusIconBox) {
+                        statusIconBox.className = 'w-12 h-12 rounded-xl bg-slate-800 border-slate-700 text-gray-500 border flex items-center justify-center shrink-0 transition-all';
+                    }
+                    if (statusIcon) {
+                        statusIcon.className = 'fas fa-toggle-off text-2xl';
+                    }
+                    if (previewContainer) {
+                        previewContainer.style.opacity = '0.5';
+                        previewContainer.style.filter = 'grayscale(0.6)';
+                    }
+                }
+            });
+        }
 
-        // Trigger input events for live preview
-        document.getElementById('promo-name-input').dispatchEvent(new Event('input'));
-        document.getElementById('promo-min-spend-input').dispatchEvent(new Event('input'));
-        document.getElementById('promo-item-name-input').dispatchEvent(new Event('input'));
-        document.getElementById('promo-item-no-input').dispatchEvent(new Event('input'));
-        document.getElementById('promo-style-code-input').dispatchEvent(new Event('input'));
-    };
-});
+        // Live preview update
+        if (promoNameInput && previewTitle) {
+            promoNameInput.addEventListener('input', (e) => {
+                previewTitle.textContent = e.target.value.trim() || 'RL Shoe Bag Promo';
+            });
+        }
+
+        if (promoMinSpendInput && previewMinSpend) {
+            promoMinSpendInput.addEventListener('input', (e) => {
+                const val = parseFloat(e.target.value) || 0;
+                previewMinSpend.textContent = '₱' + val.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            });
+        }
+
+        if (promoItemNameInput && previewGiftName) {
+            promoItemNameInput.addEventListener('input', (e) => {
+                previewGiftName.textContent = 'FREE ' + (e.target.value.trim() || 'RL Shoe Bag');
+            });
+        }
+
+        if (promoItemNoInput) {
+            promoItemNoInput.addEventListener('input', updatePreviewCodes);
+        }
+        if (promoStyleCodeInput) {
+            promoStyleCodeInput.addEventListener('input', updatePreviewCodes);
+        }
+
+        // Save form handler
+        const form = document.getElementById('promo-settings-form');
+        if (form) {
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                if (typeof showGlobalLoader === 'function') showGlobalLoader("Saving Promo Settings...");
+                
+                try {
+                    const formData = new FormData(form);
+                    const response = await fetch('api/save_promo_settings.php', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (typeof hideGlobalLoader === 'function') hideGlobalLoader();
+                    
+                    if (result.success) {
+                        if (typeof showStatusModal === 'function') {
+                            showStatusModal(true, result.message, 'Success');
+                        } else {
+                            alert(result.message);
+                        }
+                    } else {
+                        if (typeof showStatusModal === 'function') {
+                            showStatusModal(false, result.message, 'Error');
+                        } else {
+                            alert(result.message);
+                        }
+                    }
+                } catch (error) {
+                    if (typeof hideGlobalLoader === 'function') hideGlobalLoader();
+                    console.error('Error saving promo settings:', error);
+                    if (typeof showStatusModal === 'function') {
+                        showStatusModal(false, 'A network error occurred while saving promo settings.', 'Error');
+                    } else {
+                        alert('A network error occurred.');
+                    }
+                }
+            });
+        }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initPromoSettings);
+    } else {
+        initPromoSettings();
+    }
+})();
 
 // Store Scope Handlers
 window.selectStoreScope = function(scope) {
@@ -609,5 +604,30 @@ window.updateSelectedStoreCount = function() {
     if (scopeSpecific && badge) {
         badge.textContent = `Specific Stores Only (${checked.length})`;
     }
+};
+
+window.loadOct2026Preset = function() {
+    document.getElementById('promo-name-input').value = 'RL Shoe Bag Promo';
+    document.getElementById('promo-min-spend-input').value = '1999.00';
+    document.getElementById('promo-item-name-input').value = 'RL Shoe Bag';
+    document.getElementById('promo-item-no-input').value = '475552';
+    document.getElementById('promo-style-code-input').value = 'RACT95002T26';
+    document.getElementById('promo-start-date-input').value = '2026-10-01';
+    document.getElementById('promo-end-date-input').value = '';
+    
+    const promoToggle = document.getElementById('promo-enabled-toggle');
+    if (promoToggle && !promoToggle.checked) {
+        promoToggle.checked = true;
+        promoToggle.dispatchEvent(new Event('change'));
+    }
+
+    window.selectStoreScope('all');
+
+    // Trigger input events for live preview
+    document.getElementById('promo-name-input').dispatchEvent(new Event('input'));
+    document.getElementById('promo-min-spend-input').dispatchEvent(new Event('input'));
+    document.getElementById('promo-item-name-input').dispatchEvent(new Event('input'));
+    document.getElementById('promo-item-no-input').dispatchEvent(new Event('input'));
+    document.getElementById('promo-style-code-input').dispatchEvent(new Event('input'));
 };
 </script>
