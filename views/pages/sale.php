@@ -358,7 +358,7 @@ if (isset($_GET['ajax'])) {
 
                     <div class="flex items-center gap-2 shrink-0">
                         <label class="relative inline-flex items-center cursor-pointer select-none">
-                            <input type="checkbox" id="gwp-toggle" class="sr-only peer" onchange="toggleGwpPromo(this.checked)">
+                            <input type="checkbox" id="gwp-toggle" class="sr-only peer" onchange="toggleGwpPromo(this.checked, true)">
                             <div class="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-purple-600 peer-checked:to-pink-600 border border-white/10 shadow-inner"></div>
                             <span id="gwp-toggle-label" class="hidden xs:inline-block sm:inline-block ml-2 text-[9px] font-black uppercase tracking-wider text-gray-400 peer-checked:text-pink-400 transition-colors">
                                 Promo Gift
@@ -642,11 +642,19 @@ if (isset($_GET['ajax'])) {
     };
 
     // ── GWP Promo Logic ──────────────────────────────────────
-    window.toggleGwpPromo = function(isChecked, skipSummary = false) {
+    let gwpUserDisabled = false; // Flag to preserve manual cashier toggle-off
+
+    window.toggleGwpPromo = function(isChecked, isUserAction = false) {
+        if (isUserAction) {
+            gwpUserDisabled = !isChecked;
+        }
         const box = document.getElementById('gwp-gift-box');
         const label = document.getElementById('gwp-toggle-label');
         const input = document.getElementById('gwp-item-no');
+        const toggle = document.getElementById('gwp-toggle');
         
+        if (toggle) toggle.checked = isChecked;
+
         if (isChecked) {
             if (box) box.classList.remove('hidden');
             if (label) label.textContent = 'Promo Gift Added';
@@ -654,11 +662,9 @@ if (isset($_GET['ajax'])) {
             if (input && input.value) window.lookupGwpPrism(input);
         } else {
             if (box) box.classList.add('hidden');
-            if (label) label.textContent = 'Promo Gift';
+            if (label) label.textContent = 'Promo Gift (Off)';
         }
-        if (!skipSummary) {
-            window.updateSummary();
-        }
+        window.updateSummary();
     };
 
     window.lookupGwpPrism = function(input) {
@@ -740,27 +746,45 @@ if (isset($_GET['ajax'])) {
 
         // Check GWP Promo status and thresholds
         const gwpToggle = document.getElementById('gwp-toggle');
+        const gwpBox = document.getElementById('gwp-gift-box');
+        const gwpLabel = document.getElementById('gwp-toggle-label');
         
         if (promoSec) {
             const promoBadge = document.getElementById('promo-status-badge');
             const promoHelper = document.getElementById('promo-helper-text');
+            const isQualified = (total >= minSpend && minSpend > 0);
             
-            if (total >= minSpend && minSpend > 0) {
+            if (isQualified) {
                 promoSec.classList.add('border-pink-500/50');
                 promoSec.classList.remove('border-white/10');
-                if (promoBadge) {
-                    promoBadge.className = 'text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-600 text-white shadow-sm';
-                    promoBadge.innerHTML = '🎉 Qualified';
-                }
-                if (promoHelper) {
-                    promoHelper.innerHTML = `Spend qualified for <span class="text-pink-300 font-bold">FREE Gift</span>.`;
-                }
-                // Auto-on / enable toggle if qualified
-                if (gwpToggle && !gwpToggle.checked) {
-                    gwpToggle.checked = true;
-                    window.toggleGwpPromo(true, true);
+                
+                if (gwpUserDisabled) {
+                    // User manually disabled promo gift for this transaction
+                    if (gwpToggle) gwpToggle.checked = false;
+                    if (gwpBox) gwpBox.classList.add('hidden');
+                    if (gwpLabel) gwpLabel.textContent = 'Promo Gift (Off)';
+                    if (promoBadge) {
+                        promoBadge.className = 'text-[7.5px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-800 text-pink-300 border border-pink-500/30';
+                        promoBadge.innerHTML = '🎉 Qualified (Disabled)';
+                    }
+                    if (promoHelper) {
+                        promoHelper.innerHTML = `Spend qualified. <span class="text-pink-300 font-bold">Promo Gift is toggled OFF</span> (Switch ON to include gift).`;
+                    }
+                } else {
+                    // Promo enabled and qualified
+                    if (gwpToggle) gwpToggle.checked = true;
+                    if (gwpBox) gwpBox.classList.remove('hidden');
+                    if (gwpLabel) gwpLabel.textContent = 'Promo Gift Added';
+                    if (promoBadge) {
+                        promoBadge.className = 'text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-600 text-white shadow-sm';
+                        promoBadge.innerHTML = '🎉 Qualified';
+                    }
+                    if (promoHelper) {
+                        promoHelper.innerHTML = `Spend qualified for <span class="text-pink-300 font-bold">FREE Gift</span>.`;
+                    }
                 }
             } else {
+                // Not qualified
                 promoSec.classList.remove('border-pink-500/50');
                 promoSec.classList.add('border-white/10');
                 const remaining = minSpend - total;
@@ -771,10 +795,12 @@ if (isset($_GET['ajax'])) {
                 if (promoHelper) {
                     promoHelper.innerHTML = `Spend <span class="text-green-400 font-bold">₱${remaining.toLocaleString('en-US', {minimumFractionDigits: 2})}</span> more for <span class="text-pink-300 font-bold">FREE Gift</span>`;
                 }
-                // Auto turn off if not qualified
-                if (gwpToggle && gwpToggle.checked) {
-                    gwpToggle.checked = false;
-                    window.toggleGwpPromo(false, true);
+                if (gwpToggle) gwpToggle.checked = false;
+                if (gwpBox) gwpBox.classList.add('hidden');
+                if (gwpLabel) gwpLabel.textContent = 'Promo Gift';
+
+                if (total === 0) {
+                    gwpUserDisabled = false;
                 }
             }
 
@@ -832,6 +858,7 @@ if (isset($_GET['ajax'])) {
             rows[0].querySelectorAll('input').forEach(i => i.value = '');
             rows[0].querySelectorAll('select').forEach(s => s.value = '0');
             
+            gwpUserDisabled = false;
             const gwpToggle = document.getElementById('gwp-toggle');
             if (gwpToggle) {
                 gwpToggle.checked = false;
@@ -949,6 +976,7 @@ if (isset($_GET['ajax'])) {
                     rows[0].querySelectorAll('select').forEach(s => s.value = '0');
                     
                     // Reset GWP toggle and fields
+                    gwpUserDisabled = false;
                     if (gwpToggle) {
                         gwpToggle.checked = false;
                         window.toggleGwpPromo(false);
