@@ -74,7 +74,7 @@ if ($ids_str !== '') {
         $types .= "s";
     }
 }
-$sql .= " ORDER BY s.created_at DESC";
+$sql .= " ORDER BY s.created_at DESC, s.id ASC";
 
 $stmt = $db->prepare($sql);
 if (!empty($params)) {

@@ -39,7 +39,8 @@ if ($tab === 'sales') {
         $count_sql .= " AND (item_no LIKE ? OR id LIKE ?)";
     }
     
-    $sql .= " ORDER BY $order_by LIMIT ? OFFSET ?";
+    $sales_order_by = $is_admin ? "created_at DESC, id ASC" : "system_timestamp DESC, id ASC";
+    $sql .= " ORDER BY $sales_order_by LIMIT ? OFFSET ?";
     
     $stmt = $db->prepare($sql);
     $c_stmt = $db->prepare($count_sql);

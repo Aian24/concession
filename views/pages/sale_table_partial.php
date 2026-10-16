@@ -120,6 +120,10 @@ if ($is_single_day && ($is_admin || $is_multi_store_admin) && empty($store_filte
             position: relative;
             box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
         }
+        #submitted-history-table tr.is-promo-gift-row {
+            border-color: rgba(236, 72, 153, 0.4) !important;
+            background: linear-gradient(145deg, rgba(80, 7, 36, 0.25), rgba(15, 23, 42, 0.5)) !important;
+        }
         #submitted-history-table td { 
             display: flex; 
             flex-direction: column;
@@ -501,8 +505,9 @@ if ($is_single_day && ($is_admin || $is_multi_store_admin) && empty($store_filte
                     foreach ($submitted_sales as $s): 
                         $total_qty += $s['quantity'];
                         $total_line_total += $s['line_total'];
+                        $is_gwp_row = ((float)($s['amount_sold'] ?? 0) == 0 && (int)($s['quantity'] ?? 0) > 0 && ($s['item_no'] ?? '') !== '0');
                     ?>
-                    <tr class="hover:bg-white/5 transition-colors border-b border-white/5 last:border-0 border-r border-transparent hover:border-r-green-500/50">
+                    <tr class="<?= $is_gwp_row ? 'is-promo-gift-row bg-pink-500/[0.04] border-l-2 border-l-pink-500/70 hover:bg-pink-500/[0.08]' : 'hover:bg-white/5' ?> transition-colors border-b border-white/5 last:border-0 border-r border-transparent hover:border-r-green-500/50">
                         <td class="px-5 py-3.5 text-center" data-label="Select">
                             <input type="checkbox" name="sale_ids[]" value="<?= $s['id'] ?>" class="sale-checkbox rounded border-white/20 bg-slate-900 text-green-500 focus:ring-offset-slate-900">
                         </td>
@@ -516,9 +521,6 @@ if ($is_single_day && ($is_admin || $is_multi_store_admin) && empty($store_filte
                                 </div>
                             </td>
                         <?php endif; ?>
-                        <?php 
-                            $is_gwp_row = ((float)($s['amount_sold'] ?? 0) == 0 && (int)($s['quantity'] ?? 0) > 0 && ($s['item_no'] ?? '') !== '0');
-                        ?>
                         <td class="px-5 py-3.5 font-bold text-purple-300 tracking-wide text-center" data-label="Item #">
                             <div class="flex flex-col items-center justify-center gap-1">
                                 <span><?= htmlspecialchars($s['item_no']) ?></span>

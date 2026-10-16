@@ -70,7 +70,7 @@ if ($ids_str !== '') {
     }
 }
 
-$sql .= " ORDER BY created_at DESC";
+$sql .= " ORDER BY created_at DESC, id ASC";
 
 $stmt = $db->prepare($sql);
 if (!empty($params)) {

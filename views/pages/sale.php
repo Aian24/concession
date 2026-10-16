@@ -124,7 +124,7 @@ $total_pages = max(1, ceil($total_rows / $limit));
 $count_stmt->close();
 
 // Fetch Rows
-$recent_stmt = $db->prepare("SELECT s.*, sc.sname FROM sales s LEFT JOIN storecode sc ON s.store_code = sc.scode COLLATE utf8mb4_unicode_ci $where ORDER BY s.created_at DESC LIMIT ? OFFSET ?");
+$recent_stmt = $db->prepare("SELECT s.*, sc.sname FROM sales s LEFT JOIN storecode sc ON s.store_code = sc.scode COLLATE utf8mb4_unicode_ci $where ORDER BY s.created_at DESC, s.id ASC LIMIT ? OFFSET ?");
 $p_with_limit = array_merge($params, [$limit, $offset]);
 $recent_stmt->bind_param($types . "ii", ...$p_with_limit);
 $recent_stmt->execute();
@@ -293,10 +293,40 @@ if (isset($_GET['ajax'])) {
             </script>
 
             <div>
+                <?php if ($promo_enabled): ?>
+                <!-- Promo / Gift With Purchase (GWP) Banner -->
+                <div id="promo-banner" class="glass-panel border border-pink-500/30 bg-gradient-to-r from-purple-950/40 via-slate-900/60 to-pink-950/40 rounded-xl p-3 mb-3 shadow-lg relative overflow-hidden animate-fade-in">
+                    <div class="flex items-center justify-between gap-3 relative z-10">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div class="w-8 h-8 rounded-lg bg-pink-500/20 border border-pink-500/30 flex items-center justify-center text-pink-400 shrink-0 shadow-sm">
+                                <i class="fas fa-gift text-sm animate-bounce"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <h4 class="text-xs font-black text-white uppercase tracking-wider truncate"><?= htmlspecialchars($promo_name) ?></h4>
+                                    <span class="text-[7.5px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                                        Min. ₱<?= number_format($promo_min_spend, 2) ?> Per Item
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="promo-earned-badge" class="shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-pink-500/10 border border-pink-500/20 text-[9px] font-black text-pink-300 uppercase tracking-wider">
+                            <i class="fas fa-gift text-[9px] text-pink-400"></i>
+                            <span id="promo-earned-count">0 Gifts Qualified</span>
+                        </div>
+                    </div>
+                </div>
+                <?php endif; ?>
+
                 <div id="entry-rows" class="space-y-4">
                     <div class="entry-row glass-panel border border-white/5 shadow-lg overflow-hidden bg-[#0d1527]/30 animate-slide-in">
                         <div class="px-4 py-2 bg-white/5 border-b border-white/5 flex items-center justify-between">
-                            <span class="entry-title text-[10px] font-black text-gray-500 uppercase tracking-widest">Entry #1</span>
+                            <div class="flex items-center gap-2">
+                                <span class="entry-title text-[10px] font-black text-gray-400 uppercase tracking-widest">Entry #1</span>
+                                <span class="entry-gift-indicator hidden items-center gap-1 px-2 py-0.5 rounded-full bg-pink-500/20 text-pink-300 border border-pink-500/30 text-[8.5px] font-black uppercase tracking-wider shadow-sm animate-pulse" title="Qualified for FREE <?= htmlspecialchars($promo_item_name) ?>">
+                                    <i class="fas fa-gift text-pink-400 text-[8px]"></i> Free Gift Qualified
+                                </span>
+                            </div>
                             <button type="button" onclick="removeRow(this)" class="remove-btn hidden text-red-500/50 hover:text-red-500 transition-colors flex items-center gap-1.5 group">
                                 <span class="text-[9px] font-bold uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-opacity">Remove</span>
                                 <i class="fas fa-trash-alt text-[10px]"></i>
@@ -343,91 +373,9 @@ if (isset($_GET['ajax'])) {
                                 </div>
                             </div>
                         </div>
-                </div>
-            </div>
-
-            <?php if ($promo_enabled): ?>
-            <!-- Promo / Gift With Purchase (GWP) Section -->
-            <div id="promo-section" class="glass-panel border border-white/10 rounded-xl p-2.5 sm:p-3 bg-gradient-to-r from-slate-900/95 via-purple-950/20 to-pink-950/20 transition-all duration-300 relative overflow-hidden my-1 shadow-md"
-                 data-min-spend="<?= $promo_min_spend ?>"
-                 data-promo-name="<?= htmlspecialchars($promo_name) ?>"
-                 data-gift-name="<?= htmlspecialchars($promo_item_name) ?>"
-                 data-default-item-no="<?= htmlspecialchars($promo_item_no) ?>"
-                 data-style-code="<?= htmlspecialchars($promo_style_code) ?>">
-                
-                <!-- Decorative glow -->
-                <div id="promo-glow" class="absolute -right-6 -top-6 w-24 h-24 bg-pink-500/10 rounded-full blur-xl pointer-events-none transition-all"></div>
-
-                <div class="flex items-center justify-between gap-2.5 relative z-10">
-                    <div class="flex items-center gap-2.5 min-w-0 flex-1">
-                        <div id="promo-icon-box" class="w-7 h-7 rounded-lg bg-pink-500/20 border border-pink-500/30 flex items-center justify-center text-pink-400 shrink-0 shadow-sm transition-all">
-                            <i class="fas fa-gift text-xs"></i>
-                        </div>
-                        <div class="min-w-0 flex-1">
-                            <div class="flex items-center gap-1.5 flex-wrap">
-                                <h4 class="text-[10px] sm:text-[11px] font-black text-white uppercase tracking-wider truncate"><?= htmlspecialchars($promo_name) ?></h4>
-                                <span id="promo-status-badge" class="text-[7.5px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-800 text-gray-400 border border-white/10">Min. ₱<?= number_format($promo_min_spend, 2) ?></span>
-                            </div>
-                            <p id="promo-helper-text" class="text-[8px] sm:text-[9px] text-gray-400 font-medium truncate mt-0.5">
-                                Spend <span class="text-green-400 font-bold">₱<?= number_format($promo_min_spend, 2) ?></span>+ for <span class="text-pink-300 font-bold">FREE Gift</span>
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-center gap-2 shrink-0">
-                        <label class="relative inline-flex items-center cursor-pointer select-none">
-                            <input type="checkbox" id="gwp-toggle" class="sr-only peer" onchange="toggleGwpPromo(this.checked, true)">
-                            <div class="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-purple-600 peer-checked:to-pink-600 border border-white/10 shadow-inner"></div>
-                            <span id="gwp-toggle-label" class="hidden xs:inline-block sm:inline-block ml-2 text-[9px] font-black uppercase tracking-wider text-gray-400 peer-checked:text-pink-400 transition-colors">
-                                Promo Gift
-                            </span>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Free Gift Entry Row (Expands when toggle is ON) -->
-                <div id="gwp-gift-box" class="hidden mt-3 pt-3 border-t border-white/10 animate-slide-in">
-                    <div class="glass-panel border border-pink-500/30 bg-[#0c1222]/90 rounded-xl p-3 shadow-inner">
-                        <div class="grid grid-cols-1 md:grid-cols-12 gap-2.5 md:gap-3">
-                            <!-- Gift Item # Input & Camera (Full line on mobile, 3 cols on desktop) -->
-                            <div class="relative flex items-stretch md:col-span-3">
-                                <span class="absolute top-0 -translate-y-1/2 left-3 px-1 bg-[#0c1222] text-[8px] font-black text-pink-400 uppercase tracking-widest z-10">Gift Item #</span>
-                                <input type="number" id="gwp-item-no" name="gwp_item_no" min="0" value="<?= htmlspecialchars($promo_item_no) ?>"
-                                       oninput="if(this.value.length > 6) this.value = this.value.slice(0, 6); lookupGwpPrism(this);" 
-                                       onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();"
-                                       class="bg-slate-900/90 border border-pink-500/40 rounded-l-xl px-3 py-2 flex-1 text-xs text-white focus:outline-none focus:border-pink-400 font-bold focus:text-base md:focus:text-xs tracking-wider font-mono" 
-                                       placeholder="475552">
-                                <button type="button" onclick="startGwpBarcodeScan()" class="bg-pink-600/20 border border-l-0 border-pink-500/40 px-3.5 rounded-r-xl text-pink-400 hover:bg-pink-600/30 transition-all flex items-center justify-center shrink-0" title="Scan Gift Barcode">
-                                    <i class="fas fa-camera text-sm"></i>
-                                </button>
-                            </div>
-
-                            <!-- Gift Details (Full line on mobile, 6 cols on desktop) -->
-                            <div class="relative md:col-span-6">
-                                <span class="absolute top-0 -translate-y-1/2 left-3 px-1 bg-[#0c1222] text-[8px] font-black text-pink-400 uppercase tracking-widest z-10">Gift Details</span>
-                                <input type="text" id="gwp-details" readonly value="[PROMO GIFT] <?= htmlspecialchars($promo_item_name) ?> | <?= htmlspecialchars($promo_style_code) ?>" class="bg-slate-900/50 border border-white/10 rounded-xl px-3 py-2 w-full text-xs text-pink-300 font-medium cursor-not-allowed truncate" title="Gift Details">
-                            </div>
-                            
-                            <!-- Qty & Price on mobile (grid-cols-2 on mobile, md:contents on desktop) -->
-                            <div class="grid grid-cols-2 md:contents gap-2.5 md:gap-3">
-                                <!-- Qty (1 col on mobile, 1 col on desktop) -->
-                                <div class="relative md:col-span-1">
-                                    <span class="absolute top-0 -translate-y-1/2 left-2 px-1 bg-[#0c1222] text-[7.5px] font-black text-gray-400 uppercase tracking-widest z-10">Qty</span>
-                                    <div class="bg-slate-900/50 border border-white/10 rounded-xl px-2 py-2 text-xs text-white font-bold text-center leading-normal">1</div>
-                                </div>
-
-                                <!-- Price (1 col on mobile, 2 cols on desktop) -->
-                                <div class="relative md:col-span-2">
-                                    <span class="absolute top-0 -translate-y-1/2 left-2 px-1 bg-[#0c1222] text-[7.5px] font-black text-emerald-400 uppercase tracking-widest z-10">Price</span>
-                                    <div class="bg-emerald-500/10 border border-emerald-500/30 rounded-xl px-2 py-2 text-xs text-emerald-400 font-black text-center whitespace-nowrap leading-normal">FREE</div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
-            <?php endif; ?>
-        </div>
 
             <div class="mt-3 sm:mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 sm:gap-3 border-t border-white/5 pt-3 sm:pt-4">
                 <div class="flex items-center gap-2 w-full sm:w-auto">
@@ -455,6 +403,10 @@ if (isset($_GET['ajax'])) {
                         <div class="flex items-center gap-2 whitespace-nowrap">
                             <span class="text-[9px] text-green-500/70 font-bold uppercase tracking-tight">Total:</span>
                             <span class="text-xs font-black text-green-400" id="summary-total">₱0.00</span>
+                        </div>
+                        <div id="summary-gift-pill" class="hidden flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-pink-500/20 text-pink-300 border border-pink-500/30 text-[8.5px] font-black uppercase tracking-wider animate-pulse whitespace-nowrap">
+                            <i class="fas fa-gift text-pink-400 text-[8.5px]"></i>
+                            <span id="summary-gift-count">0 Gifts</span>
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-2 w-full sm:w-auto h-[38px]">
@@ -659,94 +611,50 @@ if (isset($_GET['ajax'])) {
         document.getElementById('edit-amount').value = final.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
     };
 
-    // ── GWP Promo Logic ──────────────────────────────────────
-    let gwpUserDisabled = false; // Flag to preserve manual cashier toggle-off
-
-    window.toggleGwpPromo = function(isChecked, isUserAction = false) {
-        if (isUserAction) {
-            gwpUserDisabled = !isChecked;
-        }
-        const box = document.getElementById('gwp-gift-box');
-        const label = document.getElementById('gwp-toggle-label');
-        const input = document.getElementById('gwp-item-no');
-        const toggle = document.getElementById('gwp-toggle');
-        
-        if (toggle) toggle.checked = isChecked;
-
-        if (isChecked) {
-            if (box) box.classList.remove('hidden');
-            if (label) label.textContent = 'Promo Gift Added';
-            if (input && !input.value) input.focus();
-            if (input && input.value) window.lookupGwpPrism(input);
-        } else {
-            if (box) box.classList.add('hidden');
-            if (label) label.textContent = 'Promo Gift (Off)';
-        }
-        window.updateSummary();
-    };
-
-    window.lookupGwpPrism = function(input) {
-        const item_no = input.value.trim();
-        const detailsInput = document.getElementById('gwp-details');
-        const promoSection = document.getElementById('promo-section');
-        const giftName = promoSection?.dataset.giftName || 'RL Shoe Bag';
-        const defaultStyleCode = promoSection?.dataset.styleCode || 'RACT95002T26';
-        const defaultItemNo = promoSection?.dataset.defaultItemNo || '475552';
-        
-        const fallbackText = defaultStyleCode 
-            ? `[PROMO GIFT] ${giftName} | ${defaultStyleCode}` 
-            : `[PROMO GIFT] ${giftName}`;
-
-        if (item_no.length === 6) {
-            fetch(`api/get_prism_price.php?item_no=${encodeURIComponent(item_no)}`)
-            .then(r => r.json())
-            .then(res => {
-                if (res.success && detailsInput) {
-                    const parts = [res.itemcode, res.stylename, res.color, res.size].filter(Boolean);
-                    detailsInput.value = `[PROMO GIFT] ${giftName} | ` + parts.join(' | ');
-                } else if (detailsInput) {
-                    if (item_no === defaultItemNo) {
-                        detailsInput.value = fallbackText;
-                    } else {
-                        detailsInput.value = `[PROMO GIFT] ${giftName}`;
-                    }
-                }
-            })
-            .catch(() => {
-                if (detailsInput) detailsInput.value = fallbackText;
-            });
-        } else if (detailsInput) {
-            detailsInput.value = fallbackText;
-        }
-    };
-
-    window.startGwpBarcodeScan = function() {
-        const input = document.getElementById('gwp-item-no');
-        if (typeof window.startBarcodeScan === 'function') {
-            window.startBarcodeScan('item_no', input);
-        }
+    // ── GWP Promo Configuration & Helpers ─────────────────────
+    window.promoConfig = {
+        enabled: <?= $promo_enabled ? 'true' : 'false' ?>,
+        minSpend: <?= (float)$promo_min_spend ?>,
+        promoName: <?= json_encode($promo_name) ?>,
+        giftName: <?= json_encode($promo_item_name) ?>,
+        defaultItemNo: <?= json_encode($promo_item_no) ?>,
+        styleCode: <?= json_encode($promo_style_code) ?>
     };
 
     // ── Form Logic ───────────────────────────────────────────
     function updateBadge() {
         const rows = document.querySelectorAll('.entry-row');
-        document.getElementById('entry-count-badge').textContent = rows.length + (rows.length === 1 ? ' item' : ' items');
+        const countBadge = document.getElementById('entry-count-badge');
+        if (countBadge) {
+            countBadge.textContent = rows.length + (rows.length === 1 ? ' item' : ' items');
+        }
         rows.forEach((r, i) => {
-            r.querySelector('.entry-title').textContent = `Entry #${i + 1}`;
+            const titleEl = r.querySelector('.entry-title');
+            if (titleEl) titleEl.textContent = `Entry #${i + 1}`;
             const rem = r.querySelector('.remove-btn');
-            rem.style.opacity = rows.length > 1 ? '1' : '0';
-            rem.style.pointerEvents = rows.length > 1 ? 'all' : 'none';
+            if (rem) {
+                rem.style.opacity = rows.length > 1 ? '1' : '0';
+                rem.style.pointerEvents = rows.length > 1 ? 'all' : 'none';
+                if (rows.length > 1) {
+                    rem.classList.remove('hidden');
+                } else {
+                    rem.classList.add('hidden');
+                }
+            }
         });
     }
 
     window.updateSummary = function() {
-        let items = 0, qty = 0, total = 0;
-        const promoSec = document.getElementById('promo-section');
-        const minSpend = promoSec ? (parseFloat(promoSec.dataset.minSpend) || 1999) : 1999;
+        let items = 0, qty = 0, total = 0, giftsCount = 0;
+        const promoConfig = window.promoConfig || {};
+        const promoEnabled = !!promoConfig.enabled;
+        const minSpend = parseFloat(promoConfig.minSpend) || 1999;
 
         document.querySelectorAll('.entry-row').forEach(row => {
-            const itm = row.querySelector('[name="item_no"]').value.trim();
-            const amt = parseFloat(row.querySelector('[name="amount_sold"]').value.replace(/,/g, '')) || 0;
+            const itmInput = row.querySelector('[name="item_no"]');
+            const itm = itmInput ? itmInput.value.trim() : '';
+            const amtInput = row.querySelector('[name="amount_sold"]');
+            const amt = parseFloat(amtInput ? amtInput.value.replace(/,/g, '') : 0) || 0;
             const qtyInput = row.querySelector('[name="quantity"]');
             let qVal = qtyInput ? qtyInput.value.trim() : '';
 
@@ -759,100 +667,99 @@ if (isset($_GET['ajax'])) {
             const q = parseInt(qVal) || 0;
             if (itm) items++;
             qty += q;
-            total += amt * q;
+            const rowTotal = amt * q;
+            total += rowTotal;
+
+            // Check if this specific entry qualifies for Promo Gift
+            const indicator = row.querySelector('.entry-gift-indicator');
+            if (promoEnabled && indicator) {
+                const isQualified = (rowTotal >= minSpend && minSpend > 0 && itm !== '0' && itm !== '');
+                if (isQualified) {
+                    indicator.classList.remove('hidden');
+                    indicator.classList.add('inline-flex');
+                    giftsCount++;
+                    items++;
+                    qty++;
+                } else {
+                    indicator.classList.add('hidden');
+                    indicator.classList.remove('inline-flex');
+                }
+            } else if (indicator) {
+                indicator.classList.add('hidden');
+                indicator.classList.remove('inline-flex');
+            }
         });
 
-        // Check GWP Promo status and thresholds
-        const gwpToggle = document.getElementById('gwp-toggle');
-        const gwpBox = document.getElementById('gwp-gift-box');
-        const gwpLabel = document.getElementById('gwp-toggle-label');
-        
-        if (promoSec) {
-            const promoBadge = document.getElementById('promo-status-badge');
-            const promoHelper = document.getElementById('promo-helper-text');
-            const isQualified = (total >= minSpend && minSpend > 0);
-            
-            if (isQualified) {
-                promoSec.classList.add('border-pink-500/50');
-                promoSec.classList.remove('border-white/10');
-                
-                if (gwpUserDisabled) {
-                    // User manually disabled promo gift for this transaction
-                    if (gwpToggle) gwpToggle.checked = false;
-                    if (gwpBox) gwpBox.classList.add('hidden');
-                    if (gwpLabel) gwpLabel.textContent = 'Promo Gift (Off)';
-                    if (promoBadge) {
-                        promoBadge.className = 'text-[7.5px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-800 text-pink-300 border border-pink-500/30';
-                        promoBadge.innerHTML = '🎉 Qualified (Disabled)';
-                    }
-                    if (promoHelper) {
-                        promoHelper.innerHTML = `Spend qualified. <span class="text-pink-300 font-bold">Promo Gift is toggled OFF</span> (Switch ON to include gift).`;
-                    }
-                } else {
-                    // Promo enabled and qualified
-                    if (gwpToggle) gwpToggle.checked = true;
-                    if (gwpBox) gwpBox.classList.remove('hidden');
-                    if (gwpLabel) gwpLabel.textContent = 'Promo Gift Added';
-                    if (promoBadge) {
-                        promoBadge.className = 'text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-600 text-white shadow-sm';
-                        promoBadge.innerHTML = '🎉 Qualified';
-                    }
-                    if (promoHelper) {
-                        promoHelper.innerHTML = `Spend qualified for <span class="text-pink-300 font-bold">FREE Gift</span>.`;
-                    }
-                }
-            } else {
-                // Not qualified
-                promoSec.classList.remove('border-pink-500/50');
-                promoSec.classList.add('border-white/10');
-                const remaining = minSpend - total;
-                if (promoBadge) {
-                    promoBadge.className = 'text-[7.5px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-800 text-gray-400 border border-white/10';
-                    promoBadge.textContent = `Min. ₱${minSpend.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
-                }
-                if (promoHelper) {
-                    promoHelper.innerHTML = `Spend <span class="text-green-400 font-bold">₱${remaining.toLocaleString('en-US', {minimumFractionDigits: 2})}</span> more for <span class="text-pink-300 font-bold">FREE Gift</span>`;
-                }
-                if (gwpToggle) gwpToggle.checked = false;
-                if (gwpBox) gwpBox.classList.add('hidden');
-                if (gwpLabel) gwpLabel.textContent = 'Promo Gift';
-
-                if (total === 0) {
-                    gwpUserDisabled = false;
-                }
-            }
-
-            if (gwpToggle && gwpToggle.checked) {
-                items += 1;
-                qty += 1;
-                // total remains unchanged since GWP price is ₱0.00
-            }
+        // Update earned count badge in banner
+        const promoCountEl = document.getElementById('promo-earned-count');
+        if (promoCountEl) {
+            promoCountEl.textContent = giftsCount === 1 ? '1 Gift Qualified' : `${giftsCount} Gifts Qualified`;
         }
 
+        // Update summary box numbers
         const summaryItemsEl = document.getElementById('summary-items');
         const summaryQtyEl = document.getElementById('summary-qty');
         const summaryTotalEl = document.getElementById('summary-total');
         if (summaryItemsEl) summaryItemsEl.textContent = items;
         if (summaryQtyEl) summaryQtyEl.textContent = qty;
         if (summaryTotalEl) summaryTotalEl.textContent = '₱' + total.toLocaleString('en-US', {minimumFractionDigits:2});
+
+        // Summary Gift Pill
+        const giftPill = document.getElementById('summary-gift-pill');
+        const giftCountSpan = document.getElementById('summary-gift-count');
+        if (giftPill && giftCountSpan) {
+            if (giftsCount > 0) {
+                giftCountSpan.textContent = giftsCount === 1 ? '1 Free Gift' : `${giftsCount} Free Gifts`;
+                giftPill.classList.remove('hidden');
+                giftPill.classList.add('flex');
+            } else {
+                giftPill.classList.add('hidden');
+                giftPill.classList.remove('flex');
+            }
+        }
     };
 
     window.addRow = function () {
         const tpl = document.querySelector('.entry-row');
         if (!tpl) return;
         const row = tpl.cloneNode(true);
-        row.querySelectorAll('input').forEach(i => i.value = '');
+        
+        // Reset regular inputs
+        row.querySelectorAll('input').forEach(i => {
+            i.value = '';
+            i.classList.remove('border-red-500/50', 'focus:border-red-500/50', 'ring-2', 'ring-green-500/50', 'border-green-500/50');
+            i.classList.add('border-white/10', 'focus:border-green-500/50');
+        });
         row.querySelectorAll('select').forEach(s => s.value = '0');
-        row.querySelectorAll('input, select').forEach(i => i.addEventListener('input', window.updateSummary));
+        row.querySelectorAll('.item-error-msg').forEach(e => e.remove());
+
+        // Hide gift indicator on newly added row
+        const indicator = row.querySelector('.entry-gift-indicator');
+        if (indicator) {
+            indicator.classList.add('hidden');
+            indicator.classList.remove('inline-flex');
+        }
         
         const removeBtn = row.querySelector('.remove-btn');
-        if (removeBtn) removeBtn.classList.remove('hidden');
+        if (removeBtn) {
+            removeBtn.classList.remove('hidden');
+            removeBtn.style.opacity = '1';
+            removeBtn.style.pointerEvents = 'all';
+        }
         
         document.getElementById('entry-rows').appendChild(row);
         updateBadge();
+
         const itemInput = row.querySelector('[name="item_no"]');
-        itemInput.addEventListener('input', function() { lookupPrismPrice(this); });
-        itemInput.focus();
+        if (itemInput) {
+            itemInput.addEventListener('input', function() { 
+                if (typeof window.lookupPrismPrice === 'function') {
+                    window.lookupPrismPrice(this); 
+                }
+            });
+            itemInput.focus();
+        }
+        window.updateSummary();
     };
 
     window.removeRow = function (btn) {
@@ -869,28 +776,34 @@ if (isset($_GET['ajax'])) {
         }
     };
 
-    window.clearForm = function () {
+    window.clearForm = function (skipConfirm = false) {
         const doClear = () => {
             const rows = document.querySelectorAll('.entry-row');
             rows.forEach((r, i) => { if (i > 0) r.remove(); });
-            rows[0].querySelectorAll('input').forEach(i => i.value = '');
-            rows[0].querySelectorAll('select').forEach(s => s.value = '0');
-            
-            gwpUserDisabled = false;
-            const gwpToggle = document.getElementById('gwp-toggle');
-            if (gwpToggle) {
-                gwpToggle.checked = false;
-                window.toggleGwpPromo(false);
+            const firstRow = rows[0];
+            if (firstRow) {
+                firstRow.querySelectorAll('input').forEach(i => {
+                    i.value = '';
+                    i.classList.remove('border-red-500/50', 'focus:border-red-500/50', 'ring-2', 'ring-green-500/50', 'border-green-500/50');
+                    i.classList.add('border-white/10', 'focus:border-green-500/50');
+                });
+                firstRow.querySelectorAll('select').forEach(s => s.value = '0');
+                firstRow.querySelectorAll('.item-error-msg').forEach(e => e.remove());
+                
+                const indicator = firstRow.querySelector('.entry-gift-indicator');
+                if (indicator) {
+                    indicator.classList.add('hidden');
+                    indicator.classList.remove('inline-flex');
+                }
             }
-            const defaultItemNo = document.getElementById('promo-section')?.dataset.defaultItemNo || '';
-            const gwpItemInput = document.getElementById('gwp-item-no');
-            if (gwpItemInput) gwpItemInput.value = defaultItemNo;
 
             window.updateSummary();
             updateBadge();
         };
 
-        if (typeof showConfirmModal === 'function') {
+        if (skipConfirm) {
+            doClear();
+        } else if (typeof showConfirmModal === 'function') {
             showConfirmModal('Are you sure you want to clear all current entry data?', doClear, 'Clear Form');
         } else {
             doClear();
@@ -908,13 +821,22 @@ if (isset($_GET['ajax'])) {
         const entries = [];
         let valid = true;
         let hasErrors = false;
+        const promoConfig = window.promoConfig || {};
+        const promoEnabled = !!promoConfig.enabled;
+        const minSpend = parseFloat(promoConfig.minSpend) || 1999;
+        const defaultGiftItemNo = promoConfig.defaultItemNo || '475552';
         
-        document.querySelectorAll('.entry-row').forEach(row => {
-            const item = row.querySelector('[name="item_no"]').value.trim();
-            const base = row.querySelector('[name="base_price"]').value.replace(/,/g, '');
-            const disc = row.querySelector('[name="discount"]').value;
-            const amt  = row.querySelector('[name="amount_sold"]').value.replace(/,/g, '');
-            const qty  = row.querySelector('[name="quantity"]').value;
+        document.querySelectorAll('.entry-row').forEach((row) => {
+            const itemInput = row.querySelector('[name="item_no"]');
+            const item = itemInput ? itemInput.value.trim() : '';
+            const baseInput = row.querySelector('[name="base_price"]');
+            const base = baseInput ? baseInput.value.replace(/,/g, '') : '0';
+            const discInput = row.querySelector('[name="discount"]');
+            const disc = discInput ? discInput.value : '0';
+            const amtInput  = row.querySelector('[name="amount_sold"]');
+            const amt  = amtInput ? amtInput.value.replace(/,/g, '') : '';
+            const qtyInput  = row.querySelector('[name="quantity"]');
+            const qty  = qtyInput ? qtyInput.value : '';
             
             if (row.querySelector('.item-error-msg')) {
                 hasErrors = true;
@@ -924,30 +846,27 @@ if (isset($_GET['ajax'])) {
                 if (!item || amt === '' || !qty) {
                     valid = false;
                 } else {
+                    const numAmt = parseFloat(amt) || 0;
+                    const numQty = parseInt(qty) || 0;
+                    const rowTotal = numAmt * numQty;
+
+                    // Main item entry
                     entries.push({ item_no: item, base_price: base, discount: disc, amount_sold: amt, quantity: qty });
+
+                    // Directly append free gift row for this qualifying entry
+                    if (promoEnabled && rowTotal >= minSpend && minSpend > 0 && item !== '0') {
+                        entries.push({
+                            item_no: defaultGiftItemNo,
+                            base_price: 0,
+                            discount: 100,
+                            amount_sold: 0,
+                            quantity: 1,
+                            is_gwp: 1
+                        });
+                    }
                 }
             }
         });
-
-        // Check GWP Promo
-        const gwpToggle = document.getElementById('gwp-toggle');
-        if (gwpToggle && gwpToggle.checked) {
-            const gwpItemNo = document.getElementById('gwp-item-no')?.value.trim();
-            const giftName = document.getElementById('promo-section')?.dataset.giftName || 'RL Shoe Bag';
-            if (!gwpItemNo) {
-                showStatusModal(false, `Please enter or scan the Item # for the Promo Gift (${giftName}) before submitting, or turn off the promo toggle.`, 'Missing Gift Item #');
-                document.getElementById('gwp-item-no')?.focus();
-                return;
-            }
-            entries.push({
-                item_no: gwpItemNo,
-                base_price: 0,
-                discount: 100,
-                amount_sold: 0,
-                quantity: 1,
-                is_gwp: 1
-            });
-        }
 
         if (hasErrors) {
             showStatusModal(false, 'Please correct the invalid items before submitting.', 'Validation Error');
@@ -988,23 +907,7 @@ if (isset($_GET['ajax'])) {
                 loader?.classList.add('opacity-0', 'pointer-events-none');
                 showStatusModal(res.success, res.message, res.success ? 'Sale Successful' : 'Sale Failed');
                 if (res.success) { 
-                    const rows = document.querySelectorAll('.entry-row');
-                    rows.forEach((r, i) => { if (i > 0) r.remove(); });
-                    rows[0].querySelectorAll('input').forEach(i => i.value = '');
-                    rows[0].querySelectorAll('select').forEach(s => s.value = '0');
-                    
-                    // Reset GWP toggle and fields
-                    gwpUserDisabled = false;
-                    if (gwpToggle) {
-                        gwpToggle.checked = false;
-                        window.toggleGwpPromo(false);
-                    }
-                    const defaultItemNo = document.getElementById('promo-section')?.dataset.defaultItemNo || '';
-                    const gwpItemInput = document.getElementById('gwp-item-no');
-                    if (gwpItemInput) gwpItemInput.value = defaultItemNo;
-
-                    window.updateSummary();
-                    updateBadge();
+                    window.clearForm(true);
                     
                     const searchInput = document.querySelector('[name="search"]');
                     const startInput  = document.querySelector('[name="start_date"]');
@@ -1378,16 +1281,11 @@ if (isset($_GET['ajax'])) {
 
     // Global listener for any input change in the entry rows
     document.getElementById('entry-rows')?.addEventListener('input', (e) => {
-        if (e.target.tagName === 'INPUT') window.updateSummary();
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') window.updateSummary();
     });
     document.getElementById('entry-rows')?.addEventListener('change', (e) => {
-        if (e.target.tagName === 'INPUT') window.updateSummary();
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') window.updateSummary();
     });
-
-    initTableEvents();
-    window.refreshSaleTable = refreshTable;
-
-
 
     initTableEvents();
     window.refreshSaleTable = refreshTable;
