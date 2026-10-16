@@ -294,25 +294,47 @@ if (isset($_GET['ajax'])) {
 
             <div>
                 <?php if ($promo_enabled): ?>
-                <!-- Promo / Gift With Purchase (GWP) Banner -->
-                <div id="promo-banner" class="glass-panel border border-pink-500/30 bg-gradient-to-r from-purple-950/40 via-slate-900/60 to-pink-950/40 rounded-xl p-3 mb-3 shadow-lg relative overflow-hidden animate-fade-in">
-                    <div class="flex items-center justify-between gap-3 relative z-10">
+                <!-- Promo / Gift With Purchase (GWP) Banner with Enable/Disable Toggle -->
+                <div id="promo-banner" class="glass-panel border border-white/10 bg-gradient-to-r from-slate-900/80 via-slate-900/90 to-[#161226]/80 rounded-xl p-3 md:p-3.5 mb-3 shadow-xl relative overflow-hidden transition-all duration-300">
+                    <!-- Ambient Glow Effect -->
+                    <div id="promo-glow" class="absolute -right-8 -top-8 w-44 h-44 bg-pink-500/10 rounded-full blur-2xl pointer-events-none transition-opacity duration-300 opacity-20"></div>
+
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 relative z-10">
+                        <!-- Left: Promo Campaign Info -->
                         <div class="flex items-center gap-3 min-w-0">
-                            <div class="w-8 h-8 rounded-lg bg-pink-500/20 border border-pink-500/30 flex items-center justify-center text-pink-400 shrink-0 shadow-sm">
-                                <i class="fas fa-gift text-sm animate-bounce"></i>
+                            <div id="promo-icon-box" class="w-9 h-9 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-gray-500 shrink-0 shadow-sm transition-all duration-300">
+                                <i id="promo-icon" class="fas fa-gift text-sm"></i>
                             </div>
                             <div class="min-w-0">
                                 <div class="flex items-center gap-2 flex-wrap">
                                     <h4 class="text-xs font-black text-white uppercase tracking-wider truncate"><?= htmlspecialchars($promo_name) ?></h4>
+                                    <span id="promo-toggle-status-badge" class="px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider bg-slate-800 text-gray-400 border border-slate-700 transition-all">
+                                        Gift Disabled
+                                    </span>
                                     <span class="text-[7.5px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                                         Min. ₱<?= number_format($promo_min_spend, 2) ?> Per Item
                                     </span>
                                 </div>
+                                <p class="text-[10.5px] text-gray-400 mt-0.5 truncate">
+                                    Gift Item: <span class="text-pink-300 font-bold"><?= htmlspecialchars($promo_item_name) ?></span> <span class="text-[9.5px] font-mono text-gray-400">(#<?= htmlspecialchars($promo_item_no) ?> • <?= htmlspecialchars($promo_style_code) ?>)</span>
+                                </p>
                             </div>
                         </div>
-                        <div id="promo-earned-badge" class="shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-pink-500/10 border border-pink-500/20 text-[9px] font-black text-pink-300 uppercase tracking-wider">
-                            <i class="fas fa-gift text-[9px] text-pink-400"></i>
-                            <span id="promo-earned-count">0 Gifts Qualified</span>
+
+                        <!-- Right: Toggle Switch & Qualified Counter -->
+                        <div class="flex items-center gap-3 shrink-0 self-end sm:self-center">
+                            <!-- Qualified Counter Badge -->
+                            <div id="promo-earned-badge" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700 text-[9px] font-black text-gray-400 uppercase tracking-wider transition-all">
+                                <i id="promo-earned-icon" class="fas fa-gift text-[9px] text-gray-500"></i>
+                                <span id="promo-earned-count">No Gift (Promo Off)</span>
+                            </div>
+
+                            <!-- Interactive Enable/Disable Toggle -->
+                            <label class="relative inline-flex items-center cursor-pointer select-none group" title="Toggle to enable or disable promo gift for this transaction">
+                                <input type="checkbox" id="transaction-promo-toggle" onchange="toggleTransactionPromo(this.checked)" class="sr-only peer">
+                                <div class="w-12 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-pink-600 peer-checked:to-purple-600 border border-slate-600 group-hover:border-pink-500/50 transition-all"></div>
+                                <span id="promo-toggle-label" class="ml-2 text-xs font-bold text-gray-300 group-hover:text-white transition-colors">Enable Gift</span>
+                            </label>
                         </div>
                     </div>
                 </div>
@@ -621,6 +643,78 @@ if (isset($_GET['ajax'])) {
         styleCode: <?= json_encode($promo_style_code) ?>
     };
 
+    // Promo Gift is disabled by default until user turns ON the toggle for this transaction
+    window.promoTransactionEnabled = false;
+
+    window.toggleTransactionPromo = function(isEnabled) {
+        window.promoTransactionEnabled = !!isEnabled;
+        
+        const toggleInput = document.getElementById('transaction-promo-toggle');
+        if (toggleInput && toggleInput.checked !== window.promoTransactionEnabled) {
+            toggleInput.checked = window.promoTransactionEnabled;
+        }
+
+        const badge = document.getElementById('promo-toggle-status-badge');
+        const label = document.getElementById('promo-toggle-label');
+        const iconBox = document.getElementById('promo-icon-box');
+        const banner = document.getElementById('promo-banner');
+        const glow = document.getElementById('promo-glow');
+        const earnedBadge = document.getElementById('promo-earned-badge');
+        const earnedIcon = document.getElementById('promo-earned-icon');
+
+        if (window.promoTransactionEnabled) {
+            if (badge) {
+                badge.textContent = 'Gift Enabled';
+                badge.className = 'px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 animate-pulse transition-all';
+            }
+            if (label) {
+                label.textContent = 'Gift Active';
+                label.className = 'ml-2 text-xs font-bold text-pink-300 group-hover:text-pink-200 transition-colors';
+            }
+            if (iconBox) {
+                iconBox.className = 'w-9 h-9 rounded-xl bg-gradient-to-br from-pink-500/30 to-purple-600/30 border border-pink-500/50 flex items-center justify-center text-pink-300 shrink-0 shadow-lg shadow-pink-500/20 transition-all duration-300';
+            }
+            if (banner) {
+                banner.className = 'glass-panel border-2 border-pink-500/50 bg-gradient-to-r from-purple-950/40 via-slate-900/80 to-pink-950/50 rounded-xl p-3 md:p-3.5 mb-3 shadow-xl shadow-pink-500/10 relative overflow-hidden transition-all duration-300';
+            }
+            if (glow) {
+                glow.className = 'absolute -right-8 -top-8 w-44 h-44 bg-pink-500/20 rounded-full blur-2xl pointer-events-none transition-opacity duration-300 opacity-100';
+            }
+            if (earnedBadge) {
+                earnedBadge.className = 'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-pink-500/10 border border-pink-500/30 text-[9px] font-black text-pink-300 uppercase tracking-wider transition-all';
+            }
+            if (earnedIcon) {
+                earnedIcon.className = 'fas fa-gift text-[9px] text-pink-400 animate-bounce';
+            }
+        } else {
+            if (badge) {
+                badge.textContent = 'Gift Disabled';
+                badge.className = 'px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider bg-slate-800 text-gray-400 border border-slate-700 transition-all';
+            }
+            if (label) {
+                label.textContent = 'Enable Gift';
+                label.className = 'ml-2 text-xs font-bold text-gray-300 group-hover:text-white transition-colors';
+            }
+            if (iconBox) {
+                iconBox.className = 'w-9 h-9 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-gray-500 shrink-0 shadow-sm transition-all duration-300';
+            }
+            if (banner) {
+                banner.className = 'glass-panel border border-white/10 bg-gradient-to-r from-slate-900/80 via-slate-900/90 to-[#161226]/80 rounded-xl p-3 md:p-3.5 mb-3 shadow-xl relative overflow-hidden transition-all duration-300';
+            }
+            if (glow) {
+                glow.className = 'absolute -right-8 -top-8 w-44 h-44 bg-pink-500/10 rounded-full blur-2xl pointer-events-none transition-opacity duration-300 opacity-20';
+            }
+            if (earnedBadge) {
+                earnedBadge.className = 'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700 text-[9px] font-black text-gray-400 uppercase tracking-wider transition-all';
+            }
+            if (earnedIcon) {
+                earnedIcon.className = 'fas fa-gift text-[9px] text-gray-500';
+            }
+        }
+
+        window.updateSummary();
+    };
+
     // ── Form Logic ───────────────────────────────────────────
     function updateBadge() {
         const rows = document.querySelectorAll('.entry-row');
@@ -648,6 +742,7 @@ if (isset($_GET['ajax'])) {
         let items = 0, qty = 0, total = 0, giftsCount = 0;
         const promoConfig = window.promoConfig || {};
         const promoEnabled = !!promoConfig.enabled;
+        const promoTxActive = !!window.promoTransactionEnabled;
         const minSpend = parseFloat(promoConfig.minSpend) || 1999;
 
         document.querySelectorAll('.entry-row').forEach(row => {
@@ -674,7 +769,7 @@ if (isset($_GET['ajax'])) {
             const indicator = row.querySelector('.entry-gift-indicator');
             if (promoEnabled && indicator) {
                 const isQualified = (rowTotal >= minSpend && minSpend > 0 && itm !== '0' && itm !== '');
-                if (isQualified) {
+                if (isQualified && promoTxActive) {
                     indicator.classList.remove('hidden');
                     indicator.classList.add('inline-flex');
                     giftsCount++;
@@ -693,7 +788,11 @@ if (isset($_GET['ajax'])) {
         // Update earned count badge in banner
         const promoCountEl = document.getElementById('promo-earned-count');
         if (promoCountEl) {
-            promoCountEl.textContent = giftsCount === 1 ? '1 Gift Qualified' : `${giftsCount} Gifts Qualified`;
+            if (!promoTxActive) {
+                promoCountEl.textContent = 'No Gift (Promo Off)';
+            } else {
+                promoCountEl.textContent = giftsCount === 1 ? '1 Gift Qualified' : `${giftsCount} Gifts Qualified`;
+            }
         }
 
         // Update summary box numbers
@@ -797,6 +896,11 @@ if (isset($_GET['ajax'])) {
                 }
             }
 
+            // Reset promo gift toggle to disabled on form reset
+            if (typeof window.toggleTransactionPromo === 'function') {
+                window.toggleTransactionPromo(false);
+            }
+
             window.updateSummary();
             updateBadge();
         };
@@ -853,8 +957,8 @@ if (isset($_GET['ajax'])) {
                     // Main item entry
                     entries.push({ item_no: item, base_price: base, discount: disc, amount_sold: amt, quantity: qty });
 
-                    // Directly append free gift row for this qualifying entry
-                    if (promoEnabled && rowTotal >= minSpend && minSpend > 0 && item !== '0') {
+                    // Directly append free gift row for this qualifying entry ONLY if transaction promo is enabled
+                    if (promoEnabled && window.promoTransactionEnabled && rowTotal >= minSpend && minSpend > 0 && item !== '0') {
                         entries.push({
                             item_no: defaultGiftItemNo,
                             base_price: 0,
@@ -1289,5 +1393,10 @@ if (isset($_GET['ajax'])) {
 
     initTableEvents();
     window.refreshSaleTable = refreshTable;
+
+    // Initialize transaction promo gift to disabled by default ("like in the first its disabled")
+    if (typeof window.toggleTransactionPromo === 'function') {
+        window.toggleTransactionPromo(false);
+    }
 })();
 </script>
