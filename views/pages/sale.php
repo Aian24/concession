@@ -298,14 +298,17 @@ if (isset($_GET['ajax'])) {
                 <div id="promo-banner" class="glass-panel border border-pink-500/30 bg-gradient-to-r from-purple-950/40 via-slate-900/60 to-pink-950/40 rounded-xl p-2.5 sm:p-3 mb-3 shadow-lg relative overflow-hidden animate-fade-in">
                     <div class="flex items-center justify-between gap-3 relative z-10 flex-wrap">
                         
-                        <!-- Left: Promo Title & Gift Description -->
+                        <!-- Left: Promo Title & Gift Badge -->
                         <div class="flex items-center gap-2.5 min-w-0">
                             <div class="w-8 h-8 rounded-lg bg-pink-500/20 border border-pink-500/30 flex items-center justify-center text-pink-400 shrink-0 shadow-sm">
                                 <i class="fas fa-gift text-sm animate-bounce"></i>
                             </div>
-                            <div class="min-w-0">
+                            <div class="flex items-center gap-2 min-w-0 flex-wrap">
                                 <h4 class="text-xs sm:text-sm font-black text-white uppercase tracking-wider truncate"><?= htmlspecialchars($promo_name) ?></h4>
-                                <p class="text-[10px] text-pink-300/80 font-medium truncate">FREE <?= htmlspecialchars($promo_item_name) ?> <span class="text-gray-400 font-mono text-[9px]">(#<?= htmlspecialchars($promo_item_no) ?>)</span></p>
+                                <div id="promo-earned-badge" class="hidden items-center gap-1.5 px-2.5 py-1 rounded-lg bg-pink-500/20 border border-pink-500/30 text-[9px] sm:text-[10px] font-black text-pink-300 uppercase tracking-wider shadow-sm animate-pulse">
+                                    <i class="fas fa-gift text-[9px] text-pink-400"></i>
+                                    <span id="promo-earned-count">1 Gift</span>
+                                </div>
                             </div>
                         </div>
 
@@ -322,7 +325,7 @@ if (isset($_GET['ajax'])) {
                                 </div>
                             </label>
 
-                            <!-- Stepper Input & Gift Count (shown when toggle is ON) -->
+                            <!-- Stepper Input (shown when toggle is ON) -->
                             <div id="banner-manual-controls" class="hidden flex items-center gap-1.5 animate-fade-in">
                                 <div class="flex items-center bg-slate-900/90 border border-pink-500/50 rounded-lg px-1.5 py-0.5 shadow-inner">
                                     <span class="text-[8px] sm:text-[8.5px] font-black uppercase text-pink-300/80 px-1 tracking-wider">Qty:</span>
@@ -333,11 +336,6 @@ if (isset($_GET['ajax'])) {
                                     <button type="button" onclick="adjustManualGiftQty(1)" class="w-5 h-5 rounded bg-white/5 hover:bg-white/10 text-white flex items-center justify-center text-[10px] font-bold transition-all hover:scale-105 active:scale-95" title="Increase gift quantity">
                                         <i class="fas fa-plus text-[8px]"></i>
                                     </button>
-                                </div>
-
-                                <div id="promo-earned-badge" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-pink-500/20 border border-pink-500/30 text-[9px] sm:text-[10px] font-black text-pink-300 uppercase tracking-wider shadow-sm">
-                                    <i class="fas fa-gift text-[9px] text-pink-400"></i>
-                                    <span id="promo-earned-count">1 Gift</span>
                                 </div>
                             </div>
                         </div>
@@ -789,10 +787,20 @@ if (isset($_GET['ajax'])) {
             qty += manualQty;
         }
 
-        // Update earned count badge in banner
+        // Update earned count badge beside promo title in banner
+        const promoBadgeEl = document.getElementById('promo-earned-badge');
         const promoCountEl = document.getElementById('promo-earned-count');
         if (promoCountEl) {
             promoCountEl.textContent = giftsCount === 1 ? '1 Gift' : `${giftsCount} Gifts`;
+        }
+        if (promoBadgeEl) {
+            if (giftsCount > 0) {
+                promoBadgeEl.classList.remove('hidden');
+                promoBadgeEl.classList.add('inline-flex');
+            } else {
+                promoBadgeEl.classList.add('hidden');
+                promoBadgeEl.classList.remove('inline-flex');
+            }
         }
 
         // Update summary box numbers
