@@ -342,10 +342,14 @@ if (!$is_all_stores) {
                         </div>
                     </div>
                     
-                    <div class="flex items-center gap-2 self-end sm:self-center">
-                        <div class="px-4 py-2 rounded-xl bg-pink-500/20 border border-pink-500/40 text-pink-300 text-xs font-bold flex items-center gap-2">
-                            <i class="fas fa-toggle-on text-pink-400"></i>
-                            <span>Claim Promo Gift (₱0.00)</span>
+                    <div class="flex items-center gap-3 shrink-0 self-end sm:self-center">
+                        <div class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700 text-[9px] font-black text-gray-400 uppercase tracking-wider">
+                            <i class="fas fa-gift text-[9px] text-gray-500"></i>
+                            <span>No Gift (Promo Off)</span>
+                        </div>
+                        <div class="flex items-center select-none opacity-90">
+                            <div class="w-12 h-6 bg-slate-800 rounded-full relative border border-slate-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5"></div>
+                            <span class="ml-2 text-xs font-bold text-gray-300">Enable Gift</span>
                         </div>
                     </div>
                 </div>
