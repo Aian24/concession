@@ -47,6 +47,22 @@ function db_connect(): mysqli {
         }
     }
 
+    // Ensure setup.sql schema is executed if core tables do not exist
+    $tbl_check = $conn->query("SHOW TABLES LIKE 'users'");
+    if (!$tbl_check || $tbl_check->num_rows === 0) {
+        $sql_file = __DIR__ . '/../database/setup.sql';
+        if (file_exists($sql_file)) {
+            $sql = file_get_contents($sql_file);
+            if ($conn->multi_query($sql)) {
+                do {
+                    if ($res = $conn->store_result()) {
+                        $res->free();
+                    }
+                } while ($conn->more_results() && $conn->next_result());
+            }
+        }
+    }
+
     $conn->query("SET time_zone = '+08:00'");
 
     // Ensure Admin user exists if not present
@@ -71,7 +87,7 @@ function db_connect(): mysqli {
             INDEX idx_user_id (user_id),
             INDEX idx_store_code (store_code),
             FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
     }
 
     // Ensure user_logs table exists
@@ -84,7 +100,7 @@ function db_connect(): mysqli {
             ip_address  VARCHAR(50)     NOT NULL,
             login_time  TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
             INDEX idx_login_time (login_time)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
     }
 
     // Ensure page_navigation_logs table exists
@@ -102,7 +118,7 @@ function db_connect(): mysqli {
             INDEX idx_username (username),
             INDEX idx_page_name (page_name),
             INDEX idx_visit_time (visit_time)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
     }
 
     // Ensure role column is VARCHAR (not ENUM) to support dynamic custom roles
@@ -113,6 +129,12 @@ function db_connect(): mysqli {
         if (stripos($col['Type'], 'varchar') === false) {
             $conn->query("ALTER TABLE users MODIFY COLUMN role VARCHAR(100) NOT NULL DEFAULT 'user'");
         }
+    }
+
+    // Ensure avatar column exists in users table
+    $av_res = $conn->query("SHOW COLUMNS FROM users LIKE 'avatar'");
+    if (!$av_res || $av_res->num_rows === 0) {
+        $conn->query("ALTER TABLE users ADD COLUMN avatar VARCHAR(255) DEFAULT NULL AFTER role");
     }
 
     // Ensure system_settings table exists
@@ -135,7 +157,7 @@ function db_connect(): mysqli {
             promo_start_date DATE           NULL DEFAULT '2026-10-01',
             promo_end_date   DATE           NULL DEFAULT NULL,
             updated_at      TIMESTAMP       DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
         
         $conn->query("INSERT INTO system_settings (company_name, promo_enabled, promo_name, promo_min_spend, promo_item_name, promo_item_no, promo_style_code, promo_start_date) VALUES ('Concession System', 1, 'RL Shoe Bag Promo', 1999.00, 'RL Shoe Bag', '475552', 'RACT95002T26', '2026-10-01')");
     } else {
@@ -206,6 +228,43 @@ function db_connect(): mysqli {
         @$conn->query("ALTER TABLE sales ADD COLUMN discount DECIMAL(5,2) NOT NULL DEFAULT 0.00");
     }
 
+    // Ensure prismdata table exists
+    $conn->query("CREATE TABLE IF NOT EXISTS `prismdata` (
+        `id`         INT AUTO_INCREMENT PRIMARY KEY,
+        `item_no`    VARCHAR(50) NOT NULL UNIQUE,
+        `itemcode`   VARCHAR(255) NULL,
+        `stylename`  VARCHAR(255) NULL,
+        `color`      VARCHAR(100) NULL,
+        `size`       VARCHAR(100) NULL,
+        `srp`        DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+        `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        INDEX `idx_item_no` (`item_no`),
+        INDEX `idx_itemcode` (`itemcode`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    // Ensure boutique table exists
+    $conn->query("CREATE TABLE IF NOT EXISTS `boutique` (
+        `id`         INT AUTO_INCREMENT PRIMARY KEY,
+        `date`       DATE NOT NULL,
+        `store_code` VARCHAR(50) NOT NULL,
+        `store_name` VARCHAR(150) NOT NULL,
+        `qty_sold`   INT NOT NULL DEFAULT 0,
+        `amount`     DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+        `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        INDEX `idx_date` (`date`),
+        INDEX `idx_store_code` (`store_code`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    // Ensure user_themes table exists
+    $conn->query("CREATE TABLE IF NOT EXISTS `user_themes` (
+        `id`          INT AUTO_INCREMENT PRIMARY KEY,
+        `user_id`     INT NOT NULL,
+        `theme_data`  JSON NOT NULL,
+        `updated_at`  TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        UNIQUE KEY `unique_user` (`user_id`),
+        FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
     return $conn;
 }
 
@@ -263,7 +322,7 @@ function log_activity(mysqli $db, string $username, string $action_type, string 
             INDEX idx_action_type (action_type),
             INDEX idx_module (module),
             INDEX idx_created_at (created_at)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
         // Backpopulate existing entries as 'create' actions
         $db->query("INSERT INTO activity_log (username, action_type, module, store_code, reference, quantity, details, created_at)

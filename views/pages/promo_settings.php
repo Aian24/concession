@@ -74,7 +74,7 @@ if (!$is_all_stores) {
                             <?= (!empty($settings['promo_enabled'])) ? 'Active & Running' : 'Disabled' ?>
                         </span>
                     </div>
-                    <p class="text-xs text-gray-300 mt-1">When enabled, cashiers can claim the Promo Gift in the Create Sale screen when minimum spend is reached.</p>
+                    <p class="text-xs text-gray-300 mt-1">When enabled, cashiers can toggle and include Promo Gifts directly in the Create Sale screen.</p>
                 </div>
             </div>
 
@@ -122,7 +122,7 @@ if (!$is_all_stores) {
                            class="w-full bg-slate-900 border-2 border-slate-600 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 rounded-xl pl-9 pr-4 py-3 text-sm text-emerald-400 font-black placeholder-gray-500 shadow-inner transition-all outline-none" 
                            placeholder="1999.00">
                 </div>
-                <p class="text-[11px] text-gray-400 ml-1">Cashier is only allowed to claim gift once sale subtotal meets or exceeds this amount.</p>
+                <p class="text-[11px] text-gray-400 ml-1">Standard promo spend guideline for cashiers when granting freebies.</p>
             </div>
 
             <!-- Gift Item Name / Description -->
@@ -333,7 +333,7 @@ if (!$is_all_stores) {
                         </div>
                         <div>
                             <div class="flex items-center gap-2">
-                                <span class="text-[9px] font-black uppercase tracking-wider bg-pink-500/30 text-pink-200 px-2 py-0.5 rounded border border-pink-500/40">PROMO ELIGIBLE</span>
+                                <span class="text-[9px] font-black uppercase tracking-wider bg-pink-500/30 text-pink-200 px-2 py-0.5 rounded border border-pink-500/40">PROMO GIFT</span>
                                 <h4 id="preview-promo-title" class="text-sm font-black text-white uppercase tracking-wider"><?= htmlspecialchars($settings['promo_name'] ?? 'RL Shoe Bag Promo') ?></h4>
                             </div>
                             <p class="text-xs text-gray-200 mt-1">
