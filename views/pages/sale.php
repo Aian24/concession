@@ -294,48 +294,54 @@ if (isset($_GET['ajax'])) {
 
             <div>
                 <?php if ($promo_enabled): ?>
-                <!-- Promo / Gift With Purchase (GWP) Banner with Enable/Disable Toggle -->
-                <div id="promo-banner" class="glass-panel border border-white/10 bg-gradient-to-r from-slate-900/80 via-slate-900/90 to-[#161226]/80 rounded-xl p-3 md:p-3.5 mb-3 shadow-xl relative overflow-hidden transition-all duration-300">
-                    <!-- Ambient Glow Effect -->
-                    <div id="promo-glow" class="absolute -right-8 -top-8 w-44 h-44 bg-pink-500/10 rounded-full blur-2xl pointer-events-none transition-opacity duration-300 opacity-20"></div>
-
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 relative z-10">
-                        <!-- Left: Promo Campaign Info -->
-                        <div class="flex items-center gap-3 min-w-0">
-                            <div id="promo-icon-box" class="w-9 h-9 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-gray-500 shrink-0 shadow-sm transition-all duration-300">
-                                <i id="promo-icon" class="fas fa-gift text-sm"></i>
+                <!-- Promo / Gift With Purchase (GWP) Banner -->
+                <div id="promo-banner" class="glass-panel border border-pink-500/30 bg-gradient-to-r from-purple-950/40 via-slate-900/60 to-pink-950/40 rounded-xl p-2.5 sm:p-3 mb-3 shadow-lg relative overflow-hidden animate-fade-in">
+                    <div class="flex items-center justify-between gap-3 relative z-10 flex-wrap">
+                        
+                        <!-- Left: Promo Title -->
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <div class="w-8 h-8 rounded-lg bg-pink-500/20 border border-pink-500/30 flex items-center justify-center text-pink-400 shrink-0 shadow-sm">
+                                <i class="fas fa-gift text-sm animate-bounce"></i>
                             </div>
-                            <div class="min-w-0">
-                                <div class="flex items-center gap-2 flex-wrap">
-                                    <h4 class="text-xs font-black text-white uppercase tracking-wider truncate"><?= htmlspecialchars($promo_name) ?></h4>
-                                    <span id="promo-toggle-status-badge" class="px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider bg-slate-800 text-gray-400 border border-slate-700 transition-all">
-                                        Gift Disabled
+                            <h4 class="text-xs sm:text-sm font-black text-white uppercase tracking-wider truncate"><?= htmlspecialchars($promo_name) ?></h4>
+                        </div>
+
+                        <!-- Right: Status Badge & Freebie Toggle with Stepper -->
+                        <div class="flex items-center gap-2 sm:gap-2.5 shrink-0 flex-wrap">
+                            <!-- Qualified Count Badge -->
+                            <div id="promo-earned-badge" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-pink-500/10 border border-pink-500/20 text-[9px] sm:text-[10px] font-black text-pink-300 uppercase tracking-wider shadow-sm">
+                                <i class="fas fa-gift text-[9px] text-pink-400"></i>
+                                <span id="promo-earned-count">0 Gifts</span>
+                            </div>
+
+                            <!-- Manual Promo Gift Toggle with Reduced Label -->
+                            <div class="flex items-center gap-1.5">
+                                <label class="flex items-center gap-2 cursor-pointer select-none bg-slate-900/80 hover:bg-slate-900 border border-pink-500/30 hover:border-pink-500/60 rounded-xl px-2.5 py-1.5 transition-all shadow-sm group" title="Toggle freebie for multiple/combined transactions">
+                                    <span class="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-pink-300 group-hover:text-pink-200 transition-colors flex items-center gap-1">
+                                        <i class="fas fa-gift text-pink-400 text-[9px]"></i> Freebie
                                     </span>
-                                    <span class="text-[7.5px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                                        Min. ₱<?= number_format($promo_min_spend, 2) ?> Per Item
-                                    </span>
+                                    <div class="relative inline-flex items-center">
+                                        <input type="checkbox" id="manual-promo-toggle" onchange="onManualPromoToggleChange(this.checked)" class="sr-only peer">
+                                        <div class="w-7 h-4 bg-slate-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-pink-500 peer-checked:to-purple-500 border border-slate-600"></div>
+                                    </div>
+                                </label>
+
+                                <!-- Stepper Input (shown when toggle is ON) -->
+                                <div id="banner-manual-controls" class="hidden flex items-center gap-1.5 animate-fade-in">
+                                    <div class="flex items-center bg-slate-900/90 border border-pink-500/50 rounded-lg px-1.5 py-0.5 shadow-inner">
+                                        <span class="text-[8px] sm:text-[8.5px] font-black uppercase text-pink-300/80 px-1 tracking-wider">Qty:</span>
+                                        <button type="button" onclick="adjustManualGiftQty(-1)" class="w-5 h-5 rounded bg-white/5 hover:bg-white/10 text-white flex items-center justify-center text-[10px] font-bold transition-all hover:scale-105 active:scale-95" title="Decrease gift quantity">
+                                            <i class="fas fa-minus text-[8px]"></i>
+                                        </button>
+                                        <input type="number" id="manual-gift-qty-input" min="1" max="99" value="1" oninput="onManualGiftQtyChange(this)" onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();" class="w-8 bg-transparent text-center text-xs font-black text-white focus:outline-none select-all" title="Number of free gifts">
+                                        <button type="button" onclick="adjustManualGiftQty(1)" class="w-5 h-5 rounded bg-white/5 hover:bg-white/10 text-white flex items-center justify-center text-[10px] font-bold transition-all hover:scale-105 active:scale-95" title="Increase gift quantity">
+                                            <i class="fas fa-plus text-[8px]"></i>
+                                        </button>
+                                    </div>
                                 </div>
-                                <p class="text-[10.5px] text-gray-400 mt-0.5 truncate">
-                                    Gift Item: <span class="text-pink-300 font-bold"><?= htmlspecialchars($promo_item_name) ?></span> <span class="text-[9.5px] font-mono text-gray-400">(#<?= htmlspecialchars($promo_item_no) ?> • <?= htmlspecialchars($promo_style_code) ?>)</span>
-                                </p>
                             </div>
                         </div>
 
-                        <!-- Right: Toggle Switch & Qualified Counter -->
-                        <div class="flex items-center gap-3 shrink-0 self-end sm:self-center">
-                            <!-- Qualified Counter Badge -->
-                            <div id="promo-earned-badge" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700 text-[9px] font-black text-gray-400 uppercase tracking-wider transition-all">
-                                <i id="promo-earned-icon" class="fas fa-gift text-[9px] text-gray-500"></i>
-                                <span id="promo-earned-count">No Gift (Promo Off)</span>
-                            </div>
-
-                            <!-- Interactive Enable/Disable Toggle -->
-                            <label class="relative inline-flex items-center cursor-pointer select-none group" title="Toggle to enable or disable promo gift for this transaction">
-                                <input type="checkbox" id="transaction-promo-toggle" onchange="toggleTransactionPromo(this.checked)" class="sr-only peer">
-                                <div class="w-12 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-pink-600 peer-checked:to-purple-600 border border-slate-600 group-hover:border-pink-500/50 transition-all"></div>
-                                <span id="promo-toggle-label" class="ml-2 text-xs font-bold text-gray-300 group-hover:text-white transition-colors">Enable Gift</span>
-                            </label>
-                        </div>
                     </div>
                 </div>
                 <?php endif; ?>
@@ -643,76 +649,87 @@ if (isset($_GET['ajax'])) {
         styleCode: <?= json_encode($promo_style_code) ?>
     };
 
-    // Promo Gift is disabled by default until user turns ON the toggle for this transaction
-    window.promoTransactionEnabled = false;
+    window.manualPromoGiftClaimed = false;
 
-    window.toggleTransactionPromo = function(isEnabled) {
-        window.promoTransactionEnabled = !!isEnabled;
-        
-        const toggleInput = document.getElementById('transaction-promo-toggle');
-        if (toggleInput && toggleInput.checked !== window.promoTransactionEnabled) {
-            toggleInput.checked = window.promoTransactionEnabled;
+    window.onManualPromoToggleChange = function(isChecked) {
+        const promoConfig = window.promoConfig || {};
+        if (!promoConfig.enabled) {
+            const toggle = document.getElementById('manual-promo-toggle');
+            if (toggle) toggle.checked = false;
+            if (typeof showStatusModal === 'function') {
+                showStatusModal(false, 'Promo gift is currently disabled in Promo Settings.', 'Promo Inactive');
+            }
+            return;
         }
 
-        const badge = document.getElementById('promo-toggle-status-badge');
-        const label = document.getElementById('promo-toggle-label');
-        const iconBox = document.getElementById('promo-icon-box');
-        const banner = document.getElementById('promo-banner');
-        const glow = document.getElementById('promo-glow');
-        const earnedBadge = document.getElementById('promo-earned-badge');
-        const earnedIcon = document.getElementById('promo-earned-icon');
+        if (isChecked) {
+            window.manualPromoGiftClaimed = true;
+            const controls = document.getElementById('banner-manual-controls');
+            if (controls) controls.classList.remove('hidden');
 
-        if (window.promoTransactionEnabled) {
-            if (badge) {
-                badge.textContent = 'Gift Enabled';
-                badge.className = 'px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 animate-pulse transition-all';
+            const qtyInput = document.getElementById('manual-gift-qty-input');
+            if (qtyInput && (!qtyInput.value || parseInt(qtyInput.value) < 1)) {
+                qtyInput.value = '1';
             }
-            if (label) {
-                label.textContent = 'Gift Active';
-                label.className = 'ml-2 text-xs font-bold text-pink-300 group-hover:text-pink-200 transition-colors';
-            }
-            if (iconBox) {
-                iconBox.className = 'w-9 h-9 rounded-xl bg-gradient-to-br from-pink-500/30 to-purple-600/30 border border-pink-500/50 flex items-center justify-center text-pink-300 shrink-0 shadow-lg shadow-pink-500/20 transition-all duration-300';
-            }
-            if (banner) {
-                banner.className = 'glass-panel border-2 border-pink-500/50 bg-gradient-to-r from-purple-950/40 via-slate-900/80 to-pink-950/50 rounded-xl p-3 md:p-3.5 mb-3 shadow-xl shadow-pink-500/10 relative overflow-hidden transition-all duration-300';
-            }
-            if (glow) {
-                glow.className = 'absolute -right-8 -top-8 w-44 h-44 bg-pink-500/20 rounded-full blur-2xl pointer-events-none transition-opacity duration-300 opacity-100';
-            }
-            if (earnedBadge) {
-                earnedBadge.className = 'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-pink-500/10 border border-pink-500/30 text-[9px] font-black text-pink-300 uppercase tracking-wider transition-all';
-            }
-            if (earnedIcon) {
-                earnedIcon.className = 'fas fa-gift text-[9px] text-pink-400 animate-bounce';
+
+            window.updateSummary();
+            setTimeout(() => {
+                if (qtyInput) {
+                    qtyInput.focus();
+                    qtyInput.select();
+                }
+            }, 50);
+
+            if (typeof showStatusModal === 'function') {
+                showStatusModal(true, 'Freebie enabled. You can adjust the quantity for multiple/combined transactions.', 'Freebie Enabled');
             }
         } else {
-            if (badge) {
-                badge.textContent = 'Gift Disabled';
-                badge.className = 'px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider bg-slate-800 text-gray-400 border border-slate-700 transition-all';
-            }
-            if (label) {
-                label.textContent = 'Enable Gift';
-                label.className = 'ml-2 text-xs font-bold text-gray-300 group-hover:text-white transition-colors';
-            }
-            if (iconBox) {
-                iconBox.className = 'w-9 h-9 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-gray-500 shrink-0 shadow-sm transition-all duration-300';
-            }
-            if (banner) {
-                banner.className = 'glass-panel border border-white/10 bg-gradient-to-r from-slate-900/80 via-slate-900/90 to-[#161226]/80 rounded-xl p-3 md:p-3.5 mb-3 shadow-xl relative overflow-hidden transition-all duration-300';
-            }
-            if (glow) {
-                glow.className = 'absolute -right-8 -top-8 w-44 h-44 bg-pink-500/10 rounded-full blur-2xl pointer-events-none transition-opacity duration-300 opacity-20';
-            }
-            if (earnedBadge) {
-                earnedBadge.className = 'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700 text-[9px] font-black text-gray-400 uppercase tracking-wider transition-all';
-            }
-            if (earnedIcon) {
-                earnedIcon.className = 'fas fa-gift text-[9px] text-gray-500';
-            }
+            window.removeManualPromoGift();
         }
+    };
+
+    window.toggleManualPromoGift = function() {
+        const toggle = document.getElementById('manual-promo-toggle');
+        if (toggle) {
+            toggle.checked = !toggle.checked;
+            window.onManualPromoToggleChange(toggle.checked);
+        }
+    };
+
+    window.adjustManualGiftQty = function(delta) {
+        const input = document.getElementById('manual-gift-qty-input');
+        if (!input) return;
+        let current = parseInt(input.value) || 1;
+        let next = current + delta;
+        if (next < 1) next = 1;
+        if (next > 99) next = 99;
+        input.value = next;
+        window.updateSummary();
+    };
+
+    window.onManualGiftQtyChange = function(input) {
+        let val = parseInt(input.value) || 1;
+        if (val < 1) val = 1;
+        if (val > 99) val = 99;
+        input.value = val;
+        window.updateSummary();
+    };
+
+    window.removeManualPromoGift = function(silent = false) {
+        window.manualPromoGiftClaimed = false;
+        const toggle = document.getElementById('manual-promo-toggle');
+        if (toggle) toggle.checked = false;
+
+        const controls = document.getElementById('banner-manual-controls');
+        if (controls) controls.classList.add('hidden');
+
+        const qtyInput = document.getElementById('manual-gift-qty-input');
+        if (qtyInput) qtyInput.value = '1';
 
         window.updateSummary();
+        if (!silent && typeof showStatusModal === 'function') {
+            showStatusModal(false, 'Promo Freebie removed from this sale.', 'Freebie Removed');
+        }
     };
 
     // ── Form Logic ───────────────────────────────────────────
@@ -742,7 +759,6 @@ if (isset($_GET['ajax'])) {
         let items = 0, qty = 0, total = 0, giftsCount = 0;
         const promoConfig = window.promoConfig || {};
         const promoEnabled = !!promoConfig.enabled;
-        const promoTxActive = !!window.promoTransactionEnabled;
         const minSpend = parseFloat(promoConfig.minSpend) || 1999;
 
         document.querySelectorAll('.entry-row').forEach(row => {
@@ -765,11 +781,12 @@ if (isset($_GET['ajax'])) {
             const rowTotal = amt * q;
             total += rowTotal;
 
-            // Check if this specific entry qualifies for Promo Gift
+            // Check if this specific entry qualifies for Promo Gift (Current 1,999 rule)
+            // (When manual promo gift is claimed, manual quantity takes precedence)
             const indicator = row.querySelector('.entry-gift-indicator');
             if (promoEnabled && indicator) {
-                const isQualified = (rowTotal >= minSpend && minSpend > 0 && itm !== '0' && itm !== '');
-                if (isQualified && promoTxActive) {
+                const isQualified = (!window.manualPromoGiftClaimed && rowTotal >= minSpend && minSpend > 0 && itm !== '0' && itm !== '');
+                if (isQualified) {
                     indicator.classList.remove('hidden');
                     indicator.classList.add('inline-flex');
                     giftsCount++;
@@ -785,14 +802,21 @@ if (isset($_GET['ajax'])) {
             }
         });
 
+        // If manual promo gift is enabled, add the cashier's specified gifts quantity
+        if (promoEnabled && window.manualPromoGiftClaimed) {
+            const qtyInput = document.getElementById('manual-gift-qty-input');
+            let manualQty = parseInt(qtyInput ? qtyInput.value : 1) || 1;
+            if (manualQty < 1) manualQty = 1;
+
+            giftsCount = manualQty;
+            items += manualQty;
+            qty += manualQty;
+        }
+
         // Update earned count badge in banner
         const promoCountEl = document.getElementById('promo-earned-count');
         if (promoCountEl) {
-            if (!promoTxActive) {
-                promoCountEl.textContent = 'No Gift (Promo Off)';
-            } else {
-                promoCountEl.textContent = giftsCount === 1 ? '1 Gift Qualified' : `${giftsCount} Gifts Qualified`;
-            }
+            promoCountEl.textContent = giftsCount === 1 ? '1 Gift' : `${giftsCount} Gifts`;
         }
 
         // Update summary box numbers
@@ -896,9 +920,8 @@ if (isset($_GET['ajax'])) {
                 }
             }
 
-            // Reset promo gift toggle to disabled on form reset
-            if (typeof window.toggleTransactionPromo === 'function') {
-                window.toggleTransactionPromo(false);
+            if (typeof window.removeManualPromoGift === 'function') {
+                window.removeManualPromoGift(true);
             }
 
             window.updateSummary();
@@ -925,6 +948,7 @@ if (isset($_GET['ajax'])) {
         const entries = [];
         let valid = true;
         let hasErrors = false;
+        let autoGiftsCount = 0;
         const promoConfig = window.promoConfig || {};
         const promoEnabled = !!promoConfig.enabled;
         const minSpend = parseFloat(promoConfig.minSpend) || 1999;
@@ -957,8 +981,9 @@ if (isset($_GET['ajax'])) {
                     // Main item entry
                     entries.push({ item_no: item, base_price: base, discount: disc, amount_sold: amt, quantity: qty });
 
-                    // Directly append free gift row for this qualifying entry ONLY if transaction promo is enabled
-                    if (promoEnabled && window.promoTransactionEnabled && rowTotal >= minSpend && minSpend > 0 && item !== '0') {
+                    // Directly append free gift row for this qualifying entry (existing 1,999 rule)
+                    // (Only if cashier did not manually set promo gifts)
+                    if (!window.manualPromoGiftClaimed && promoEnabled && rowTotal >= minSpend && minSpend > 0 && item !== '0') {
                         entries.push({
                             item_no: defaultGiftItemNo,
                             base_price: 0,
@@ -967,10 +992,29 @@ if (isset($_GET['ajax'])) {
                             quantity: 1,
                             is_gwp: 1
                         });
+                        autoGiftsCount++;
                     }
                 }
             }
         });
+
+        // If manual promo gift is enabled, append separate gift entries (1 qty each)
+        if (promoEnabled && window.manualPromoGiftClaimed) {
+            const qtyInput = document.getElementById('manual-gift-qty-input');
+            let manualQty = parseInt(qtyInput ? qtyInput.value : 1) || 1;
+            if (manualQty < 1) manualQty = 1;
+
+            for (let g = 0; g < manualQty; g++) {
+                entries.push({
+                    item_no: defaultGiftItemNo,
+                    base_price: 0,
+                    discount: 100,
+                    amount_sold: 0,
+                    quantity: 1,
+                    is_gwp: 1
+                });
+            }
+        }
 
         if (hasErrors) {
             showStatusModal(false, 'Please correct the invalid items before submitting.', 'Validation Error');
@@ -1393,10 +1437,5 @@ if (isset($_GET['ajax'])) {
 
     initTableEvents();
     window.refreshSaleTable = refreshTable;
-
-    // Initialize transaction promo gift to disabled by default ("like in the first its disabled")
-    if (typeof window.toggleTransactionPromo === 'function') {
-        window.toggleTransactionPromo(false);
-    }
 })();
 </script>
